@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.util;
 
 import java.util.Arrays;
 import org.bukkit.Material;
+import org.bukkit.VanillaMaterial;
 import org.bukkit.material.MaterialData;
 
 /**
@@ -27,7 +28,7 @@ public final class CraftLegacy {
 
     public static Material[] modern_values() {
         Material[] values = Material.values();
-        return Arrays.copyOfRange(values, 0, Material.LEGACY_AIR.ordinal());
+        return Arrays.copyOfRange(values, 0, VanillaMaterial.LEGACY_AIR.ordinal());
     }
 
     public static int modern_ordinal(Material material) {
@@ -35,7 +36,10 @@ public final class CraftLegacy {
             // SPIGOT-4002: Fix for eclipse compiler manually compiling in default statements to lookupswitch
             throw new NoSuchFieldError("Legacy field ordinal: " + material);
         }
+        if (!(material instanceof VanillaMaterial vanilla)) {
+            throw new NoSuchFieldError("Non-vanilla material has no modern ordinal: " + material);
+        }
 
-        return material.ordinal();
+        return vanilla.ordinal();
     }
 }

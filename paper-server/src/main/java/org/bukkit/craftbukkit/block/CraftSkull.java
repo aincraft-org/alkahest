@@ -19,6 +19,7 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
+import org.bukkit.VanillaMaterial;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Skull;
@@ -195,31 +196,20 @@ public class CraftSkull extends CraftBlockEntityState<SkullBlockEntity> implemen
 
     @Override
     public SkullType getSkullType() {
-        switch (this.getType()) {
-            case SKELETON_SKULL:
-            case SKELETON_WALL_SKULL:
-                return SkullType.SKELETON;
-            case WITHER_SKELETON_SKULL:
-            case WITHER_SKELETON_WALL_SKULL:
-                return SkullType.WITHER;
-            case ZOMBIE_HEAD:
-            case ZOMBIE_WALL_HEAD:
-                return SkullType.ZOMBIE;
-            case PIGLIN_HEAD:
-            case PIGLIN_WALL_HEAD:
-                return SkullType.PIGLIN;
-            case PLAYER_HEAD:
-            case PLAYER_WALL_HEAD:
-                return SkullType.PLAYER;
-            case CREEPER_HEAD:
-            case CREEPER_WALL_HEAD:
-                return SkullType.CREEPER;
-            case DRAGON_HEAD:
-            case DRAGON_WALL_HEAD:
-                return SkullType.DRAGON;
-            default:
-                throw new IllegalArgumentException("Unknown SkullType for " + this.getType());
+        // Material is an interface; switch on VanillaMaterial (skulls are always vanilla carriers)
+        if (!(this.getType() instanceof VanillaMaterial vm)) {
+            throw new IllegalArgumentException("Unknown SkullType for " + this.getType());
         }
+        return switch (vm) {
+            case SKELETON_SKULL, SKELETON_WALL_SKULL -> SkullType.SKELETON;
+            case WITHER_SKELETON_SKULL, WITHER_SKELETON_WALL_SKULL -> SkullType.WITHER;
+            case ZOMBIE_HEAD, ZOMBIE_WALL_HEAD -> SkullType.ZOMBIE;
+            case PIGLIN_HEAD, PIGLIN_WALL_HEAD -> SkullType.PIGLIN;
+            case PLAYER_HEAD, PLAYER_WALL_HEAD -> SkullType.PLAYER;
+            case CREEPER_HEAD, CREEPER_WALL_HEAD -> SkullType.CREEPER;
+            case DRAGON_HEAD, DRAGON_WALL_HEAD -> SkullType.DRAGON;
+            default -> throw new IllegalArgumentException("Unknown SkullType for " + this.getType());
+        };
     }
 
     @Override

@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class PerMaterialTest {
 
     @ParameterizedTest
-    @EnumSource(value = Material.class, names = "LEGACY_.*", mode = EnumSource.Mode.MATCH_NONE)
+    @EnumSource(value = VanillaMaterial.class, names = "LEGACY_.*", mode = EnumSource.Mode.MATCH_NONE)
     @Disabled
-    public void isTransparent(Material material) {
+    public void isTransparent(VanillaMaterial material) {
         if (material == Material.AIR) {
             assertTrue(material.isTransparent());
         } else if (material.isBlock()) {
@@ -28,16 +28,16 @@ public class PerMaterialTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = Material.class, names = "LEGACY_.*", mode = EnumSource.Mode.MATCH_NONE)
-    public void testBlockDataCreation(Material material) {
+    @EnumSource(value = VanillaMaterial.class, names = "LEGACY_.*", mode = EnumSource.Mode.MATCH_NONE)
+    public void testBlockDataCreation(VanillaMaterial material) {
         if (material.isBlock()) {
             assertNotNull(material.createBlockData());
         }
     }
 
     @ParameterizedTest
-    @EnumSource(value = Material.class, names = "LEGACY_.*", mode = EnumSource.Mode.MATCH_NONE)
-    public void testBlockDataClass(Material material) {
+    @EnumSource(value = VanillaMaterial.class, names = "LEGACY_.*", mode = EnumSource.Mode.MATCH_NONE)
+    public void testBlockDataClass(VanillaMaterial material) {
         if (material.isBlock()) {
             Class<?> expectedClass = material.data;
             if (expectedClass != MaterialData.class) {

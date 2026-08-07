@@ -37,7 +37,7 @@ public class FactoryItemMaterialTest {
         materials = list.toArray(new Material[list.size()]);
     }
 
-    static String name(Enum<?> from, Enum<?> to) {
+    static String name(Material from, Material to) {
         if (from.getClass() == to.getClass()) {
             return FactoryItemMaterialTest.buffer.delete(0, Integer.MAX_VALUE).append(from.getClass().getName()).append(' ').append(from.name()).append(" to ").append(to.name()).toString();
         }

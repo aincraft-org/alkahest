@@ -1544,17 +1544,18 @@ public class CraftEventFactory {
 
     public static BlockIgniteEvent callBlockIgniteEvent(Level level, BlockPos pos, BlockPos sourcePos) {
         Block igniter = CraftBlock.at(level, sourcePos);
+        // Material is an interface; switch on VanillaMaterial (block carriers are vanilla)
         final IgniteCause cause;
-        switch (igniter.getType()) {
-            case LAVA:
-                cause = IgniteCause.LAVA;
-                break;
-            case DISPENSER:
-                cause = IgniteCause.FLINT_AND_STEEL;
-                break;
-            case FIRE: // Fire or any other unknown block counts as SPREAD.
-            default:
-                cause = IgniteCause.SPREAD;
+        if (igniter.getType() instanceof org.bukkit.VanillaMaterial vm) {
+            cause = switch (vm) {
+                case LAVA -> IgniteCause.LAVA;
+                case DISPENSER -> IgniteCause.FLINT_AND_STEEL;
+                // Fire or any other unknown block counts as SPREAD.
+                case FIRE -> IgniteCause.SPREAD;
+                default -> IgniteCause.SPREAD;
+            };
+        } else {
+            cause = IgniteCause.SPREAD;
         }
 
         BlockIgniteEvent event = new BlockIgniteEvent(CraftBlock.at(level, pos), cause, igniter);

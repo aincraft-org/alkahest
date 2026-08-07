@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.bukkit.Material;
+import org.bukkit.VanillaMaterial;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.EntityType;
 import org.bukkit.material.MaterialData;
@@ -227,7 +228,7 @@ public final class CraftLegacy {
 
     public static Material[] values() {
         Material[] values = Material.values();
-        return Arrays.copyOfRange(values, Material.LEGACY_AIR.ordinal(), values.length);
+        return Arrays.copyOfRange(values, VanillaMaterial.LEGACY_AIR.ordinal(), values.length);
     }
 
     public static Material valueOf(String name) {
@@ -244,8 +245,11 @@ public final class CraftLegacy {
 
     public static int ordinal(Material material) {
         Preconditions.checkArgument(material.isLegacy(), "ordinal on modern Material");
+        if (!(material instanceof VanillaMaterial vanilla)) {
+            throw new NoSuchFieldError("Non-vanilla material: " + material);
+        }
 
-        return material.ordinal() - Material.LEGACY_AIR.ordinal();
+        return vanilla.ordinal() - VanillaMaterial.LEGACY_AIR.ordinal();
     }
 
     public static String name(Material material) {
@@ -382,8 +386,8 @@ public final class CraftLegacy {
 
             // Handle items (and second fallback for blocks)
             // We cannot rely on Material#getMaxDurability here because it relies on materialToItem which isn't filled
-            // yet.
-            int maxData = switch (material) {
+            // yet. Switch on VanillaMaterial — Material is an interface (not an enum).
+            int maxData = switch ((VanillaMaterial) material) {
                 case LEGACY_WOOD_AXE, LEGACY_WOOD_HOE, LEGACY_WOOD_PICKAXE, LEGACY_WOOD_SPADE,
                      LEGACY_WOOD_SWORD,
                      LEGACY_STONE_AXE, LEGACY_STONE_HOE, LEGACY_STONE_PICKAXE, LEGACY_STONE_SPADE,
