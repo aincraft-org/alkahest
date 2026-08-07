@@ -3342,7 +3342,7 @@ public interface Material extends Keyed, Translatable, net.kyori.adventure.trans
     static Material matchMaterial(@NotNull final String name, boolean legacyName) {
         Preconditions.checkArgument(name != null, "Name cannot be null");
 
-        // Custom / namespaced key path (Task 5 will fully wire catalog; stub safe for now)
+        // Namespaced key path — custom catalog via getByKey, then vanilla
         if (name.indexOf(':') >= 0) {
             final NamespacedKey key = NamespacedKey.fromString(name);
             if (key != null) {
@@ -3364,14 +3364,20 @@ public interface Material extends Keyed, Translatable, net.kyori.adventure.trans
 
     /**
      * Resolve any material (vanilla or mintychochip custom catalog) by key.
-     * Vanilla-only until Task 5 wires CustomBlocks; implement empty custom branch first.
+     *
+     * <p>Custom catalog is checked first so registered
+     * {@link dev.mintychochip.customblock.CustomBlockDefinition}s participate.
      */
     @NotNull
     static Optional<Material> getByKey(@Nullable final NamespacedKey key) {
         if (key == null) {
             return Optional.empty();
         }
-        // Task 5: CustomBlocks.get(key)
+        final Optional<dev.mintychochip.customblock.CustomBlockDefinition> custom =
+            dev.mintychochip.customblock.CustomBlocks.get(key);
+        if (custom.isPresent()) {
+            return Optional.of(custom.get());
+        }
         try {
             final Material reg = Registry.MATERIAL.get(key);
             if (reg != null) {

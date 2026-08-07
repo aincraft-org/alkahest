@@ -1,12 +1,25 @@
 package dev.mintychochip.customblock;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Multimap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.BlockType;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.inventory.CreativeCategory;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemType;
+import org.bukkit.material.MaterialData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -14,10 +27,15 @@ import org.jetbrains.annotations.Unmodifiable;
 /**
  * Immutable definition of a custom block type (identity + host + item + feel).
  *
+ * <p>Implements {@link Material} so callers can use the same APIs as vanilla constants
+ * (lookups via {@link Material#getByKey}, hardness, stack size, …). Live
+ * {@link org.bukkit.block.Block#getType()} / {@link org.bukkit.inventory.ItemStack#getType()}
+ * still return the vanilla carrier/base; logical identity is this definition.
+ *
  * <p>{@link BlockFeel} controls hardness, preferred tool, and blast resistance so the
  * custom block can emulate a vanilla block even when hosted on a different carrier.
  */
-public final class CustomBlockDefinition implements Keyed {
+public final class CustomBlockDefinition implements Material {
 
     private final NamespacedKey key;
     private final HostSpec host;
@@ -41,6 +59,9 @@ public final class CustomBlockDefinition implements Keyed {
         this.itemMaterial = Objects.requireNonNull(itemMaterial, "itemMaterial");
         this.itemModel = Objects.requireNonNull(itemModel, "itemModel");
         this.feel = Objects.requireNonNull(feel, "feel");
+        if (itemMaterial.isCustom()) {
+            throw new IllegalArgumentException("itemMaterial must be vanilla Material, not custom");
+        }
         // Avoid Material#isAir() — it touches BlockType registry (needs full server bootstrap).
         if (itemMaterial == Material.AIR
             || itemMaterial == Material.CAVE_AIR
@@ -63,8 +84,15 @@ public final class CustomBlockDefinition implements Keyed {
         return builder(key);
     }
 
-    @Override
+    /**
+     * Adventure {@link Key} form of the definition id (same as {@link #getKey()}).
+     */
     public @NotNull Key key() {
+        return this.key;
+    }
+
+    @Override
+    public @NotNull NamespacedKey getKey() {
         return this.key;
     }
 
@@ -107,6 +135,333 @@ public final class CustomBlockDefinition implements Keyed {
 
     public boolean isPacket() {
         return this.host.type().isPacket();
+    }
+
+    /**
+     * Vanilla world carrier material for this definition's host.
+     *
+     * <p>API-side (no NMS); server placement delegates here.
+     */
+    public @NotNull Material carrierMaterial() {
+        return switch (this.host.type()) {
+            case CHORUS -> Material.CHORUS_PLANT;
+            case MUSHROOM -> {
+                final MushroomHostSpec mush = (MushroomHostSpec) this.host;
+                yield mush.variant() == MushroomVariant.RED
+                    ? Material.RED_MUSHROOM_BLOCK
+                    : Material.BROWN_MUSHROOM_BLOCK;
+            }
+            case TRIPWIRE -> Material.TRIPWIRE;
+            case PACKET -> packetCollisionMaterial();
+        };
+    }
+
+    private Material packetCollisionMaterial() {
+        final PacketHostSpec packet = (PacketHostSpec) this.host;
+        final String key = packet.collisionMaterialKey();
+        // Fast-path common defaults without touching Material registry bootstrap.
+        if ("minecraft:glass".equals(key) || "glass".equalsIgnoreCase(key)) {
+            return Material.GLASS;
+        }
+        if ("minecraft:barrier".equals(key) || "barrier".equalsIgnoreCase(key)) {
+            return Material.BARRIER;
+        }
+        // Prefer getMaterial (not matchMaterial) to avoid custom-key recursion.
+        final String enumName;
+        if (key.startsWith("minecraft:")) {
+            enumName = key.substring("minecraft:".length()).toUpperCase(Locale.ROOT);
+        } else {
+            enumName = key.toUpperCase(Locale.ROOT).replace(':', '_');
+        }
+        final Material parsed = Material.getMaterial(enumName);
+        if (parsed != null && parsed.isVanilla() && parsed.isBlock()
+            && parsed != Material.AIR
+            && parsed != Material.CAVE_AIR
+            && parsed != Material.VOID_AIR) {
+            return parsed;
+        }
+        return Material.GLASS;
+    }
+
+    private Material carrier() {
+        return carrierMaterial();
+    }
+
+    private Material item() {
+        return this.itemMaterial;
+    }
+
+    // ---- Material ----
+
+    @Override
+    public boolean isLegacy() {
+        return false;
+    }
+
+    @Override
+    public boolean isBlock() {
+        return true;
+    }
+
+    @Override
+    public boolean isItem() {
+        return true;
+    }
+
+    @Override
+    public boolean isAir() {
+        return false;
+    }
+
+    @Override
+    @Deprecated(since = "1.21.5")
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    public boolean isVanilla() {
+        return false;
+    }
+
+    @Override
+    public boolean isCustom() {
+        return true;
+    }
+
+    @Override
+    public float getHardness() {
+        return this.feel.hardness();
+    }
+
+    @Override
+    public float getBlastResistance() {
+        return this.feel.blastResistance();
+    }
+
+    @Override
+    public float getSlipperiness() {
+        return carrier().getSlipperiness();
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        return item().getMaxStackSize();
+    }
+
+    @Override
+    public short getMaxDurability() {
+        return item().getMaxDurability();
+    }
+
+    @Override
+    public @NotNull BlockData createBlockData() {
+        return Bukkit.createBlockData(carrier());
+    }
+
+    @Override
+    public @NotNull BlockData createBlockData(@Nullable final Consumer<? super BlockData> consumer) {
+        return Bukkit.createBlockData(carrier(), consumer);
+    }
+
+    @Override
+    public @NotNull BlockData createBlockData(@Nullable final String data) {
+        return Bukkit.createBlockData(carrier(), data);
+    }
+
+    @Override
+    public @Nullable ItemType asItemType() {
+        return null;
+    }
+
+    @Override
+    public @Nullable BlockType asBlockType() {
+        return null;
+    }
+
+    @Override
+    public int getId() {
+        throw new IllegalArgumentException("Cannot get ID of custom Material " + this.key);
+    }
+
+    @Override
+    @Deprecated // Paper
+    public @NotNull Class<? extends MaterialData> getData() {
+        throw new IllegalArgumentException("Cannot get data class of custom Material " + this.key);
+    }
+
+    @Override
+    @Deprecated(since = "1.6.2")
+    public @NotNull MaterialData getNewData(final byte raw) {
+        throw new IllegalArgumentException("Cannot get new data of custom Material " + this.key);
+    }
+
+    @Override
+    public @NotNull String translationKey() {
+        return this.key.toString();
+    }
+
+    @Override
+    @Deprecated(forRemoval = true)
+    public @NotNull String getTranslationKey() {
+        return translationKey();
+    }
+
+    @Override
+    public @Nullable String getBlockTranslationKey() {
+        return translationKey();
+    }
+
+    @Override
+    public @Nullable String getItemTranslationKey() {
+        return translationKey();
+    }
+
+    @Override
+    @Deprecated(forRemoval = true, since = "1.20.5")
+    public io.papermc.paper.inventory.@NotNull ItemRarity getItemRarity() {
+        return item().getItemRarity();
+    }
+
+    @Override
+    @Deprecated(forRemoval = true, since = "1.20.5")
+    public @NotNull Multimap<Attribute, AttributeModifier> getItemAttributes(@NotNull final EquipmentSlot equipmentSlot) {
+        return item().getItemAttributes(equipmentSlot);
+    }
+
+    @Override
+    public boolean isCollidable() {
+        return carrier().isCollidable();
+    }
+
+    @Override
+    public boolean isEdible() {
+        return item().isEdible();
+    }
+
+    @Override
+    public boolean isRecord() {
+        return item().isRecord();
+    }
+
+    @Override
+    public boolean isSolid() {
+        return carrier().isSolid();
+    }
+
+    @Override
+    @Deprecated(since = "1.13", forRemoval = true)
+    public boolean isTransparent() {
+        return carrier().isTransparent();
+    }
+
+    @Override
+    public boolean isFlammable() {
+        return carrier().isFlammable();
+    }
+
+    @Override
+    public boolean isBurnable() {
+        return carrier().isBurnable();
+    }
+
+    @Override
+    public boolean isFuel() {
+        return item().isFuel();
+    }
+
+    @Override
+    public boolean isOccluding() {
+        return carrier().isOccluding();
+    }
+
+    @Override
+    public boolean hasGravity() {
+        return carrier().hasGravity();
+    }
+
+    @Override
+    @Deprecated // Paper
+    public boolean isInteractable() {
+        return carrier().isInteractable();
+    }
+
+    @Override
+    public @Nullable Material getCraftingRemainingItem() {
+        return item().getCraftingRemainingItem();
+    }
+
+    @Override
+    public @NotNull EquipmentSlot getEquipmentSlot() {
+        return item().getEquipmentSlot();
+    }
+
+    @Override
+    public @NotNull @Unmodifiable Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers() {
+        return item().getDefaultAttributeModifiers();
+    }
+
+    @Override
+    public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull final EquipmentSlot slot) {
+        return item().getDefaultAttributeModifiers(slot);
+    }
+
+    @Override
+    @Deprecated(since = "1.20.6", forRemoval = true)
+    public @Nullable CreativeCategory getCreativeCategory() {
+        return item().getCreativeCategory();
+    }
+
+    @Override
+    public boolean isCompostable() {
+        return item().isCompostable();
+    }
+
+    @Override
+    public float getCompostChance() {
+        return item().getCompostChance();
+    }
+
+    @Override
+    public @Nullable <T> T getDefaultData(final io.papermc.paper.datacomponent.DataComponentType.@NotNull Valued<T> type) {
+        final ItemType itemType = item().asItemType();
+        Preconditions.checkArgument(itemType != null, "The Material is not an item!");
+        return itemType.getDefaultData(type);
+    }
+
+    @Override
+    public boolean hasDefaultData(final io.papermc.paper.datacomponent.@NotNull DataComponentType type) {
+        final ItemType itemType = item().asItemType();
+        Preconditions.checkArgument(itemType != null, "The Material is not an item!");
+        return itemType.hasDefaultData(type);
+    }
+
+    @Override
+    public @Unmodifiable @NotNull Set<io.papermc.paper.datacomponent.DataComponentType> getDefaultDataTypes() {
+        final ItemType itemType = item().asItemType();
+        Preconditions.checkArgument(itemType != null, "The Material is not an item!");
+        return itemType.getDefaultDataTypes();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CustomBlockDefinition that)) {
+            return false;
+        }
+        return this.key.equals(that.key);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.key.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "CustomBlockDefinition[" + this.key + "]";
     }
 
     public static final class Builder {
