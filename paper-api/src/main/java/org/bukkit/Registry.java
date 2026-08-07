@@ -191,7 +191,8 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
      *
      * @see Material
      */
-    Registry<Material> MATERIAL = new SimpleRegistry<>(Material.class, (mat) -> !mat.isLegacy());
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    Registry<Material> MATERIAL = (Registry) new SimpleRegistry<>(VanillaMaterial.class, (mat) -> !mat.isLegacy());
     /**
      * Server menus.
      *

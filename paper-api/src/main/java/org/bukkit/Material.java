@@ -1,2839 +1,2665 @@
 package org.bukkit;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.Equippable;
-import java.lang.reflect.Constructor;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockType;
-import org.bukkit.block.data.Ageable;
-import org.bukkit.block.data.AnaloguePowerable;
-import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Brushable;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.Hatchable;
-import org.bukkit.block.data.Levelled;
-import org.bukkit.block.data.Lightable;
-import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.block.data.Orientable;
-import org.bukkit.block.data.Powerable;
-import org.bukkit.block.data.Rail;
-import org.bukkit.block.data.Rotatable;
-import org.bukkit.block.data.Snowable;
-import org.bukkit.block.data.Waterlogged;
-import org.bukkit.block.data.type.AmethystCluster;
-import org.bukkit.block.data.type.Bamboo;
-import org.bukkit.block.data.type.Barrel;
-import org.bukkit.block.data.type.Bed;
-import org.bukkit.block.data.type.Beehive;
-import org.bukkit.block.data.type.Bell;
-import org.bukkit.block.data.type.BigDripleaf;
-import org.bukkit.block.data.type.BrewingStand;
-import org.bukkit.block.data.type.BubbleColumn;
-import org.bukkit.block.data.type.Cake;
-import org.bukkit.block.data.type.CalibratedSculkSensor;
-import org.bukkit.block.data.type.Campfire;
-import org.bukkit.block.data.type.Candle;
-import org.bukkit.block.data.type.CaveVines;
-import org.bukkit.block.data.type.CaveVinesPlant;
-import org.bukkit.block.data.type.Chain;
-import org.bukkit.block.data.type.Chest;
-import org.bukkit.block.data.type.ChiseledBookshelf;
-import org.bukkit.block.data.type.Cocoa;
-import org.bukkit.block.data.type.CommandBlock;
-import org.bukkit.block.data.type.Comparator;
-import org.bukkit.block.data.type.CopperBulb;
-import org.bukkit.block.data.type.CopperGolemStatue;
-import org.bukkit.block.data.type.CoralWallFan;
-import org.bukkit.block.data.type.Crafter;
-import org.bukkit.block.data.type.CreakingHeart;
-import org.bukkit.block.data.type.DaylightDetector;
-import org.bukkit.block.data.type.DecoratedPot;
-import org.bukkit.block.data.type.Dispenser;
-import org.bukkit.block.data.type.Door;
-import org.bukkit.block.data.type.DriedGhast;
-import org.bukkit.block.data.type.Dripleaf;
-import org.bukkit.block.data.type.EndPortalFrame;
-import org.bukkit.block.data.type.EnderChest;
-import org.bukkit.block.data.type.Farmland;
-import org.bukkit.block.data.type.Fence;
-import org.bukkit.block.data.type.Fire;
-import org.bukkit.block.data.type.FlowerBed;
-import org.bukkit.block.data.type.Furnace;
-import org.bukkit.block.data.type.Gate;
-import org.bukkit.block.data.type.GlassPane;
-import org.bukkit.block.data.type.GlowLichen;
-import org.bukkit.block.data.type.Grindstone;
-import org.bukkit.block.data.type.HangingMoss;
-import org.bukkit.block.data.type.HangingSign;
-import org.bukkit.block.data.type.Hopper;
-import org.bukkit.block.data.type.Jigsaw;
-import org.bukkit.block.data.type.Jukebox;
-import org.bukkit.block.data.type.Ladder;
-import org.bukkit.block.data.type.Lantern;
-import org.bukkit.block.data.type.LeafLitter;
-import org.bukkit.block.data.type.Leaves;
-import org.bukkit.block.data.type.Lectern;
-import org.bukkit.block.data.type.Light;
-import org.bukkit.block.data.type.LightningRod;
-import org.bukkit.block.data.type.MangrovePropagule;
-import org.bukkit.block.data.type.MossyCarpet;
-import org.bukkit.block.data.type.NoteBlock;
-import org.bukkit.block.data.type.Observer;
-import org.bukkit.block.data.type.Piston;
-import org.bukkit.block.data.type.PistonHead;
-import org.bukkit.block.data.type.PitcherCrop;
-import org.bukkit.block.data.type.PotentSulfur;
-import org.bukkit.block.data.type.RedstoneRail;
-import org.bukkit.block.data.type.RedstoneWallTorch;
-import org.bukkit.block.data.type.RedstoneWire;
-import org.bukkit.block.data.type.Repeater;
-import org.bukkit.block.data.type.ResinClump;
-import org.bukkit.block.data.type.RespawnAnchor;
-import org.bukkit.block.data.type.Sapling;
-import org.bukkit.block.data.type.Scaffolding;
-import org.bukkit.block.data.type.SculkCatalyst;
-import org.bukkit.block.data.type.SculkSensor;
-import org.bukkit.block.data.type.SculkShrieker;
-import org.bukkit.block.data.type.SculkVein;
-import org.bukkit.block.data.type.SeaPickle;
-import org.bukkit.block.data.type.Shelf;
-import org.bukkit.block.data.type.Sign;
-import org.bukkit.block.data.type.Skull;
-import org.bukkit.block.data.type.Slab;
-import org.bukkit.block.data.type.SmallDripleaf;
-import org.bukkit.block.data.type.Snow;
-import org.bukkit.block.data.type.Speleothem;
-import org.bukkit.block.data.type.Stairs;
-import org.bukkit.block.data.type.StructureBlock;
-import org.bukkit.block.data.type.Switch;
-import org.bukkit.block.data.type.TNT;
-import org.bukkit.block.data.type.TechnicalPiston;
-import org.bukkit.block.data.type.TestBlock;
-import org.bukkit.block.data.type.TrapDoor;
-import org.bukkit.block.data.type.TrialSpawner;
-import org.bukkit.block.data.type.Tripwire;
-import org.bukkit.block.data.type.TripwireHook;
-import org.bukkit.block.data.type.TurtleEgg;
-import org.bukkit.block.data.type.Vault;
-import org.bukkit.block.data.type.Wall;
-import org.bukkit.block.data.type.WallHangingSign;
-import org.bukkit.block.data.type.WallSign;
-import org.bukkit.block.data.type.WallSkull;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * An enum of all material IDs accepted by the official server and client
+ * A material identity (block and/or item) accepted by Bukkit APIs.
+ *
+ * <p>Vanilla types are the constants on this interface (e.g. {@link #STONE}); they are instances of
+ * {@link VanillaMaterial}. Custom types ({@link dev.mintychochip.customblock.CustomBlockDefinition})
+ * implement this interface so they can be used anywhere a {@code Material} is accepted.
+ *
+ * <p>{@link org.bukkit.block.Block#getType()} / {@link org.bukkit.inventory.ItemStack#getType()} return
+ * the <strong>carrier</strong> vanilla material for custom blocks/items; use
+ * {@code getCustomBlock()} / {@code getCustomKey()} for logical custom identity.
  */
 @SuppressWarnings({"DeprecatedIsStillUsed", "deprecation"}) // Paper
-public enum Material implements Keyed, Translatable, net.kyori.adventure.translation.Translatable { // Paper
-    //<editor-fold desc="Materials" defaultstate="collapsed">
-    // Start generate - Items
-    ACACIA_BOAT(-1),
-    ACACIA_CHEST_BOAT(-1),
-    AIR(-1),
-    ALLAY_SPAWN_EGG(-1),
-    AMETHYST_SHARD(-1),
-    ANGLER_POTTERY_SHERD(-1),
-    APPLE(-1),
-    ARCHER_POTTERY_SHERD(-1),
-    ARMADILLO_SCUTE(-1),
-    ARMADILLO_SPAWN_EGG(-1),
-    ARMOR_STAND(-1),
-    ARMS_UP_POTTERY_SHERD(-1),
-    ARROW(-1),
-    AXOLOTL_BUCKET(-1),
-    AXOLOTL_SPAWN_EGG(-1),
-    BAKED_POTATO(-1),
-    BAMBOO_CHEST_RAFT(-1),
-    BAMBOO_RAFT(-1),
-    BAT_SPAWN_EGG(-1),
-    BEE_SPAWN_EGG(-1),
-    BEEF(-1),
-    BEETROOT(-1),
-    BEETROOT_SEEDS(-1),
-    BEETROOT_SOUP(-1),
-    BIRCH_BOAT(-1),
-    BIRCH_CHEST_BOAT(-1),
-    BLACK_BUNDLE(-1),
-    BLACK_DYE(-1),
-    BLACK_HARNESS(-1),
-    BLADE_POTTERY_SHERD(-1),
-    BLAZE_POWDER(-1),
-    BLAZE_ROD(-1),
-    BLAZE_SPAWN_EGG(-1),
-    BLUE_BUNDLE(-1),
-    BLUE_DYE(-1),
-    BLUE_EGG(-1),
-    BLUE_HARNESS(-1),
-    BOGGED_SPAWN_EGG(-1),
-    BOLT_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    BONE(-1),
-    BONE_MEAL(-1),
-    BOOK(-1),
-    BORDURE_INDENTED_BANNER_PATTERN(-1),
-    BOW(-1),
-    BOWL(-1),
-    BREAD(-1),
-    BREEZE_ROD(-1),
-    BREEZE_SPAWN_EGG(-1),
-    BREWER_POTTERY_SHERD(-1),
-    BRICK(-1),
-    BROWN_BUNDLE(-1),
-    BROWN_DYE(-1),
-    BROWN_EGG(-1),
-    BROWN_HARNESS(-1),
-    BRUSH(-1),
-    BUCKET(-1),
-    BUNDLE(-1),
-    BURN_POTTERY_SHERD(-1),
-    CAMEL_HUSK_SPAWN_EGG(-1),
-    CAMEL_SPAWN_EGG(-1),
-    CARROT(-1),
-    CARROT_ON_A_STICK(-1),
-    CAT_SPAWN_EGG(-1),
-    CAVE_SPIDER_SPAWN_EGG(-1),
-    CHAINMAIL_BOOTS(-1),
-    CHAINMAIL_CHESTPLATE(-1),
-    CHAINMAIL_HELMET(-1),
-    CHAINMAIL_LEGGINGS(-1),
-    CHARCOAL(-1),
-    CHERRY_BOAT(-1),
-    CHERRY_CHEST_BOAT(-1),
-    CHEST_MINECART(-1),
-    CHICKEN(-1),
-    CHICKEN_SPAWN_EGG(-1),
-    CHORUS_FRUIT(-1),
-    CLAY_BALL(-1),
-    CLOCK(-1),
-    COAL(-1),
-    COAST_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    COCOA_BEANS(-1),
-    COD(-1),
-    COD_BUCKET(-1),
-    COD_SPAWN_EGG(-1),
-    COMMAND_BLOCK_MINECART(-1),
-    COMPASS(-1),
-    COOKED_BEEF(-1),
-    COOKED_CHICKEN(-1),
-    COOKED_COD(-1),
-    COOKED_MUTTON(-1),
-    COOKED_PORKCHOP(-1),
-    COOKED_RABBIT(-1),
-    COOKED_SALMON(-1),
-    COOKIE(-1),
-    COPPER_AXE(-1),
-    COPPER_BOOTS(-1),
-    COPPER_CHESTPLATE(-1),
-    COPPER_GOLEM_SPAWN_EGG(-1),
-    COPPER_HELMET(-1),
-    COPPER_HOE(-1),
-    COPPER_HORSE_ARMOR(-1),
-    COPPER_INGOT(-1),
-    COPPER_LEGGINGS(-1),
-    COPPER_NAUTILUS_ARMOR(-1),
-    COPPER_NUGGET(-1),
-    COPPER_PICKAXE(-1),
-    COPPER_SHOVEL(-1),
-    COPPER_SPEAR(-1),
-    COPPER_SWORD(-1),
-    COW_SPAWN_EGG(-1),
-    CREAKING_SPAWN_EGG(-1),
-    CREEPER_BANNER_PATTERN(-1),
-    CREEPER_SPAWN_EGG(-1),
-    CROSSBOW(-1),
-    CYAN_BUNDLE(-1),
-    CYAN_DYE(-1),
-    CYAN_HARNESS(-1),
-    DANGER_POTTERY_SHERD(-1),
-    DARK_OAK_BOAT(-1),
-    DARK_OAK_CHEST_BOAT(-1),
-    DEBUG_STICK(-1),
-    DIAMOND(-1),
-    DIAMOND_AXE(-1),
-    DIAMOND_BOOTS(-1),
-    DIAMOND_CHESTPLATE(-1),
-    DIAMOND_HELMET(-1),
-    DIAMOND_HOE(-1),
-    DIAMOND_HORSE_ARMOR(-1),
-    DIAMOND_LEGGINGS(-1),
-    DIAMOND_NAUTILUS_ARMOR(-1),
-    DIAMOND_PICKAXE(-1),
-    DIAMOND_SHOVEL(-1),
-    DIAMOND_SPEAR(-1),
-    DIAMOND_SWORD(-1),
-    DISC_FRAGMENT_5(-1),
-    DOLPHIN_SPAWN_EGG(-1),
-    DONKEY_SPAWN_EGG(-1),
-    DRAGON_BREATH(-1),
-    DRIED_KELP(-1),
-    DROWNED_SPAWN_EGG(-1),
-    DUNE_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    ECHO_SHARD(-1),
-    EGG(-1),
-    ELDER_GUARDIAN_SPAWN_EGG(-1),
-    ELYTRA(-1),
-    EMERALD(-1),
-    ENCHANTED_BOOK(-1),
-    ENCHANTED_GOLDEN_APPLE(-1),
-    END_CRYSTAL(-1),
-    ENDER_DRAGON_SPAWN_EGG(-1),
-    ENDER_EYE(-1),
-    ENDER_PEARL(-1),
-    ENDERMAN_SPAWN_EGG(-1),
-    ENDERMITE_SPAWN_EGG(-1),
-    EVOKER_SPAWN_EGG(-1),
-    EXPERIENCE_BOTTLE(-1),
-    EXPLORER_POTTERY_SHERD(-1),
-    EYE_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    FEATHER(-1),
-    FERMENTED_SPIDER_EYE(-1),
-    FIELD_MASONED_BANNER_PATTERN(-1),
-    FILLED_MAP(-1),
-    FIRE_CHARGE(-1),
-    FIREWORK_ROCKET(-1),
-    FIREWORK_STAR(-1),
-    FISHING_ROD(-1),
-    FLINT(-1),
-    FLINT_AND_STEEL(-1),
-    FLOW_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    FLOW_BANNER_PATTERN(-1),
-    FLOW_POTTERY_SHERD(-1),
-    FLOWER_BANNER_PATTERN(-1),
-    FOX_SPAWN_EGG(-1),
-    FRIEND_POTTERY_SHERD(-1),
-    FROG_SPAWN_EGG(-1),
-    FURNACE_MINECART(-1),
-    GHAST_SPAWN_EGG(-1),
-    GHAST_TEAR(-1),
-    GLASS_BOTTLE(-1),
-    GLISTERING_MELON_SLICE(-1),
-    GLOBE_BANNER_PATTERN(-1),
-    GLOW_BERRIES(-1),
-    GLOW_INK_SAC(-1),
-    GLOW_ITEM_FRAME(-1),
-    GLOW_SQUID_SPAWN_EGG(-1),
-    GLOWSTONE_DUST(-1),
-    GOAT_HORN(-1),
-    GOAT_SPAWN_EGG(-1),
-    GOLD_INGOT(-1),
-    GOLD_NUGGET(-1),
-    GOLDEN_APPLE(-1),
-    GOLDEN_AXE(-1),
-    GOLDEN_BOOTS(-1),
-    GOLDEN_CARROT(-1),
-    GOLDEN_CHESTPLATE(-1),
-    GOLDEN_HELMET(-1),
-    GOLDEN_HOE(-1),
-    GOLDEN_HORSE_ARMOR(-1),
-    GOLDEN_LEGGINGS(-1),
-    GOLDEN_NAUTILUS_ARMOR(-1),
-    GOLDEN_PICKAXE(-1),
-    GOLDEN_SHOVEL(-1),
-    GOLDEN_SPEAR(-1),
-    GOLDEN_SWORD(-1),
-    GRAY_BUNDLE(-1),
-    GRAY_DYE(-1),
-    GRAY_HARNESS(-1),
-    GREEN_BUNDLE(-1),
-    GREEN_DYE(-1),
-    GREEN_HARNESS(-1),
-    GUARDIAN_SPAWN_EGG(-1),
-    GUNPOWDER(-1),
-    GUSTER_BANNER_PATTERN(-1),
-    GUSTER_POTTERY_SHERD(-1),
-    HAPPY_GHAST_SPAWN_EGG(-1),
-    HEART_OF_THE_SEA(-1),
-    HEART_POTTERY_SHERD(-1),
-    HEARTBREAK_POTTERY_SHERD(-1),
-    HOGLIN_SPAWN_EGG(-1),
-    HONEY_BOTTLE(-1),
-    HONEYCOMB(-1),
-    HOPPER_MINECART(-1),
-    HORSE_SPAWN_EGG(-1),
-    HOST_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    HOWL_POTTERY_SHERD(-1),
-    HUSK_SPAWN_EGG(-1),
-    INK_SAC(-1),
-    IRON_AXE(-1),
-    IRON_BOOTS(-1),
-    IRON_CHESTPLATE(-1),
-    IRON_GOLEM_SPAWN_EGG(-1),
-    IRON_HELMET(-1),
-    IRON_HOE(-1),
-    IRON_HORSE_ARMOR(-1),
-    IRON_INGOT(-1),
-    IRON_LEGGINGS(-1),
-    IRON_NAUTILUS_ARMOR(-1),
-    IRON_NUGGET(-1),
-    IRON_PICKAXE(-1),
-    IRON_SHOVEL(-1),
-    IRON_SPEAR(-1),
-    IRON_SWORD(-1),
-    ITEM_FRAME(-1),
-    JUNGLE_BOAT(-1),
-    JUNGLE_CHEST_BOAT(-1),
-    KNOWLEDGE_BOOK(-1),
-    LAPIS_LAZULI(-1),
-    LAVA_BUCKET(-1),
-    LEAD(-1),
-    LEATHER(-1),
-    LEATHER_BOOTS(-1),
-    LEATHER_CHESTPLATE(-1),
-    LEATHER_HELMET(-1),
-    LEATHER_HORSE_ARMOR(-1),
-    LEATHER_LEGGINGS(-1),
-    LIGHT_BLUE_BUNDLE(-1),
-    LIGHT_BLUE_DYE(-1),
-    LIGHT_BLUE_HARNESS(-1),
-    LIGHT_GRAY_BUNDLE(-1),
-    LIGHT_GRAY_DYE(-1),
-    LIGHT_GRAY_HARNESS(-1),
-    LIME_BUNDLE(-1),
-    LIME_DYE(-1),
-    LIME_HARNESS(-1),
-    LINGERING_POTION(-1),
-    LLAMA_SPAWN_EGG(-1),
-    MACE(-1),
-    MAGENTA_BUNDLE(-1),
-    MAGENTA_DYE(-1),
-    MAGENTA_HARNESS(-1),
-    MAGMA_CREAM(-1),
-    MAGMA_CUBE_SPAWN_EGG(-1),
-    MANGROVE_BOAT(-1),
-    MANGROVE_CHEST_BOAT(-1),
-    MAP(-1),
-    MELON_SEEDS(-1),
-    MELON_SLICE(-1),
-    MILK_BUCKET(-1),
-    MINECART(-1),
-    MINER_POTTERY_SHERD(-1),
-    MOJANG_BANNER_PATTERN(-1),
-    MOOSHROOM_SPAWN_EGG(-1),
-    MOURNER_POTTERY_SHERD(-1),
-    MULE_SPAWN_EGG(-1),
-    MUSHROOM_STEW(-1),
-    MUSIC_DISC_5(-1),
-    MUSIC_DISC_11(-1),
-    MUSIC_DISC_13(-1),
-    MUSIC_DISC_BLOCKS(-1),
-    MUSIC_DISC_BOUNCE(-1),
-    MUSIC_DISC_CAT(-1),
-    MUSIC_DISC_CHIRP(-1),
-    MUSIC_DISC_CREATOR(-1),
-    MUSIC_DISC_CREATOR_MUSIC_BOX(-1),
-    MUSIC_DISC_FAR(-1),
-    MUSIC_DISC_LAVA_CHICKEN(-1),
-    MUSIC_DISC_MALL(-1),
-    MUSIC_DISC_MELLOHI(-1),
-    MUSIC_DISC_OTHERSIDE(-1),
-    MUSIC_DISC_PIGSTEP(-1),
-    MUSIC_DISC_PRECIPICE(-1),
-    MUSIC_DISC_RELIC(-1),
-    MUSIC_DISC_STAL(-1),
-    MUSIC_DISC_STRAD(-1),
-    MUSIC_DISC_TEARS(-1),
-    MUSIC_DISC_WAIT(-1),
-    MUSIC_DISC_WARD(-1),
-    MUTTON(-1),
-    NAME_TAG(-1),
-    NAUTILUS_SHELL(-1),
-    NAUTILUS_SPAWN_EGG(-1),
-    NETHER_BRICK(-1),
-    NETHER_STAR(-1),
-    NETHERITE_AXE(-1),
-    NETHERITE_BOOTS(-1),
-    NETHERITE_CHESTPLATE(-1),
-    NETHERITE_HELMET(-1),
-    NETHERITE_HOE(-1),
-    NETHERITE_HORSE_ARMOR(-1),
-    NETHERITE_INGOT(-1),
-    NETHERITE_LEGGINGS(-1),
-    NETHERITE_NAUTILUS_ARMOR(-1),
-    NETHERITE_PICKAXE(-1),
-    NETHERITE_SCRAP(-1),
-    NETHERITE_SHOVEL(-1),
-    NETHERITE_SPEAR(-1),
-    NETHERITE_SWORD(-1),
-    NETHERITE_UPGRADE_SMITHING_TEMPLATE(-1),
-    OAK_BOAT(-1),
-    OAK_CHEST_BOAT(-1),
-    OCELOT_SPAWN_EGG(-1),
-    OMINOUS_BOTTLE(-1),
-    OMINOUS_TRIAL_KEY(-1),
-    ORANGE_BUNDLE(-1),
-    ORANGE_DYE(-1),
-    ORANGE_HARNESS(-1),
-    PAINTING(-1),
-    PALE_OAK_BOAT(-1),
-    PALE_OAK_CHEST_BOAT(-1),
-    PANDA_SPAWN_EGG(-1),
-    PAPER(-1),
-    PARCHED_SPAWN_EGG(-1),
-    PARROT_SPAWN_EGG(-1),
-    PHANTOM_MEMBRANE(-1),
-    PHANTOM_SPAWN_EGG(-1),
-    PIG_SPAWN_EGG(-1),
-    PIGLIN_BANNER_PATTERN(-1),
-    PIGLIN_BRUTE_SPAWN_EGG(-1),
-    PIGLIN_SPAWN_EGG(-1),
-    PILLAGER_SPAWN_EGG(-1),
-    PINK_BUNDLE(-1),
-    PINK_DYE(-1),
-    PINK_HARNESS(-1),
-    PITCHER_POD(-1),
-    PLENTY_POTTERY_SHERD(-1),
-    POISONOUS_POTATO(-1),
-    POLAR_BEAR_SPAWN_EGG(-1),
-    POPPED_CHORUS_FRUIT(-1),
-    PORKCHOP(-1),
-    POTATO(-1),
-    POTION(-1),
-    POWDER_SNOW_BUCKET(-1),
-    PRISMARINE_CRYSTALS(-1),
-    PRISMARINE_SHARD(-1),
-    PRIZE_POTTERY_SHERD(-1),
-    PUFFERFISH(-1),
-    PUFFERFISH_BUCKET(-1),
-    PUFFERFISH_SPAWN_EGG(-1),
-    PUMPKIN_PIE(-1),
-    PUMPKIN_SEEDS(-1),
-    PURPLE_BUNDLE(-1),
-    PURPLE_DYE(-1),
-    PURPLE_HARNESS(-1),
-    QUARTZ(-1),
-    RABBIT(-1),
-    RABBIT_FOOT(-1),
-    RABBIT_HIDE(-1),
-    RABBIT_SPAWN_EGG(-1),
-    RABBIT_STEW(-1),
-    RAISER_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    RAVAGER_SPAWN_EGG(-1),
-    RAW_COPPER(-1),
-    RAW_GOLD(-1),
-    RAW_IRON(-1),
-    RECOVERY_COMPASS(-1),
-    RED_BUNDLE(-1),
-    RED_DYE(-1),
-    RED_HARNESS(-1),
-    REDSTONE(-1),
-    RESIN_BRICK(-1),
-    RIB_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    ROTTEN_FLESH(-1),
-    SADDLE(-1),
-    SALMON(-1),
-    SALMON_BUCKET(-1),
-    SALMON_SPAWN_EGG(-1),
-    SCRAPE_POTTERY_SHERD(-1),
-    SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    SHEAF_POTTERY_SHERD(-1),
-    SHEARS(-1),
-    SHEEP_SPAWN_EGG(-1),
-    SHELTER_POTTERY_SHERD(-1),
-    SHIELD(-1),
-    SHULKER_SHELL(-1),
-    SHULKER_SPAWN_EGG(-1),
-    SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    SILVERFISH_SPAWN_EGG(-1),
-    SKELETON_HORSE_SPAWN_EGG(-1),
-    SKELETON_SPAWN_EGG(-1),
-    SKULL_BANNER_PATTERN(-1),
-    SKULL_POTTERY_SHERD(-1),
-    SLIME_BALL(-1),
-    SLIME_SPAWN_EGG(-1),
-    SNIFFER_SPAWN_EGG(-1),
-    SNORT_POTTERY_SHERD(-1),
-    SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    SNOW_GOLEM_SPAWN_EGG(-1),
-    SNOWBALL(-1),
-    SPECTRAL_ARROW(-1),
-    SPIDER_EYE(-1),
-    SPIDER_SPAWN_EGG(-1),
-    SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    SPLASH_POTION(-1),
-    SPRUCE_BOAT(-1),
-    SPRUCE_CHEST_BOAT(-1),
-    SPYGLASS(-1),
-    SQUID_SPAWN_EGG(-1),
-    STICK(-1),
-    STONE_AXE(-1),
-    STONE_HOE(-1),
-    STONE_PICKAXE(-1),
-    STONE_SHOVEL(-1),
-    STONE_SPEAR(-1),
-    STONE_SWORD(-1),
-    STRAY_SPAWN_EGG(-1),
-    STRIDER_SPAWN_EGG(-1),
-    STRING(-1),
-    SUGAR(-1),
-    SULFUR_CUBE_BUCKET(-1),
-    SULFUR_CUBE_SPAWN_EGG(-1),
-    SUSPICIOUS_STEW(-1),
-    SWEET_BERRIES(-1),
-    TADPOLE_BUCKET(-1),
-    TADPOLE_SPAWN_EGG(-1),
-    TIDE_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    TIPPED_ARROW(-1),
-    TNT_MINECART(-1),
-    TORCHFLOWER_SEEDS(-1),
-    TOTEM_OF_UNDYING(-1),
-    TRADER_LLAMA_SPAWN_EGG(-1),
-    TRIAL_KEY(-1),
-    TRIDENT(-1),
-    TROPICAL_FISH(-1),
-    TROPICAL_FISH_BUCKET(-1),
-    TROPICAL_FISH_SPAWN_EGG(-1),
-    TURTLE_HELMET(-1),
-    TURTLE_SCUTE(-1),
-    TURTLE_SPAWN_EGG(-1),
-    VEX_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    VEX_SPAWN_EGG(-1),
-    VILLAGER_SPAWN_EGG(-1),
-    VINDICATOR_SPAWN_EGG(-1),
-    WANDERING_TRADER_SPAWN_EGG(-1),
-    WARD_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    WARDEN_SPAWN_EGG(-1),
-    WARPED_FUNGUS_ON_A_STICK(-1),
-    WATER_BUCKET(-1),
-    WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    WHEAT_SEEDS(-1),
-    WHITE_BUNDLE(-1),
-    WHITE_DYE(-1),
-    WHITE_HARNESS(-1),
-    WILD_ARMOR_TRIM_SMITHING_TEMPLATE(-1),
-    WIND_CHARGE(-1),
-    WITCH_SPAWN_EGG(-1),
-    WITHER_SKELETON_SPAWN_EGG(-1),
-    WITHER_SPAWN_EGG(-1),
-    WOLF_ARMOR(-1),
-    WOLF_SPAWN_EGG(-1),
-    WOODEN_AXE(-1),
-    WOODEN_HOE(-1),
-    WOODEN_PICKAXE(-1),
-    WOODEN_SHOVEL(-1),
-    WOODEN_SPEAR(-1),
-    WOODEN_SWORD(-1),
-    WRITABLE_BOOK(-1),
-    WRITTEN_BOOK(-1),
-    YELLOW_BUNDLE(-1),
-    YELLOW_DYE(-1),
-    YELLOW_HARNESS(-1),
-    ZOGLIN_SPAWN_EGG(-1),
-    ZOMBIE_HORSE_SPAWN_EGG(-1),
-    ZOMBIE_NAUTILUS_SPAWN_EGG(-1),
-    ZOMBIE_SPAWN_EGG(-1),
-    ZOMBIE_VILLAGER_SPAWN_EGG(-1),
-    ZOMBIFIED_PIGLIN_SPAWN_EGG(-1),
-    // End generate - Items
-    // Start generate - Blocks
-    ACACIA_BUTTON(-1, Switch.class),
-    ACACIA_DOOR(-1, Door.class),
-    ACACIA_FENCE(-1, Fence.class),
-    ACACIA_FENCE_GATE(-1, Gate.class),
-    ACACIA_HANGING_SIGN(-1, HangingSign.class),
-    ACACIA_LEAVES(-1, Leaves.class),
-    ACACIA_LOG(-1, Orientable.class),
-    ACACIA_PLANKS(-1),
-    ACACIA_PRESSURE_PLATE(-1, Powerable.class),
-    ACACIA_SAPLING(-1, Sapling.class),
-    ACACIA_SHELF(-1, Shelf.class),
-    ACACIA_SIGN(-1, Sign.class),
-    ACACIA_SLAB(-1, Slab.class),
-    ACACIA_STAIRS(-1, Stairs.class),
-    ACACIA_TRAPDOOR(-1, TrapDoor.class),
-    ACACIA_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    ACACIA_WALL_SIGN(-1, WallSign.class),
-    ACACIA_WOOD(-1, Orientable.class),
-    ACTIVATOR_RAIL(-1, RedstoneRail.class),
-    ALLIUM(-1),
-    AMETHYST_BLOCK(-1),
-    AMETHYST_CLUSTER(-1, AmethystCluster.class),
-    ANCIENT_DEBRIS(-1),
-    ANDESITE(-1),
-    ANDESITE_SLAB(-1, Slab.class),
-    ANDESITE_STAIRS(-1, Stairs.class),
-    ANDESITE_WALL(-1, Wall.class),
-    ANVIL(-1, Directional.class),
-    ATTACHED_MELON_STEM(-1, Directional.class),
-    ATTACHED_PUMPKIN_STEM(-1, Directional.class),
-    AZALEA(-1),
-    AZALEA_LEAVES(-1, Leaves.class),
-    AZURE_BLUET(-1),
-    BAMBOO(-1, Bamboo.class),
-    BAMBOO_BLOCK(-1, Orientable.class),
-    BAMBOO_BUTTON(-1, Switch.class),
-    BAMBOO_DOOR(-1, Door.class),
-    BAMBOO_FENCE(-1, Fence.class),
-    BAMBOO_FENCE_GATE(-1, Gate.class),
-    BAMBOO_HANGING_SIGN(-1, HangingSign.class),
-    BAMBOO_MOSAIC(-1),
-    BAMBOO_MOSAIC_SLAB(-1, Slab.class),
-    BAMBOO_MOSAIC_STAIRS(-1, Stairs.class),
-    BAMBOO_PLANKS(-1),
-    BAMBOO_PRESSURE_PLATE(-1, Powerable.class),
-    BAMBOO_SAPLING(-1),
-    BAMBOO_SHELF(-1, Shelf.class),
-    BAMBOO_SIGN(-1, Sign.class),
-    BAMBOO_SLAB(-1, Slab.class),
-    BAMBOO_STAIRS(-1, Stairs.class),
-    BAMBOO_TRAPDOOR(-1, TrapDoor.class),
-    BAMBOO_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    BAMBOO_WALL_SIGN(-1, WallSign.class),
-    BARREL(-1, Barrel.class),
-    BARRIER(-1, Waterlogged.class),
-    BASALT(-1, Orientable.class),
-    BEACON(-1),
-    BEDROCK(-1),
-    BEE_NEST(-1, Beehive.class),
-    BEEHIVE(-1, Beehive.class),
-    BEETROOTS(-1, Ageable.class),
-    BELL(-1, Bell.class),
-    BIG_DRIPLEAF(-1, BigDripleaf.class),
-    BIG_DRIPLEAF_STEM(-1, Dripleaf.class),
-    BIRCH_BUTTON(-1, Switch.class),
-    BIRCH_DOOR(-1, Door.class),
-    BIRCH_FENCE(-1, Fence.class),
-    BIRCH_FENCE_GATE(-1, Gate.class),
-    BIRCH_HANGING_SIGN(-1, HangingSign.class),
-    BIRCH_LEAVES(-1, Leaves.class),
-    BIRCH_LOG(-1, Orientable.class),
-    BIRCH_PLANKS(-1),
-    BIRCH_PRESSURE_PLATE(-1, Powerable.class),
-    BIRCH_SAPLING(-1, Sapling.class),
-    BIRCH_SHELF(-1, Shelf.class),
-    BIRCH_SIGN(-1, Sign.class),
-    BIRCH_SLAB(-1, Slab.class),
-    BIRCH_STAIRS(-1, Stairs.class),
-    BIRCH_TRAPDOOR(-1, TrapDoor.class),
-    BIRCH_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    BIRCH_WALL_SIGN(-1, WallSign.class),
-    BIRCH_WOOD(-1, Orientable.class),
-    BLACK_BANNER(-1, Rotatable.class),
-    BLACK_BED(-1, Bed.class),
-    BLACK_CANDLE(-1, Candle.class),
-    BLACK_CANDLE_CAKE(-1, Lightable.class),
-    BLACK_CARPET(-1),
-    BLACK_CONCRETE(-1),
-    BLACK_CONCRETE_POWDER(-1),
-    BLACK_GLAZED_TERRACOTTA(-1, Directional.class),
-    BLACK_SHULKER_BOX(-1, Directional.class),
-    BLACK_STAINED_GLASS(-1),
-    BLACK_STAINED_GLASS_PANE(-1, GlassPane.class),
-    BLACK_TERRACOTTA(-1),
-    BLACK_WALL_BANNER(-1, Directional.class),
-    BLACK_WOOL(-1),
-    BLACKSTONE(-1),
-    BLACKSTONE_SLAB(-1, Slab.class),
-    BLACKSTONE_STAIRS(-1, Stairs.class),
-    BLACKSTONE_WALL(-1, Wall.class),
-    BLAST_FURNACE(-1, Furnace.class),
-    BLUE_BANNER(-1, Rotatable.class),
-    BLUE_BED(-1, Bed.class),
-    BLUE_CANDLE(-1, Candle.class),
-    BLUE_CANDLE_CAKE(-1, Lightable.class),
-    BLUE_CARPET(-1),
-    BLUE_CONCRETE(-1),
-    BLUE_CONCRETE_POWDER(-1),
-    BLUE_GLAZED_TERRACOTTA(-1, Directional.class),
-    BLUE_ICE(-1),
-    BLUE_ORCHID(-1),
-    BLUE_SHULKER_BOX(-1, Directional.class),
-    BLUE_STAINED_GLASS(-1),
-    BLUE_STAINED_GLASS_PANE(-1, GlassPane.class),
-    BLUE_TERRACOTTA(-1),
-    BLUE_WALL_BANNER(-1, Directional.class),
-    BLUE_WOOL(-1),
-    BONE_BLOCK(-1, Orientable.class),
-    BOOKSHELF(-1),
-    BRAIN_CORAL(-1, Waterlogged.class),
-    BRAIN_CORAL_BLOCK(-1),
-    BRAIN_CORAL_FAN(-1, Waterlogged.class),
-    BRAIN_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    BREWING_STAND(-1, BrewingStand.class),
-    BRICK_SLAB(-1, Slab.class),
-    BRICK_STAIRS(-1, Stairs.class),
-    BRICK_WALL(-1, Wall.class),
-    BRICKS(-1),
-    BROWN_BANNER(-1, Rotatable.class),
-    BROWN_BED(-1, Bed.class),
-    BROWN_CANDLE(-1, Candle.class),
-    BROWN_CANDLE_CAKE(-1, Lightable.class),
-    BROWN_CARPET(-1),
-    BROWN_CONCRETE(-1),
-    BROWN_CONCRETE_POWDER(-1),
-    BROWN_GLAZED_TERRACOTTA(-1, Directional.class),
-    BROWN_MUSHROOM(-1),
-    BROWN_MUSHROOM_BLOCK(-1, MultipleFacing.class),
-    BROWN_SHULKER_BOX(-1, Directional.class),
-    BROWN_STAINED_GLASS(-1),
-    BROWN_STAINED_GLASS_PANE(-1, GlassPane.class),
-    BROWN_TERRACOTTA(-1),
-    BROWN_WALL_BANNER(-1, Directional.class),
-    BROWN_WOOL(-1),
-    BUBBLE_COLUMN(-1, BubbleColumn.class),
-    BUBBLE_CORAL(-1, Waterlogged.class),
-    BUBBLE_CORAL_BLOCK(-1),
-    BUBBLE_CORAL_FAN(-1, Waterlogged.class),
-    BUBBLE_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    BUDDING_AMETHYST(-1),
-    BUSH(-1),
-    CACTUS(-1, Ageable.class),
-    CACTUS_FLOWER(-1),
-    CAKE(-1, Cake.class),
-    CALCITE(-1),
-    CALIBRATED_SCULK_SENSOR(-1, CalibratedSculkSensor.class),
-    CAMPFIRE(-1, Campfire.class),
-    CANDLE(-1, Candle.class),
-    CANDLE_CAKE(-1, Lightable.class),
-    CARROTS(-1, Ageable.class),
-    CARTOGRAPHY_TABLE(-1),
-    CARVED_PUMPKIN(-1, Directional.class),
-    CAULDRON(-1),
-    CAVE_AIR(-1),
-    CAVE_VINES(-1, CaveVines.class),
-    CAVE_VINES_PLANT(-1, CaveVinesPlant.class),
-    CHAIN_COMMAND_BLOCK(-1, CommandBlock.class),
-    CHERRY_BUTTON(-1, Switch.class),
-    CHERRY_DOOR(-1, Door.class),
-    CHERRY_FENCE(-1, Fence.class),
-    CHERRY_FENCE_GATE(-1, Gate.class),
-    CHERRY_HANGING_SIGN(-1, HangingSign.class),
-    CHERRY_LEAVES(-1, Leaves.class),
-    CHERRY_LOG(-1, Orientable.class),
-    CHERRY_PLANKS(-1),
-    CHERRY_PRESSURE_PLATE(-1, Powerable.class),
-    CHERRY_SAPLING(-1, Sapling.class),
-    CHERRY_SHELF(-1, Shelf.class),
-    CHERRY_SIGN(-1, Sign.class),
-    CHERRY_SLAB(-1, Slab.class),
-    CHERRY_STAIRS(-1, Stairs.class),
-    CHERRY_TRAPDOOR(-1, TrapDoor.class),
-    CHERRY_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    CHERRY_WALL_SIGN(-1, WallSign.class),
-    CHERRY_WOOD(-1, Orientable.class),
-    CHEST(-1, Chest.class),
-    CHIPPED_ANVIL(-1, Directional.class),
-    CHISELED_BOOKSHELF(-1, ChiseledBookshelf.class),
-    CHISELED_CINNABAR(-1),
-    CHISELED_COPPER(-1),
-    CHISELED_DEEPSLATE(-1),
-    CHISELED_NETHER_BRICKS(-1),
-    CHISELED_POLISHED_BLACKSTONE(-1),
-    CHISELED_QUARTZ_BLOCK(-1),
-    CHISELED_RED_SANDSTONE(-1),
-    CHISELED_RESIN_BRICKS(-1),
-    CHISELED_SANDSTONE(-1),
-    CHISELED_STONE_BRICKS(-1),
-    CHISELED_SULFUR(-1),
-    CHISELED_TUFF(-1),
-    CHISELED_TUFF_BRICKS(-1),
-    CHORUS_FLOWER(-1, Ageable.class),
-    CHORUS_PLANT(-1, MultipleFacing.class),
-    CINNABAR(-1),
-    CINNABAR_BRICK_SLAB(-1, Slab.class),
-    CINNABAR_BRICK_STAIRS(-1, Stairs.class),
-    CINNABAR_BRICK_WALL(-1, Wall.class),
-    CINNABAR_BRICKS(-1),
-    CINNABAR_SLAB(-1, Slab.class),
-    CINNABAR_STAIRS(-1, Stairs.class),
-    CINNABAR_WALL(-1, Wall.class),
-    CLAY(-1),
-    CLOSED_EYEBLOSSOM(-1),
-    COAL_BLOCK(-1),
-    COAL_ORE(-1),
-    COARSE_DIRT(-1),
-    COBBLED_DEEPSLATE(-1),
-    COBBLED_DEEPSLATE_SLAB(-1, Slab.class),
-    COBBLED_DEEPSLATE_STAIRS(-1, Stairs.class),
-    COBBLED_DEEPSLATE_WALL(-1, Wall.class),
-    COBBLESTONE(-1),
-    COBBLESTONE_SLAB(-1, Slab.class),
-    COBBLESTONE_STAIRS(-1, Stairs.class),
-    COBBLESTONE_WALL(-1, Wall.class),
-    COBWEB(-1),
-    COCOA(-1, Cocoa.class),
-    COMMAND_BLOCK(-1, CommandBlock.class),
-    COMPARATOR(-1, Comparator.class),
-    COMPOSTER(-1, Levelled.class),
-    CONDUIT(-1, Waterlogged.class),
-    COPPER_BARS(-1, Fence.class),
-    COPPER_BLOCK(-1),
-    COPPER_BULB(-1, CopperBulb.class),
-    COPPER_CHAIN(-1, Chain.class),
-    COPPER_CHEST(-1, Chest.class),
-    COPPER_DOOR(-1, Door.class),
-    COPPER_GOLEM_STATUE(-1, CopperGolemStatue.class),
-    COPPER_GRATE(-1, Waterlogged.class),
-    COPPER_LANTERN(-1, Lantern.class),
-    COPPER_ORE(-1),
-    COPPER_TORCH(-1),
-    COPPER_TRAPDOOR(-1, TrapDoor.class),
-    COPPER_WALL_TORCH(-1, Directional.class),
-    CORNFLOWER(-1),
-    CRACKED_DEEPSLATE_BRICKS(-1),
-    CRACKED_DEEPSLATE_TILES(-1),
-    CRACKED_NETHER_BRICKS(-1),
-    CRACKED_POLISHED_BLACKSTONE_BRICKS(-1),
-    CRACKED_STONE_BRICKS(-1),
-    CRAFTER(-1, Crafter.class),
-    CRAFTING_TABLE(-1),
-    CREAKING_HEART(-1, CreakingHeart.class),
-    CREEPER_HEAD(-1, Skull.class),
-    CREEPER_WALL_HEAD(-1, WallSkull.class),
-    CRIMSON_BUTTON(-1, Switch.class),
-    CRIMSON_DOOR(-1, Door.class),
-    CRIMSON_FENCE(-1, Fence.class),
-    CRIMSON_FENCE_GATE(-1, Gate.class),
-    CRIMSON_FUNGUS(-1),
-    CRIMSON_HANGING_SIGN(-1, HangingSign.class),
-    CRIMSON_HYPHAE(-1, Orientable.class),
-    CRIMSON_NYLIUM(-1),
-    CRIMSON_PLANKS(-1),
-    CRIMSON_PRESSURE_PLATE(-1, Powerable.class),
-    CRIMSON_ROOTS(-1),
-    CRIMSON_SHELF(-1, Shelf.class),
-    CRIMSON_SIGN(-1, Sign.class),
-    CRIMSON_SLAB(-1, Slab.class),
-    CRIMSON_STAIRS(-1, Stairs.class),
-    CRIMSON_STEM(-1, Orientable.class),
-    CRIMSON_TRAPDOOR(-1, TrapDoor.class),
-    CRIMSON_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    CRIMSON_WALL_SIGN(-1, WallSign.class),
-    CRYING_OBSIDIAN(-1),
-    CUT_COPPER(-1),
-    CUT_COPPER_SLAB(-1, Slab.class),
-    CUT_COPPER_STAIRS(-1, Stairs.class),
-    CUT_RED_SANDSTONE(-1),
-    CUT_RED_SANDSTONE_SLAB(-1, Slab.class),
-    CUT_SANDSTONE(-1),
-    CUT_SANDSTONE_SLAB(-1, Slab.class),
-    CYAN_BANNER(-1, Rotatable.class),
-    CYAN_BED(-1, Bed.class),
-    CYAN_CANDLE(-1, Candle.class),
-    CYAN_CANDLE_CAKE(-1, Lightable.class),
-    CYAN_CARPET(-1),
-    CYAN_CONCRETE(-1),
-    CYAN_CONCRETE_POWDER(-1),
-    CYAN_GLAZED_TERRACOTTA(-1, Directional.class),
-    CYAN_SHULKER_BOX(-1, Directional.class),
-    CYAN_STAINED_GLASS(-1),
-    CYAN_STAINED_GLASS_PANE(-1, GlassPane.class),
-    CYAN_TERRACOTTA(-1),
-    CYAN_WALL_BANNER(-1, Directional.class),
-    CYAN_WOOL(-1),
-    DAMAGED_ANVIL(-1, Directional.class),
-    DANDELION(-1),
-    DARK_OAK_BUTTON(-1, Switch.class),
-    DARK_OAK_DOOR(-1, Door.class),
-    DARK_OAK_FENCE(-1, Fence.class),
-    DARK_OAK_FENCE_GATE(-1, Gate.class),
-    DARK_OAK_HANGING_SIGN(-1, HangingSign.class),
-    DARK_OAK_LEAVES(-1, Leaves.class),
-    DARK_OAK_LOG(-1, Orientable.class),
-    DARK_OAK_PLANKS(-1),
-    DARK_OAK_PRESSURE_PLATE(-1, Powerable.class),
-    DARK_OAK_SAPLING(-1, Sapling.class),
-    DARK_OAK_SHELF(-1, Shelf.class),
-    DARK_OAK_SIGN(-1, Sign.class),
-    DARK_OAK_SLAB(-1, Slab.class),
-    DARK_OAK_STAIRS(-1, Stairs.class),
-    DARK_OAK_TRAPDOOR(-1, TrapDoor.class),
-    DARK_OAK_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    DARK_OAK_WALL_SIGN(-1, WallSign.class),
-    DARK_OAK_WOOD(-1, Orientable.class),
-    DARK_PRISMARINE(-1),
-    DARK_PRISMARINE_SLAB(-1, Slab.class),
-    DARK_PRISMARINE_STAIRS(-1, Stairs.class),
-    DAYLIGHT_DETECTOR(-1, DaylightDetector.class),
-    DEAD_BRAIN_CORAL(-1, Waterlogged.class),
-    DEAD_BRAIN_CORAL_BLOCK(-1),
-    DEAD_BRAIN_CORAL_FAN(-1, Waterlogged.class),
-    DEAD_BRAIN_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    DEAD_BUBBLE_CORAL(-1, Waterlogged.class),
-    DEAD_BUBBLE_CORAL_BLOCK(-1),
-    DEAD_BUBBLE_CORAL_FAN(-1, Waterlogged.class),
-    DEAD_BUBBLE_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    DEAD_BUSH(-1),
-    DEAD_FIRE_CORAL(-1, Waterlogged.class),
-    DEAD_FIRE_CORAL_BLOCK(-1),
-    DEAD_FIRE_CORAL_FAN(-1, Waterlogged.class),
-    DEAD_FIRE_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    DEAD_HORN_CORAL(-1, Waterlogged.class),
-    DEAD_HORN_CORAL_BLOCK(-1),
-    DEAD_HORN_CORAL_FAN(-1, Waterlogged.class),
-    DEAD_HORN_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    DEAD_TUBE_CORAL(-1, Waterlogged.class),
-    DEAD_TUBE_CORAL_BLOCK(-1),
-    DEAD_TUBE_CORAL_FAN(-1, Waterlogged.class),
-    DEAD_TUBE_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    DECORATED_POT(-1, DecoratedPot.class),
-    DEEPSLATE(-1, Orientable.class),
-    DEEPSLATE_BRICK_SLAB(-1, Slab.class),
-    DEEPSLATE_BRICK_STAIRS(-1, Stairs.class),
-    DEEPSLATE_BRICK_WALL(-1, Wall.class),
-    DEEPSLATE_BRICKS(-1),
-    DEEPSLATE_COAL_ORE(-1),
-    DEEPSLATE_COPPER_ORE(-1),
-    DEEPSLATE_DIAMOND_ORE(-1),
-    DEEPSLATE_EMERALD_ORE(-1),
-    DEEPSLATE_GOLD_ORE(-1),
-    DEEPSLATE_IRON_ORE(-1),
-    DEEPSLATE_LAPIS_ORE(-1),
-    DEEPSLATE_REDSTONE_ORE(-1, Lightable.class),
-    DEEPSLATE_TILE_SLAB(-1, Slab.class),
-    DEEPSLATE_TILE_STAIRS(-1, Stairs.class),
-    DEEPSLATE_TILE_WALL(-1, Wall.class),
-    DEEPSLATE_TILES(-1),
-    DETECTOR_RAIL(-1, RedstoneRail.class),
-    DIAMOND_BLOCK(-1),
-    DIAMOND_ORE(-1),
-    DIORITE(-1),
-    DIORITE_SLAB(-1, Slab.class),
-    DIORITE_STAIRS(-1, Stairs.class),
-    DIORITE_WALL(-1, Wall.class),
-    DIRT(-1),
-    DIRT_PATH(-1),
-    DISPENSER(-1, Dispenser.class),
-    DRAGON_EGG(-1),
-    DRAGON_HEAD(-1, Skull.class),
-    DRAGON_WALL_HEAD(-1, WallSkull.class),
-    DRIED_GHAST(-1, DriedGhast.class),
-    DRIED_KELP_BLOCK(-1),
-    DRIPSTONE_BLOCK(-1),
-    DROPPER(-1, Dispenser.class),
-    EMERALD_BLOCK(-1),
-    EMERALD_ORE(-1),
-    ENCHANTING_TABLE(-1),
-    END_GATEWAY(-1),
-    END_PORTAL(-1),
-    END_PORTAL_FRAME(-1, EndPortalFrame.class),
-    END_ROD(-1, Directional.class),
-    END_STONE(-1),
-    END_STONE_BRICK_SLAB(-1, Slab.class),
-    END_STONE_BRICK_STAIRS(-1, Stairs.class),
-    END_STONE_BRICK_WALL(-1, Wall.class),
-    END_STONE_BRICKS(-1),
-    ENDER_CHEST(-1, EnderChest.class),
-    EXPOSED_CHISELED_COPPER(-1),
-    EXPOSED_COPPER(-1),
-    EXPOSED_COPPER_BARS(-1, Fence.class),
-    EXPOSED_COPPER_BULB(-1, CopperBulb.class),
-    EXPOSED_COPPER_CHAIN(-1, Chain.class),
-    EXPOSED_COPPER_CHEST(-1, Chest.class),
-    EXPOSED_COPPER_DOOR(-1, Door.class),
-    EXPOSED_COPPER_GOLEM_STATUE(-1, CopperGolemStatue.class),
-    EXPOSED_COPPER_GRATE(-1, Waterlogged.class),
-    EXPOSED_COPPER_LANTERN(-1, Lantern.class),
-    EXPOSED_COPPER_TRAPDOOR(-1, TrapDoor.class),
-    EXPOSED_CUT_COPPER(-1),
-    EXPOSED_CUT_COPPER_SLAB(-1, Slab.class),
-    EXPOSED_CUT_COPPER_STAIRS(-1, Stairs.class),
-    EXPOSED_LIGHTNING_ROD(-1, LightningRod.class),
-    FARMLAND(-1, Farmland.class),
-    FERN(-1),
-    FIRE(-1, Fire.class),
-    FIRE_CORAL(-1, Waterlogged.class),
-    FIRE_CORAL_BLOCK(-1),
-    FIRE_CORAL_FAN(-1, Waterlogged.class),
-    FIRE_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    FIREFLY_BUSH(-1),
-    FLETCHING_TABLE(-1),
-    FLOWER_POT(-1),
-    FLOWERING_AZALEA(-1),
-    FLOWERING_AZALEA_LEAVES(-1, Leaves.class),
-    FROGSPAWN(-1),
-    FROSTED_ICE(-1, Ageable.class),
-    FURNACE(-1, Furnace.class),
-    GILDED_BLACKSTONE(-1),
-    GLASS(-1),
-    GLASS_PANE(-1, Fence.class),
-    GLOW_LICHEN(-1, GlowLichen.class),
-    GLOWSTONE(-1),
-    GOLD_BLOCK(-1),
-    GOLD_ORE(-1),
-    GOLDEN_DANDELION(-1),
-    GRANITE(-1),
-    GRANITE_SLAB(-1, Slab.class),
-    GRANITE_STAIRS(-1, Stairs.class),
-    GRANITE_WALL(-1, Wall.class),
-    GRASS_BLOCK(-1, Snowable.class),
-    GRAVEL(-1),
-    GRAY_BANNER(-1, Rotatable.class),
-    GRAY_BED(-1, Bed.class),
-    GRAY_CANDLE(-1, Candle.class),
-    GRAY_CANDLE_CAKE(-1, Lightable.class),
-    GRAY_CARPET(-1),
-    GRAY_CONCRETE(-1),
-    GRAY_CONCRETE_POWDER(-1),
-    GRAY_GLAZED_TERRACOTTA(-1, Directional.class),
-    GRAY_SHULKER_BOX(-1, Directional.class),
-    GRAY_STAINED_GLASS(-1),
-    GRAY_STAINED_GLASS_PANE(-1, GlassPane.class),
-    GRAY_TERRACOTTA(-1),
-    GRAY_WALL_BANNER(-1, Directional.class),
-    GRAY_WOOL(-1),
-    GREEN_BANNER(-1, Rotatable.class),
-    GREEN_BED(-1, Bed.class),
-    GREEN_CANDLE(-1, Candle.class),
-    GREEN_CANDLE_CAKE(-1, Lightable.class),
-    GREEN_CARPET(-1),
-    GREEN_CONCRETE(-1),
-    GREEN_CONCRETE_POWDER(-1),
-    GREEN_GLAZED_TERRACOTTA(-1, Directional.class),
-    GREEN_SHULKER_BOX(-1, Directional.class),
-    GREEN_STAINED_GLASS(-1),
-    GREEN_STAINED_GLASS_PANE(-1, GlassPane.class),
-    GREEN_TERRACOTTA(-1),
-    GREEN_WALL_BANNER(-1, Directional.class),
-    GREEN_WOOL(-1),
-    GRINDSTONE(-1, Grindstone.class),
-    HANGING_ROOTS(-1, Waterlogged.class),
-    HAY_BLOCK(-1, Orientable.class),
-    HEAVY_CORE(-1, Waterlogged.class),
-    HEAVY_WEIGHTED_PRESSURE_PLATE(-1, AnaloguePowerable.class),
-    HONEY_BLOCK(-1),
-    HONEYCOMB_BLOCK(-1),
-    HOPPER(-1, Hopper.class),
-    HORN_CORAL(-1, Waterlogged.class),
-    HORN_CORAL_BLOCK(-1),
-    HORN_CORAL_FAN(-1, Waterlogged.class),
-    HORN_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    ICE(-1),
-    INFESTED_CHISELED_STONE_BRICKS(-1),
-    INFESTED_COBBLESTONE(-1),
-    INFESTED_CRACKED_STONE_BRICKS(-1),
-    INFESTED_DEEPSLATE(-1, Orientable.class),
-    INFESTED_MOSSY_STONE_BRICKS(-1),
-    INFESTED_STONE(-1),
-    INFESTED_STONE_BRICKS(-1),
-    IRON_BARS(-1, Fence.class),
-    IRON_BLOCK(-1),
-    IRON_CHAIN(-1, Chain.class),
-    IRON_DOOR(-1, Door.class),
-    IRON_ORE(-1),
-    IRON_TRAPDOOR(-1, TrapDoor.class),
-    JACK_O_LANTERN(-1, Directional.class),
-    JIGSAW(-1, Jigsaw.class),
-    JUKEBOX(-1, Jukebox.class),
-    JUNGLE_BUTTON(-1, Switch.class),
-    JUNGLE_DOOR(-1, Door.class),
-    JUNGLE_FENCE(-1, Fence.class),
-    JUNGLE_FENCE_GATE(-1, Gate.class),
-    JUNGLE_HANGING_SIGN(-1, HangingSign.class),
-    JUNGLE_LEAVES(-1, Leaves.class),
-    JUNGLE_LOG(-1, Orientable.class),
-    JUNGLE_PLANKS(-1),
-    JUNGLE_PRESSURE_PLATE(-1, Powerable.class),
-    JUNGLE_SAPLING(-1, Sapling.class),
-    JUNGLE_SHELF(-1, Shelf.class),
-    JUNGLE_SIGN(-1, Sign.class),
-    JUNGLE_SLAB(-1, Slab.class),
-    JUNGLE_STAIRS(-1, Stairs.class),
-    JUNGLE_TRAPDOOR(-1, TrapDoor.class),
-    JUNGLE_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    JUNGLE_WALL_SIGN(-1, WallSign.class),
-    JUNGLE_WOOD(-1, Orientable.class),
-    KELP(-1, Ageable.class),
-    KELP_PLANT(-1),
-    LADDER(-1, Ladder.class),
-    LANTERN(-1, Lantern.class),
-    LAPIS_BLOCK(-1),
-    LAPIS_ORE(-1),
-    LARGE_AMETHYST_BUD(-1, AmethystCluster.class),
-    LARGE_FERN(-1, Bisected.class),
-    LAVA(-1, Levelled.class),
-    LAVA_CAULDRON(-1),
-    LEAF_LITTER(-1, LeafLitter.class),
-    LECTERN(-1, Lectern.class),
-    LEVER(-1, Switch.class),
-    LIGHT(-1, Light.class),
-    LIGHT_BLUE_BANNER(-1, Rotatable.class),
-    LIGHT_BLUE_BED(-1, Bed.class),
-    LIGHT_BLUE_CANDLE(-1, Candle.class),
-    LIGHT_BLUE_CANDLE_CAKE(-1, Lightable.class),
-    LIGHT_BLUE_CARPET(-1),
-    LIGHT_BLUE_CONCRETE(-1),
-    LIGHT_BLUE_CONCRETE_POWDER(-1),
-    LIGHT_BLUE_GLAZED_TERRACOTTA(-1, Directional.class),
-    LIGHT_BLUE_SHULKER_BOX(-1, Directional.class),
-    LIGHT_BLUE_STAINED_GLASS(-1),
-    LIGHT_BLUE_STAINED_GLASS_PANE(-1, GlassPane.class),
-    LIGHT_BLUE_TERRACOTTA(-1),
-    LIGHT_BLUE_WALL_BANNER(-1, Directional.class),
-    LIGHT_BLUE_WOOL(-1),
-    LIGHT_GRAY_BANNER(-1, Rotatable.class),
-    LIGHT_GRAY_BED(-1, Bed.class),
-    LIGHT_GRAY_CANDLE(-1, Candle.class),
-    LIGHT_GRAY_CANDLE_CAKE(-1, Lightable.class),
-    LIGHT_GRAY_CARPET(-1),
-    LIGHT_GRAY_CONCRETE(-1),
-    LIGHT_GRAY_CONCRETE_POWDER(-1),
-    LIGHT_GRAY_GLAZED_TERRACOTTA(-1, Directional.class),
-    LIGHT_GRAY_SHULKER_BOX(-1, Directional.class),
-    LIGHT_GRAY_STAINED_GLASS(-1),
-    LIGHT_GRAY_STAINED_GLASS_PANE(-1, GlassPane.class),
-    LIGHT_GRAY_TERRACOTTA(-1),
-    LIGHT_GRAY_WALL_BANNER(-1, Directional.class),
-    LIGHT_GRAY_WOOL(-1),
-    LIGHT_WEIGHTED_PRESSURE_PLATE(-1, AnaloguePowerable.class),
-    LIGHTNING_ROD(-1, LightningRod.class),
-    LILAC(-1, Bisected.class),
-    LILY_OF_THE_VALLEY(-1),
-    LILY_PAD(-1),
-    LIME_BANNER(-1, Rotatable.class),
-    LIME_BED(-1, Bed.class),
-    LIME_CANDLE(-1, Candle.class),
-    LIME_CANDLE_CAKE(-1, Lightable.class),
-    LIME_CARPET(-1),
-    LIME_CONCRETE(-1),
-    LIME_CONCRETE_POWDER(-1),
-    LIME_GLAZED_TERRACOTTA(-1, Directional.class),
-    LIME_SHULKER_BOX(-1, Directional.class),
-    LIME_STAINED_GLASS(-1),
-    LIME_STAINED_GLASS_PANE(-1, GlassPane.class),
-    LIME_TERRACOTTA(-1),
-    LIME_WALL_BANNER(-1, Directional.class),
-    LIME_WOOL(-1),
-    LODESTONE(-1),
-    LOOM(-1, Directional.class),
-    MAGENTA_BANNER(-1, Rotatable.class),
-    MAGENTA_BED(-1, Bed.class),
-    MAGENTA_CANDLE(-1, Candle.class),
-    MAGENTA_CANDLE_CAKE(-1, Lightable.class),
-    MAGENTA_CARPET(-1),
-    MAGENTA_CONCRETE(-1),
-    MAGENTA_CONCRETE_POWDER(-1),
-    MAGENTA_GLAZED_TERRACOTTA(-1, Directional.class),
-    MAGENTA_SHULKER_BOX(-1, Directional.class),
-    MAGENTA_STAINED_GLASS(-1),
-    MAGENTA_STAINED_GLASS_PANE(-1, GlassPane.class),
-    MAGENTA_TERRACOTTA(-1),
-    MAGENTA_WALL_BANNER(-1, Directional.class),
-    MAGENTA_WOOL(-1),
-    MAGMA_BLOCK(-1),
-    MANGROVE_BUTTON(-1, Switch.class),
-    MANGROVE_DOOR(-1, Door.class),
-    MANGROVE_FENCE(-1, Fence.class),
-    MANGROVE_FENCE_GATE(-1, Gate.class),
-    MANGROVE_HANGING_SIGN(-1, HangingSign.class),
-    MANGROVE_LEAVES(-1, Leaves.class),
-    MANGROVE_LOG(-1, Orientable.class),
-    MANGROVE_PLANKS(-1),
-    MANGROVE_PRESSURE_PLATE(-1, Powerable.class),
-    MANGROVE_PROPAGULE(-1, MangrovePropagule.class),
-    MANGROVE_ROOTS(-1, Waterlogged.class),
-    MANGROVE_SHELF(-1, Shelf.class),
-    MANGROVE_SIGN(-1, Sign.class),
-    MANGROVE_SLAB(-1, Slab.class),
-    MANGROVE_STAIRS(-1, Stairs.class),
-    MANGROVE_TRAPDOOR(-1, TrapDoor.class),
-    MANGROVE_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    MANGROVE_WALL_SIGN(-1, WallSign.class),
-    MANGROVE_WOOD(-1, Orientable.class),
-    MEDIUM_AMETHYST_BUD(-1, AmethystCluster.class),
-    MELON(-1),
-    MELON_STEM(-1, Ageable.class),
-    MOSS_BLOCK(-1),
-    MOSS_CARPET(-1),
-    MOSSY_COBBLESTONE(-1),
-    MOSSY_COBBLESTONE_SLAB(-1, Slab.class),
-    MOSSY_COBBLESTONE_STAIRS(-1, Stairs.class),
-    MOSSY_COBBLESTONE_WALL(-1, Wall.class),
-    MOSSY_STONE_BRICK_SLAB(-1, Slab.class),
-    MOSSY_STONE_BRICK_STAIRS(-1, Stairs.class),
-    MOSSY_STONE_BRICK_WALL(-1, Wall.class),
-    MOSSY_STONE_BRICKS(-1),
-    MOVING_PISTON(-1, TechnicalPiston.class),
-    MUD(-1),
-    MUD_BRICK_SLAB(-1, Slab.class),
-    MUD_BRICK_STAIRS(-1, Stairs.class),
-    MUD_BRICK_WALL(-1, Wall.class),
-    MUD_BRICKS(-1),
-    MUDDY_MANGROVE_ROOTS(-1, Orientable.class),
-    MUSHROOM_STEM(-1, MultipleFacing.class),
-    MYCELIUM(-1, Snowable.class),
-    NETHER_BRICK_FENCE(-1, Fence.class),
-    NETHER_BRICK_SLAB(-1, Slab.class),
-    NETHER_BRICK_STAIRS(-1, Stairs.class),
-    NETHER_BRICK_WALL(-1, Wall.class),
-    NETHER_BRICKS(-1),
-    NETHER_GOLD_ORE(-1),
-    NETHER_PORTAL(-1, Orientable.class),
-    NETHER_QUARTZ_ORE(-1),
-    NETHER_SPROUTS(-1),
-    NETHER_WART(-1, Ageable.class),
-    NETHER_WART_BLOCK(-1),
-    NETHERITE_BLOCK(-1),
-    NETHERRACK(-1),
-    NOTE_BLOCK(-1, NoteBlock.class),
-    OAK_BUTTON(-1, Switch.class),
-    OAK_DOOR(-1, Door.class),
-    OAK_FENCE(-1, Fence.class),
-    OAK_FENCE_GATE(-1, Gate.class),
-    OAK_HANGING_SIGN(-1, HangingSign.class),
-    OAK_LEAVES(-1, Leaves.class),
-    OAK_LOG(-1, Orientable.class),
-    OAK_PLANKS(-1),
-    OAK_PRESSURE_PLATE(-1, Powerable.class),
-    OAK_SAPLING(-1, Sapling.class),
-    OAK_SHELF(-1, Shelf.class),
-    OAK_SIGN(-1, Sign.class),
-    OAK_SLAB(-1, Slab.class),
-    OAK_STAIRS(-1, Stairs.class),
-    OAK_TRAPDOOR(-1, TrapDoor.class),
-    OAK_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    OAK_WALL_SIGN(-1, WallSign.class),
-    OAK_WOOD(-1, Orientable.class),
-    OBSERVER(-1, Observer.class),
-    OBSIDIAN(-1),
-    OCHRE_FROGLIGHT(-1, Orientable.class),
-    OPEN_EYEBLOSSOM(-1),
-    ORANGE_BANNER(-1, Rotatable.class),
-    ORANGE_BED(-1, Bed.class),
-    ORANGE_CANDLE(-1, Candle.class),
-    ORANGE_CANDLE_CAKE(-1, Lightable.class),
-    ORANGE_CARPET(-1),
-    ORANGE_CONCRETE(-1),
-    ORANGE_CONCRETE_POWDER(-1),
-    ORANGE_GLAZED_TERRACOTTA(-1, Directional.class),
-    ORANGE_SHULKER_BOX(-1, Directional.class),
-    ORANGE_STAINED_GLASS(-1),
-    ORANGE_STAINED_GLASS_PANE(-1, GlassPane.class),
-    ORANGE_TERRACOTTA(-1),
-    ORANGE_TULIP(-1),
-    ORANGE_WALL_BANNER(-1, Directional.class),
-    ORANGE_WOOL(-1),
-    OXEYE_DAISY(-1),
-    OXIDIZED_CHISELED_COPPER(-1),
-    OXIDIZED_COPPER(-1),
-    OXIDIZED_COPPER_BARS(-1, Fence.class),
-    OXIDIZED_COPPER_BULB(-1, CopperBulb.class),
-    OXIDIZED_COPPER_CHAIN(-1, Chain.class),
-    OXIDIZED_COPPER_CHEST(-1, Chest.class),
-    OXIDIZED_COPPER_DOOR(-1, Door.class),
-    OXIDIZED_COPPER_GOLEM_STATUE(-1, CopperGolemStatue.class),
-    OXIDIZED_COPPER_GRATE(-1, Waterlogged.class),
-    OXIDIZED_COPPER_LANTERN(-1, Lantern.class),
-    OXIDIZED_COPPER_TRAPDOOR(-1, TrapDoor.class),
-    OXIDIZED_CUT_COPPER(-1),
-    OXIDIZED_CUT_COPPER_SLAB(-1, Slab.class),
-    OXIDIZED_CUT_COPPER_STAIRS(-1, Stairs.class),
-    OXIDIZED_LIGHTNING_ROD(-1, LightningRod.class),
-    PACKED_ICE(-1),
-    PACKED_MUD(-1),
-    PALE_HANGING_MOSS(-1, HangingMoss.class),
-    PALE_MOSS_BLOCK(-1),
-    PALE_MOSS_CARPET(-1, MossyCarpet.class),
-    PALE_OAK_BUTTON(-1, Switch.class),
-    PALE_OAK_DOOR(-1, Door.class),
-    PALE_OAK_FENCE(-1, Fence.class),
-    PALE_OAK_FENCE_GATE(-1, Gate.class),
-    PALE_OAK_HANGING_SIGN(-1, HangingSign.class),
-    PALE_OAK_LEAVES(-1, Leaves.class),
-    PALE_OAK_LOG(-1, Orientable.class),
-    PALE_OAK_PLANKS(-1),
-    PALE_OAK_PRESSURE_PLATE(-1, Powerable.class),
-    PALE_OAK_SAPLING(-1, Sapling.class),
-    PALE_OAK_SHELF(-1, Shelf.class),
-    PALE_OAK_SIGN(-1, Sign.class),
-    PALE_OAK_SLAB(-1, Slab.class),
-    PALE_OAK_STAIRS(-1, Stairs.class),
-    PALE_OAK_TRAPDOOR(-1, TrapDoor.class),
-    PALE_OAK_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    PALE_OAK_WALL_SIGN(-1, WallSign.class),
-    PALE_OAK_WOOD(-1, Orientable.class),
-    PEARLESCENT_FROGLIGHT(-1, Orientable.class),
-    PEONY(-1, Bisected.class),
-    PETRIFIED_OAK_SLAB(-1, Slab.class),
-    PIGLIN_HEAD(-1, Skull.class),
-    PIGLIN_WALL_HEAD(-1, WallSkull.class),
-    PINK_BANNER(-1, Rotatable.class),
-    PINK_BED(-1, Bed.class),
-    PINK_CANDLE(-1, Candle.class),
-    PINK_CANDLE_CAKE(-1, Lightable.class),
-    PINK_CARPET(-1),
-    PINK_CONCRETE(-1),
-    PINK_CONCRETE_POWDER(-1),
-    PINK_GLAZED_TERRACOTTA(-1, Directional.class),
-    PINK_PETALS(-1, FlowerBed.class),
-    PINK_SHULKER_BOX(-1, Directional.class),
-    PINK_STAINED_GLASS(-1),
-    PINK_STAINED_GLASS_PANE(-1, GlassPane.class),
-    PINK_TERRACOTTA(-1),
-    PINK_TULIP(-1),
-    PINK_WALL_BANNER(-1, Directional.class),
-    PINK_WOOL(-1),
-    PISTON(-1, Piston.class),
-    PISTON_HEAD(-1, PistonHead.class),
-    PITCHER_CROP(-1, PitcherCrop.class),
-    PITCHER_PLANT(-1, Bisected.class),
-    PLAYER_HEAD(-1, Skull.class),
-    PLAYER_WALL_HEAD(-1, WallSkull.class),
-    PODZOL(-1, Snowable.class),
-    POINTED_DRIPSTONE(-1, Speleothem.class),
-    POLISHED_ANDESITE(-1),
-    POLISHED_ANDESITE_SLAB(-1, Slab.class),
-    POLISHED_ANDESITE_STAIRS(-1, Stairs.class),
-    POLISHED_BASALT(-1, Orientable.class),
-    POLISHED_BLACKSTONE(-1),
-    POLISHED_BLACKSTONE_BRICK_SLAB(-1, Slab.class),
-    POLISHED_BLACKSTONE_BRICK_STAIRS(-1, Stairs.class),
-    POLISHED_BLACKSTONE_BRICK_WALL(-1, Wall.class),
-    POLISHED_BLACKSTONE_BRICKS(-1),
-    POLISHED_BLACKSTONE_BUTTON(-1, Switch.class),
-    POLISHED_BLACKSTONE_PRESSURE_PLATE(-1, Powerable.class),
-    POLISHED_BLACKSTONE_SLAB(-1, Slab.class),
-    POLISHED_BLACKSTONE_STAIRS(-1, Stairs.class),
-    POLISHED_BLACKSTONE_WALL(-1, Wall.class),
-    POLISHED_CINNABAR(-1),
-    POLISHED_CINNABAR_SLAB(-1, Slab.class),
-    POLISHED_CINNABAR_STAIRS(-1, Stairs.class),
-    POLISHED_CINNABAR_WALL(-1, Wall.class),
-    POLISHED_DEEPSLATE(-1),
-    POLISHED_DEEPSLATE_SLAB(-1, Slab.class),
-    POLISHED_DEEPSLATE_STAIRS(-1, Stairs.class),
-    POLISHED_DEEPSLATE_WALL(-1, Wall.class),
-    POLISHED_DIORITE(-1),
-    POLISHED_DIORITE_SLAB(-1, Slab.class),
-    POLISHED_DIORITE_STAIRS(-1, Stairs.class),
-    POLISHED_GRANITE(-1),
-    POLISHED_GRANITE_SLAB(-1, Slab.class),
-    POLISHED_GRANITE_STAIRS(-1, Stairs.class),
-    POLISHED_SULFUR(-1),
-    POLISHED_SULFUR_SLAB(-1, Slab.class),
-    POLISHED_SULFUR_STAIRS(-1, Stairs.class),
-    POLISHED_SULFUR_WALL(-1, Wall.class),
-    POLISHED_TUFF(-1),
-    POLISHED_TUFF_SLAB(-1, Slab.class),
-    POLISHED_TUFF_STAIRS(-1, Stairs.class),
-    POLISHED_TUFF_WALL(-1, Wall.class),
-    POPPY(-1),
-    POTATOES(-1, Ageable.class),
-    POTENT_SULFUR(-1, PotentSulfur.class),
-    POTTED_ACACIA_SAPLING(-1),
-    POTTED_ALLIUM(-1),
-    POTTED_AZALEA_BUSH(-1),
-    POTTED_AZURE_BLUET(-1),
-    POTTED_BAMBOO(-1),
-    POTTED_BIRCH_SAPLING(-1),
-    POTTED_BLUE_ORCHID(-1),
-    POTTED_BROWN_MUSHROOM(-1),
-    POTTED_CACTUS(-1),
-    POTTED_CHERRY_SAPLING(-1),
-    POTTED_CLOSED_EYEBLOSSOM(-1),
-    POTTED_CORNFLOWER(-1),
-    POTTED_CRIMSON_FUNGUS(-1),
-    POTTED_CRIMSON_ROOTS(-1),
-    POTTED_DANDELION(-1),
-    POTTED_DARK_OAK_SAPLING(-1),
-    POTTED_DEAD_BUSH(-1),
-    POTTED_FERN(-1),
-    POTTED_FLOWERING_AZALEA_BUSH(-1),
-    POTTED_GOLDEN_DANDELION(-1),
-    POTTED_JUNGLE_SAPLING(-1),
-    POTTED_LILY_OF_THE_VALLEY(-1),
-    POTTED_MANGROVE_PROPAGULE(-1),
-    POTTED_OAK_SAPLING(-1),
-    POTTED_OPEN_EYEBLOSSOM(-1),
-    POTTED_ORANGE_TULIP(-1),
-    POTTED_OXEYE_DAISY(-1),
-    POTTED_PALE_OAK_SAPLING(-1),
-    POTTED_PINK_TULIP(-1),
-    POTTED_POPPY(-1),
-    POTTED_RED_MUSHROOM(-1),
-    POTTED_RED_TULIP(-1),
-    POTTED_SPRUCE_SAPLING(-1),
-    POTTED_TORCHFLOWER(-1),
-    POTTED_WARPED_FUNGUS(-1),
-    POTTED_WARPED_ROOTS(-1),
-    POTTED_WHITE_TULIP(-1),
-    POTTED_WITHER_ROSE(-1),
-    POWDER_SNOW(-1),
-    POWDER_SNOW_CAULDRON(-1, Levelled.class),
-    POWERED_RAIL(-1, RedstoneRail.class),
-    PRISMARINE(-1),
-    PRISMARINE_BRICK_SLAB(-1, Slab.class),
-    PRISMARINE_BRICK_STAIRS(-1, Stairs.class),
-    PRISMARINE_BRICKS(-1),
-    PRISMARINE_SLAB(-1, Slab.class),
-    PRISMARINE_STAIRS(-1, Stairs.class),
-    PRISMARINE_WALL(-1, Wall.class),
-    PUMPKIN(-1),
-    PUMPKIN_STEM(-1, Ageable.class),
-    PURPLE_BANNER(-1, Rotatable.class),
-    PURPLE_BED(-1, Bed.class),
-    PURPLE_CANDLE(-1, Candle.class),
-    PURPLE_CANDLE_CAKE(-1, Lightable.class),
-    PURPLE_CARPET(-1),
-    PURPLE_CONCRETE(-1),
-    PURPLE_CONCRETE_POWDER(-1),
-    PURPLE_GLAZED_TERRACOTTA(-1, Directional.class),
-    PURPLE_SHULKER_BOX(-1, Directional.class),
-    PURPLE_STAINED_GLASS(-1),
-    PURPLE_STAINED_GLASS_PANE(-1, GlassPane.class),
-    PURPLE_TERRACOTTA(-1),
-    PURPLE_WALL_BANNER(-1, Directional.class),
-    PURPLE_WOOL(-1),
-    PURPUR_BLOCK(-1),
-    PURPUR_PILLAR(-1, Orientable.class),
-    PURPUR_SLAB(-1, Slab.class),
-    PURPUR_STAIRS(-1, Stairs.class),
-    QUARTZ_BLOCK(-1),
-    QUARTZ_BRICKS(-1),
-    QUARTZ_PILLAR(-1, Orientable.class),
-    QUARTZ_SLAB(-1, Slab.class),
-    QUARTZ_STAIRS(-1, Stairs.class),
-    RAIL(-1, Rail.class),
-    RAW_COPPER_BLOCK(-1),
-    RAW_GOLD_BLOCK(-1),
-    RAW_IRON_BLOCK(-1),
-    RED_BANNER(-1, Rotatable.class),
-    RED_BED(-1, Bed.class),
-    RED_CANDLE(-1, Candle.class),
-    RED_CANDLE_CAKE(-1, Lightable.class),
-    RED_CARPET(-1),
-    RED_CONCRETE(-1),
-    RED_CONCRETE_POWDER(-1),
-    RED_GLAZED_TERRACOTTA(-1, Directional.class),
-    RED_MUSHROOM(-1),
-    RED_MUSHROOM_BLOCK(-1, MultipleFacing.class),
-    RED_NETHER_BRICK_SLAB(-1, Slab.class),
-    RED_NETHER_BRICK_STAIRS(-1, Stairs.class),
-    RED_NETHER_BRICK_WALL(-1, Wall.class),
-    RED_NETHER_BRICKS(-1),
-    RED_SAND(-1),
-    RED_SANDSTONE(-1),
-    RED_SANDSTONE_SLAB(-1, Slab.class),
-    RED_SANDSTONE_STAIRS(-1, Stairs.class),
-    RED_SANDSTONE_WALL(-1, Wall.class),
-    RED_SHULKER_BOX(-1, Directional.class),
-    RED_STAINED_GLASS(-1),
-    RED_STAINED_GLASS_PANE(-1, GlassPane.class),
-    RED_TERRACOTTA(-1),
-    RED_TULIP(-1),
-    RED_WALL_BANNER(-1, Directional.class),
-    RED_WOOL(-1),
-    REDSTONE_BLOCK(-1),
-    REDSTONE_LAMP(-1, Lightable.class),
-    REDSTONE_ORE(-1, Lightable.class),
-    REDSTONE_TORCH(-1, Lightable.class),
-    REDSTONE_WALL_TORCH(-1, RedstoneWallTorch.class),
-    REDSTONE_WIRE(-1, RedstoneWire.class),
-    REINFORCED_DEEPSLATE(-1),
-    REPEATER(-1, Repeater.class),
-    REPEATING_COMMAND_BLOCK(-1, CommandBlock.class),
-    RESIN_BLOCK(-1),
-    RESIN_BRICK_SLAB(-1, Slab.class),
-    RESIN_BRICK_STAIRS(-1, Stairs.class),
-    RESIN_BRICK_WALL(-1, Wall.class),
-    RESIN_BRICKS(-1),
-    RESIN_CLUMP(-1, ResinClump.class),
-    RESPAWN_ANCHOR(-1, RespawnAnchor.class),
-    ROOTED_DIRT(-1),
-    ROSE_BUSH(-1, Bisected.class),
-    SAND(-1),
-    SANDSTONE(-1),
-    SANDSTONE_SLAB(-1, Slab.class),
-    SANDSTONE_STAIRS(-1, Stairs.class),
-    SANDSTONE_WALL(-1, Wall.class),
-    SCAFFOLDING(-1, Scaffolding.class),
-    SCULK(-1),
-    SCULK_CATALYST(-1, SculkCatalyst.class),
-    SCULK_SENSOR(-1, SculkSensor.class),
-    SCULK_SHRIEKER(-1, SculkShrieker.class),
-    SCULK_VEIN(-1, SculkVein.class),
-    SEA_LANTERN(-1),
-    SEA_PICKLE(-1, SeaPickle.class),
-    SEAGRASS(-1),
-    SHORT_DRY_GRASS(-1),
-    SHORT_GRASS(-1),
-    SHROOMLIGHT(-1),
-    SHULKER_BOX(-1, Directional.class),
-    SKELETON_SKULL(-1, Skull.class),
-    SKELETON_WALL_SKULL(-1, WallSkull.class),
-    SLIME_BLOCK(-1),
-    SMALL_AMETHYST_BUD(-1, AmethystCluster.class),
-    SMALL_DRIPLEAF(-1, SmallDripleaf.class),
-    SMITHING_TABLE(-1),
-    SMOKER(-1, Furnace.class),
-    SMOOTH_BASALT(-1),
-    SMOOTH_QUARTZ(-1),
-    SMOOTH_QUARTZ_SLAB(-1, Slab.class),
-    SMOOTH_QUARTZ_STAIRS(-1, Stairs.class),
-    SMOOTH_RED_SANDSTONE(-1),
-    SMOOTH_RED_SANDSTONE_SLAB(-1, Slab.class),
-    SMOOTH_RED_SANDSTONE_STAIRS(-1, Stairs.class),
-    SMOOTH_SANDSTONE(-1),
-    SMOOTH_SANDSTONE_SLAB(-1, Slab.class),
-    SMOOTH_SANDSTONE_STAIRS(-1, Stairs.class),
-    SMOOTH_STONE(-1),
-    SMOOTH_STONE_SLAB(-1, Slab.class),
-    SNIFFER_EGG(-1, Hatchable.class),
-    SNOW(-1, Snow.class),
-    SNOW_BLOCK(-1),
-    SOUL_CAMPFIRE(-1, Campfire.class),
-    SOUL_FIRE(-1),
-    SOUL_LANTERN(-1, Lantern.class),
-    SOUL_SAND(-1),
-    SOUL_SOIL(-1),
-    SOUL_TORCH(-1),
-    SOUL_WALL_TORCH(-1, Directional.class),
-    SPAWNER(-1),
-    SPONGE(-1),
-    SPORE_BLOSSOM(-1),
-    SPRUCE_BUTTON(-1, Switch.class),
-    SPRUCE_DOOR(-1, Door.class),
-    SPRUCE_FENCE(-1, Fence.class),
-    SPRUCE_FENCE_GATE(-1, Gate.class),
-    SPRUCE_HANGING_SIGN(-1, HangingSign.class),
-    SPRUCE_LEAVES(-1, Leaves.class),
-    SPRUCE_LOG(-1, Orientable.class),
-    SPRUCE_PLANKS(-1),
-    SPRUCE_PRESSURE_PLATE(-1, Powerable.class),
-    SPRUCE_SAPLING(-1, Sapling.class),
-    SPRUCE_SHELF(-1, Shelf.class),
-    SPRUCE_SIGN(-1, Sign.class),
-    SPRUCE_SLAB(-1, Slab.class),
-    SPRUCE_STAIRS(-1, Stairs.class),
-    SPRUCE_TRAPDOOR(-1, TrapDoor.class),
-    SPRUCE_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    SPRUCE_WALL_SIGN(-1, WallSign.class),
-    SPRUCE_WOOD(-1, Orientable.class),
-    STICKY_PISTON(-1, Piston.class),
-    STONE(-1),
-    STONE_BRICK_SLAB(-1, Slab.class),
-    STONE_BRICK_STAIRS(-1, Stairs.class),
-    STONE_BRICK_WALL(-1, Wall.class),
-    STONE_BRICKS(-1),
-    STONE_BUTTON(-1, Switch.class),
-    STONE_PRESSURE_PLATE(-1, Powerable.class),
-    STONE_SLAB(-1, Slab.class),
-    STONE_STAIRS(-1, Stairs.class),
-    STONECUTTER(-1, Directional.class),
-    STRIPPED_ACACIA_LOG(-1, Orientable.class),
-    STRIPPED_ACACIA_WOOD(-1, Orientable.class),
-    STRIPPED_BAMBOO_BLOCK(-1, Orientable.class),
-    STRIPPED_BIRCH_LOG(-1, Orientable.class),
-    STRIPPED_BIRCH_WOOD(-1, Orientable.class),
-    STRIPPED_CHERRY_LOG(-1, Orientable.class),
-    STRIPPED_CHERRY_WOOD(-1, Orientable.class),
-    STRIPPED_CRIMSON_HYPHAE(-1, Orientable.class),
-    STRIPPED_CRIMSON_STEM(-1, Orientable.class),
-    STRIPPED_DARK_OAK_LOG(-1, Orientable.class),
-    STRIPPED_DARK_OAK_WOOD(-1, Orientable.class),
-    STRIPPED_JUNGLE_LOG(-1, Orientable.class),
-    STRIPPED_JUNGLE_WOOD(-1, Orientable.class),
-    STRIPPED_MANGROVE_LOG(-1, Orientable.class),
-    STRIPPED_MANGROVE_WOOD(-1, Orientable.class),
-    STRIPPED_OAK_LOG(-1, Orientable.class),
-    STRIPPED_OAK_WOOD(-1, Orientable.class),
-    STRIPPED_PALE_OAK_LOG(-1, Orientable.class),
-    STRIPPED_PALE_OAK_WOOD(-1, Orientable.class),
-    STRIPPED_SPRUCE_LOG(-1, Orientable.class),
-    STRIPPED_SPRUCE_WOOD(-1, Orientable.class),
-    STRIPPED_WARPED_HYPHAE(-1, Orientable.class),
-    STRIPPED_WARPED_STEM(-1, Orientable.class),
-    STRUCTURE_BLOCK(-1, StructureBlock.class),
-    STRUCTURE_VOID(-1),
-    SUGAR_CANE(-1, Ageable.class),
-    SULFUR(-1),
-    SULFUR_BRICK_SLAB(-1, Slab.class),
-    SULFUR_BRICK_STAIRS(-1, Stairs.class),
-    SULFUR_BRICK_WALL(-1, Wall.class),
-    SULFUR_BRICKS(-1),
-    SULFUR_SLAB(-1, Slab.class),
-    SULFUR_SPIKE(-1, Speleothem.class),
-    SULFUR_STAIRS(-1, Stairs.class),
-    SULFUR_WALL(-1, Wall.class),
-    SUNFLOWER(-1, Bisected.class),
-    SUSPICIOUS_GRAVEL(-1, Brushable.class),
-    SUSPICIOUS_SAND(-1, Brushable.class),
-    SWEET_BERRY_BUSH(-1, Ageable.class),
-    TALL_DRY_GRASS(-1),
-    TALL_GRASS(-1, Bisected.class),
-    TALL_SEAGRASS(-1, Bisected.class),
-    TARGET(-1, AnaloguePowerable.class),
-    TERRACOTTA(-1),
-    TEST_BLOCK(-1, TestBlock.class),
-    TEST_INSTANCE_BLOCK(-1),
-    TINTED_GLASS(-1),
-    TNT(-1, TNT.class),
-    TORCH(-1),
-    TORCHFLOWER(-1),
-    TORCHFLOWER_CROP(-1, Ageable.class),
-    TRAPPED_CHEST(-1, Chest.class),
-    TRIAL_SPAWNER(-1, TrialSpawner.class),
-    TRIPWIRE(-1, Tripwire.class),
-    TRIPWIRE_HOOK(-1, TripwireHook.class),
-    TUBE_CORAL(-1, Waterlogged.class),
-    TUBE_CORAL_BLOCK(-1),
-    TUBE_CORAL_FAN(-1, Waterlogged.class),
-    TUBE_CORAL_WALL_FAN(-1, CoralWallFan.class),
-    TUFF(-1),
-    TUFF_BRICK_SLAB(-1, Slab.class),
-    TUFF_BRICK_STAIRS(-1, Stairs.class),
-    TUFF_BRICK_WALL(-1, Wall.class),
-    TUFF_BRICKS(-1),
-    TUFF_SLAB(-1, Slab.class),
-    TUFF_STAIRS(-1, Stairs.class),
-    TUFF_WALL(-1, Wall.class),
-    TURTLE_EGG(-1, TurtleEgg.class),
-    TWISTING_VINES(-1, Ageable.class),
-    TWISTING_VINES_PLANT(-1),
-    VAULT(-1, Vault.class),
-    VERDANT_FROGLIGHT(-1, Orientable.class),
-    VINE(-1, MultipleFacing.class),
-    VOID_AIR(-1),
-    WALL_TORCH(-1, Directional.class),
-    WARPED_BUTTON(-1, Switch.class),
-    WARPED_DOOR(-1, Door.class),
-    WARPED_FENCE(-1, Fence.class),
-    WARPED_FENCE_GATE(-1, Gate.class),
-    WARPED_FUNGUS(-1),
-    WARPED_HANGING_SIGN(-1, HangingSign.class),
-    WARPED_HYPHAE(-1, Orientable.class),
-    WARPED_NYLIUM(-1),
-    WARPED_PLANKS(-1),
-    WARPED_PRESSURE_PLATE(-1, Powerable.class),
-    WARPED_ROOTS(-1),
-    WARPED_SHELF(-1, Shelf.class),
-    WARPED_SIGN(-1, Sign.class),
-    WARPED_SLAB(-1, Slab.class),
-    WARPED_STAIRS(-1, Stairs.class),
-    WARPED_STEM(-1, Orientable.class),
-    WARPED_TRAPDOOR(-1, TrapDoor.class),
-    WARPED_WALL_HANGING_SIGN(-1, WallHangingSign.class),
-    WARPED_WALL_SIGN(-1, WallSign.class),
-    WARPED_WART_BLOCK(-1),
-    WATER(-1, Levelled.class),
-    WATER_CAULDRON(-1, Levelled.class),
-    WAXED_CHISELED_COPPER(-1),
-    WAXED_COPPER_BARS(-1, Fence.class),
-    WAXED_COPPER_BLOCK(-1),
-    WAXED_COPPER_BULB(-1, CopperBulb.class),
-    WAXED_COPPER_CHAIN(-1, Chain.class),
-    WAXED_COPPER_CHEST(-1, Chest.class),
-    WAXED_COPPER_DOOR(-1, Door.class),
-    WAXED_COPPER_GOLEM_STATUE(-1, CopperGolemStatue.class),
-    WAXED_COPPER_GRATE(-1, Waterlogged.class),
-    WAXED_COPPER_LANTERN(-1, Lantern.class),
-    WAXED_COPPER_TRAPDOOR(-1, TrapDoor.class),
-    WAXED_CUT_COPPER(-1),
-    WAXED_CUT_COPPER_SLAB(-1, Slab.class),
-    WAXED_CUT_COPPER_STAIRS(-1, Stairs.class),
-    WAXED_EXPOSED_CHISELED_COPPER(-1),
-    WAXED_EXPOSED_COPPER(-1),
-    WAXED_EXPOSED_COPPER_BARS(-1, Fence.class),
-    WAXED_EXPOSED_COPPER_BULB(-1, CopperBulb.class),
-    WAXED_EXPOSED_COPPER_CHAIN(-1, Chain.class),
-    WAXED_EXPOSED_COPPER_CHEST(-1, Chest.class),
-    WAXED_EXPOSED_COPPER_DOOR(-1, Door.class),
-    WAXED_EXPOSED_COPPER_GOLEM_STATUE(-1, CopperGolemStatue.class),
-    WAXED_EXPOSED_COPPER_GRATE(-1, Waterlogged.class),
-    WAXED_EXPOSED_COPPER_LANTERN(-1, Lantern.class),
-    WAXED_EXPOSED_COPPER_TRAPDOOR(-1, TrapDoor.class),
-    WAXED_EXPOSED_CUT_COPPER(-1),
-    WAXED_EXPOSED_CUT_COPPER_SLAB(-1, Slab.class),
-    WAXED_EXPOSED_CUT_COPPER_STAIRS(-1, Stairs.class),
-    WAXED_EXPOSED_LIGHTNING_ROD(-1, LightningRod.class),
-    WAXED_LIGHTNING_ROD(-1, LightningRod.class),
-    WAXED_OXIDIZED_CHISELED_COPPER(-1),
-    WAXED_OXIDIZED_COPPER(-1),
-    WAXED_OXIDIZED_COPPER_BARS(-1, Fence.class),
-    WAXED_OXIDIZED_COPPER_BULB(-1, CopperBulb.class),
-    WAXED_OXIDIZED_COPPER_CHAIN(-1, Chain.class),
-    WAXED_OXIDIZED_COPPER_CHEST(-1, Chest.class),
-    WAXED_OXIDIZED_COPPER_DOOR(-1, Door.class),
-    WAXED_OXIDIZED_COPPER_GOLEM_STATUE(-1, CopperGolemStatue.class),
-    WAXED_OXIDIZED_COPPER_GRATE(-1, Waterlogged.class),
-    WAXED_OXIDIZED_COPPER_LANTERN(-1, Lantern.class),
-    WAXED_OXIDIZED_COPPER_TRAPDOOR(-1, TrapDoor.class),
-    WAXED_OXIDIZED_CUT_COPPER(-1),
-    WAXED_OXIDIZED_CUT_COPPER_SLAB(-1, Slab.class),
-    WAXED_OXIDIZED_CUT_COPPER_STAIRS(-1, Stairs.class),
-    WAXED_OXIDIZED_LIGHTNING_ROD(-1, LightningRod.class),
-    WAXED_WEATHERED_CHISELED_COPPER(-1),
-    WAXED_WEATHERED_COPPER(-1),
-    WAXED_WEATHERED_COPPER_BARS(-1, Fence.class),
-    WAXED_WEATHERED_COPPER_BULB(-1, CopperBulb.class),
-    WAXED_WEATHERED_COPPER_CHAIN(-1, Chain.class),
-    WAXED_WEATHERED_COPPER_CHEST(-1, Chest.class),
-    WAXED_WEATHERED_COPPER_DOOR(-1, Door.class),
-    WAXED_WEATHERED_COPPER_GOLEM_STATUE(-1, CopperGolemStatue.class),
-    WAXED_WEATHERED_COPPER_GRATE(-1, Waterlogged.class),
-    WAXED_WEATHERED_COPPER_LANTERN(-1, Lantern.class),
-    WAXED_WEATHERED_COPPER_TRAPDOOR(-1, TrapDoor.class),
-    WAXED_WEATHERED_CUT_COPPER(-1),
-    WAXED_WEATHERED_CUT_COPPER_SLAB(-1, Slab.class),
-    WAXED_WEATHERED_CUT_COPPER_STAIRS(-1, Stairs.class),
-    WAXED_WEATHERED_LIGHTNING_ROD(-1, LightningRod.class),
-    WEATHERED_CHISELED_COPPER(-1),
-    WEATHERED_COPPER(-1),
-    WEATHERED_COPPER_BARS(-1, Fence.class),
-    WEATHERED_COPPER_BULB(-1, CopperBulb.class),
-    WEATHERED_COPPER_CHAIN(-1, Chain.class),
-    WEATHERED_COPPER_CHEST(-1, Chest.class),
-    WEATHERED_COPPER_DOOR(-1, Door.class),
-    WEATHERED_COPPER_GOLEM_STATUE(-1, CopperGolemStatue.class),
-    WEATHERED_COPPER_GRATE(-1, Waterlogged.class),
-    WEATHERED_COPPER_LANTERN(-1, Lantern.class),
-    WEATHERED_COPPER_TRAPDOOR(-1, TrapDoor.class),
-    WEATHERED_CUT_COPPER(-1),
-    WEATHERED_CUT_COPPER_SLAB(-1, Slab.class),
-    WEATHERED_CUT_COPPER_STAIRS(-1, Stairs.class),
-    WEATHERED_LIGHTNING_ROD(-1, LightningRod.class),
-    WEEPING_VINES(-1, Ageable.class),
-    WEEPING_VINES_PLANT(-1),
-    WET_SPONGE(-1),
-    WHEAT(-1, Ageable.class),
-    WHITE_BANNER(-1, Rotatable.class),
-    WHITE_BED(-1, Bed.class),
-    WHITE_CANDLE(-1, Candle.class),
-    WHITE_CANDLE_CAKE(-1, Lightable.class),
-    WHITE_CARPET(-1),
-    WHITE_CONCRETE(-1),
-    WHITE_CONCRETE_POWDER(-1),
-    WHITE_GLAZED_TERRACOTTA(-1, Directional.class),
-    WHITE_SHULKER_BOX(-1, Directional.class),
-    WHITE_STAINED_GLASS(-1),
-    WHITE_STAINED_GLASS_PANE(-1, GlassPane.class),
-    WHITE_TERRACOTTA(-1),
-    WHITE_TULIP(-1),
-    WHITE_WALL_BANNER(-1, Directional.class),
-    WHITE_WOOL(-1),
-    WILDFLOWERS(-1, FlowerBed.class),
-    WITHER_ROSE(-1),
-    WITHER_SKELETON_SKULL(-1, Skull.class),
-    WITHER_SKELETON_WALL_SKULL(-1, WallSkull.class),
-    YELLOW_BANNER(-1, Rotatable.class),
-    YELLOW_BED(-1, Bed.class),
-    YELLOW_CANDLE(-1, Candle.class),
-    YELLOW_CANDLE_CAKE(-1, Lightable.class),
-    YELLOW_CARPET(-1),
-    YELLOW_CONCRETE(-1),
-    YELLOW_CONCRETE_POWDER(-1),
-    YELLOW_GLAZED_TERRACOTTA(-1, Directional.class),
-    YELLOW_SHULKER_BOX(-1, Directional.class),
-    YELLOW_STAINED_GLASS(-1),
-    YELLOW_STAINED_GLASS_PANE(-1, GlassPane.class),
-    YELLOW_TERRACOTTA(-1),
-    YELLOW_WALL_BANNER(-1, Directional.class),
-    YELLOW_WOOL(-1),
-    ZOMBIE_HEAD(-1, Skull.class),
-    ZOMBIE_WALL_HEAD(-1, WallSkull.class),
-    // End generate - Blocks
-    // ----- Legacy Separator -----
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_AIR(0),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE(1),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GRASS(2),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIRT(3),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COBBLESTONE(4),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD(5, org.bukkit.material.Wood.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SAPLING(6, org.bukkit.material.Sapling.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BEDROCK(7),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WATER(8, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STATIONARY_WATER(9, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LAVA(10, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STATIONARY_LAVA(11, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SAND(12),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GRAVEL(13),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_ORE(14),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_ORE(15),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COAL_ORE(16),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LOG(17, org.bukkit.material.Tree.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEAVES(18, org.bukkit.material.Leaves.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPONGE(19),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GLASS(20),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LAPIS_ORE(21),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LAPIS_BLOCK(22),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DISPENSER(23, org.bukkit.material.Dispenser.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SANDSTONE(24, org.bukkit.material.Sandstone.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NOTE_BLOCK(25),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BED_BLOCK(26, org.bukkit.material.Bed.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_POWERED_RAIL(27, org.bukkit.material.PoweredRail.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DETECTOR_RAIL(28, org.bukkit.material.DetectorRail.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PISTON_STICKY_BASE(29, org.bukkit.material.PistonBaseMaterial.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WEB(30),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LONG_GRASS(31, org.bukkit.material.LongGrass.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DEAD_BUSH(32),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PISTON_BASE(33, org.bukkit.material.PistonBaseMaterial.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PISTON_EXTENSION(34, org.bukkit.material.PistonExtensionMaterial.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOL(35, org.bukkit.material.Wool.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PISTON_MOVING_PIECE(36),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_YELLOW_FLOWER(37),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RED_ROSE(38),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BROWN_MUSHROOM(39),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RED_MUSHROOM(40),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_BLOCK(41),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_BLOCK(42),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DOUBLE_STEP(43, org.bukkit.material.Step.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STEP(44, org.bukkit.material.Step.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BRICK(45),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_TNT(46),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOOKSHELF(47),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MOSSY_COBBLESTONE(48),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_OBSIDIAN(49),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_TORCH(50, org.bukkit.material.Torch.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FIRE(51),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MOB_SPAWNER(52),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_STAIRS(53, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHEST(54, org.bukkit.material.Chest.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_WIRE(55, org.bukkit.material.RedstoneWire.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_ORE(56),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_BLOCK(57),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WORKBENCH(58),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CROPS(59, org.bukkit.material.Crops.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SOIL(60, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FURNACE(61, org.bukkit.material.Furnace.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BURNING_FURNACE(62, org.bukkit.material.Furnace.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SIGN_POST(63, org.bukkit.material.Sign.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOODEN_DOOR(64, org.bukkit.material.Door.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LADDER(65, org.bukkit.material.Ladder.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RAILS(66, org.bukkit.material.Rails.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COBBLESTONE_STAIRS(67, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WALL_SIGN(68, org.bukkit.material.Sign.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEVER(69, org.bukkit.material.Lever.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE_PLATE(70, org.bukkit.material.PressurePlate.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_DOOR_BLOCK(71, org.bukkit.material.Door.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_PLATE(72, org.bukkit.material.PressurePlate.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_ORE(73),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GLOWING_REDSTONE_ORE(74),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_TORCH_OFF(75, org.bukkit.material.RedstoneTorch.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_TORCH_ON(76, org.bukkit.material.RedstoneTorch.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE_BUTTON(77, org.bukkit.material.Button.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SNOW(78),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ICE(79),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SNOW_BLOCK(80),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CACTUS(81, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CLAY(82),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SUGAR_CANE_BLOCK(83, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_JUKEBOX(84),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FENCE(85),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PUMPKIN(86, org.bukkit.material.Pumpkin.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHERRACK(87),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SOUL_SAND(88),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GLOWSTONE(89),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PORTAL(90),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_JACK_O_LANTERN(91, org.bukkit.material.Pumpkin.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CAKE_BLOCK(92, org.bukkit.material.Cake.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIODE_BLOCK_OFF(93, org.bukkit.material.Diode.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIODE_BLOCK_ON(94, org.bukkit.material.Diode.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STAINED_GLASS(95),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_TRAP_DOOR(96, org.bukkit.material.TrapDoor.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MONSTER_EGGS(97, org.bukkit.material.MonsterEggs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SMOOTH_BRICK(98, org.bukkit.material.SmoothBrick.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_HUGE_MUSHROOM_1(99, org.bukkit.material.Mushroom.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_HUGE_MUSHROOM_2(100, org.bukkit.material.Mushroom.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_FENCE(101),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_THIN_GLASS(102),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MELON_BLOCK(103),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PUMPKIN_STEM(104, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MELON_STEM(105, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_VINE(106, org.bukkit.material.Vine.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FENCE_GATE(107, org.bukkit.material.Gate.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BRICK_STAIRS(108, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SMOOTH_STAIRS(109, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MYCEL(110),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WATER_LILY(111),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHER_BRICK(112),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHER_FENCE(113),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHER_BRICK_STAIRS(114, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHER_WARTS(115, org.bukkit.material.NetherWarts.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ENCHANTMENT_TABLE(116),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BREWING_STAND(117, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CAULDRON(118, org.bukkit.material.Cauldron.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ENDER_PORTAL(119),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ENDER_PORTAL_FRAME(120),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ENDER_STONE(121),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DRAGON_EGG(122),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_LAMP_OFF(123),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_LAMP_ON(124),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_DOUBLE_STEP(125, org.bukkit.material.Wood.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_STEP(126, org.bukkit.material.WoodenStep.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COCOA(127, org.bukkit.material.CocoaPlant.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SANDSTONE_STAIRS(128, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_EMERALD_ORE(129),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ENDER_CHEST(130, org.bukkit.material.EnderChest.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_TRIPWIRE_HOOK(131, org.bukkit.material.TripwireHook.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_TRIPWIRE(132, org.bukkit.material.Tripwire.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_EMERALD_BLOCK(133),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPRUCE_WOOD_STAIRS(134, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BIRCH_WOOD_STAIRS(135, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_JUNGLE_WOOD_STAIRS(136, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COMMAND(137, org.bukkit.material.Command.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BEACON(138),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COBBLE_WALL(139),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FLOWER_POT(140, org.bukkit.material.FlowerPot.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CARROT(141, org.bukkit.material.Crops.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_POTATO(142, org.bukkit.material.Crops.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_BUTTON(143, org.bukkit.material.Button.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SKULL(144, org.bukkit.material.Skull.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ANVIL(145),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_TRAPPED_CHEST(146, org.bukkit.material.Chest.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_PLATE(147),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_PLATE(148),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_COMPARATOR_OFF(149, org.bukkit.material.Comparator.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_COMPARATOR_ON(150, org.bukkit.material.Comparator.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DAYLIGHT_DETECTOR(151),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_BLOCK(152),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_QUARTZ_ORE(153),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_HOPPER(154, org.bukkit.material.Hopper.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_QUARTZ_BLOCK(155),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_QUARTZ_STAIRS(156, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ACTIVATOR_RAIL(157, org.bukkit.material.PoweredRail.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DROPPER(158, org.bukkit.material.Dispenser.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STAINED_CLAY(159),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STAINED_GLASS_PANE(160),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEAVES_2(161, org.bukkit.material.Leaves.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LOG_2(162, org.bukkit.material.Tree.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ACACIA_STAIRS(163, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DARK_OAK_STAIRS(164, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SLIME_BLOCK(165),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BARRIER(166),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_TRAPDOOR(167, org.bukkit.material.TrapDoor.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PRISMARINE(168),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SEA_LANTERN(169),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_HAY_BLOCK(170),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CARPET(171),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_HARD_CLAY(172),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COAL_BLOCK(173),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PACKED_ICE(174),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DOUBLE_PLANT(175),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STANDING_BANNER(176, org.bukkit.material.Banner.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WALL_BANNER(177, org.bukkit.material.Banner.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DAYLIGHT_DETECTOR_INVERTED(178),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RED_SANDSTONE(179),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RED_SANDSTONE_STAIRS(180, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DOUBLE_STONE_SLAB2(181),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE_SLAB2(182),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPRUCE_FENCE_GATE(183, org.bukkit.material.Gate.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BIRCH_FENCE_GATE(184, org.bukkit.material.Gate.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_JUNGLE_FENCE_GATE(185, org.bukkit.material.Gate.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DARK_OAK_FENCE_GATE(186, org.bukkit.material.Gate.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ACACIA_FENCE_GATE(187, org.bukkit.material.Gate.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPRUCE_FENCE(188),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BIRCH_FENCE(189),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_JUNGLE_FENCE(190),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DARK_OAK_FENCE(191),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ACACIA_FENCE(192),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPRUCE_DOOR(193, org.bukkit.material.Door.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BIRCH_DOOR(194, org.bukkit.material.Door.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_JUNGLE_DOOR(195, org.bukkit.material.Door.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ACACIA_DOOR(196, org.bukkit.material.Door.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DARK_OAK_DOOR(197, org.bukkit.material.Door.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_END_ROD(198),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHORUS_PLANT(199),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHORUS_FLOWER(200),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PURPUR_BLOCK(201),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PURPUR_PILLAR(202),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PURPUR_STAIRS(203, org.bukkit.material.Stairs.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PURPUR_DOUBLE_SLAB(204),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PURPUR_SLAB(205),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_END_BRICKS(206),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BEETROOT_BLOCK(207, org.bukkit.material.Crops.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GRASS_PATH(208),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_END_GATEWAY(209),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COMMAND_REPEATING(210, org.bukkit.material.Command.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COMMAND_CHAIN(211, org.bukkit.material.Command.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FROSTED_ICE(212),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MAGMA(213),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHER_WART_BLOCK(214),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RED_NETHER_BRICK(215),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BONE_BLOCK(216),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STRUCTURE_VOID(217),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_OBSERVER(218, org.bukkit.material.Observer.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WHITE_SHULKER_BOX(219),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ORANGE_SHULKER_BOX(220),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MAGENTA_SHULKER_BOX(221),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LIGHT_BLUE_SHULKER_BOX(222),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_YELLOW_SHULKER_BOX(223),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LIME_SHULKER_BOX(224),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PINK_SHULKER_BOX(225),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GRAY_SHULKER_BOX(226),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SILVER_SHULKER_BOX(227),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CYAN_SHULKER_BOX(228),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PURPLE_SHULKER_BOX(229),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BLUE_SHULKER_BOX(230),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BROWN_SHULKER_BOX(231),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GREEN_SHULKER_BOX(232),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RED_SHULKER_BOX(233),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BLACK_SHULKER_BOX(234),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WHITE_GLAZED_TERRACOTTA(235),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ORANGE_GLAZED_TERRACOTTA(236),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MAGENTA_GLAZED_TERRACOTTA(237),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LIGHT_BLUE_GLAZED_TERRACOTTA(238),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_YELLOW_GLAZED_TERRACOTTA(239),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LIME_GLAZED_TERRACOTTA(240),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PINK_GLAZED_TERRACOTTA(241),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GRAY_GLAZED_TERRACOTTA(242),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SILVER_GLAZED_TERRACOTTA(243),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CYAN_GLAZED_TERRACOTTA(244),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PURPLE_GLAZED_TERRACOTTA(245),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BLUE_GLAZED_TERRACOTTA(246),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BROWN_GLAZED_TERRACOTTA(247),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GREEN_GLAZED_TERRACOTTA(248),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RED_GLAZED_TERRACOTTA(249),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BLACK_GLAZED_TERRACOTTA(250),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CONCRETE(251),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CONCRETE_POWDER(252),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STRUCTURE_BLOCK(255),
-    // ----- Item Separator -----
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_SPADE(256),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_PICKAXE(257),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_AXE(258),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FLINT_AND_STEEL(259),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_APPLE(260),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOW(261),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ARROW(262),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COAL(263, org.bukkit.material.Coal.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND(264),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_INGOT(265),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_INGOT(266),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_SWORD(267),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_SWORD(268),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_SPADE(269),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_PICKAXE(270),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_AXE(271),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE_SWORD(272),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE_SPADE(273),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE_PICKAXE(274),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE_AXE(275),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_SWORD(276),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_SPADE(277),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_PICKAXE(278),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_AXE(279),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STICK(280),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOWL(281),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MUSHROOM_SOUP(282),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_SWORD(283),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_SPADE(284),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_PICKAXE(285),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_AXE(286),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STRING(287),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FEATHER(288),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SULPHUR(289),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_HOE(290),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STONE_HOE(291),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_HOE(292),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_HOE(293),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_HOE(294),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SEEDS(295),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WHEAT(296),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BREAD(297),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEATHER_HELMET(298),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEATHER_CHESTPLATE(299),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEATHER_LEGGINGS(300),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEATHER_BOOTS(301),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHAINMAIL_HELMET(302),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHAINMAIL_CHESTPLATE(303),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHAINMAIL_LEGGINGS(304),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHAINMAIL_BOOTS(305),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_HELMET(306),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_CHESTPLATE(307),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_LEGGINGS(308),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_BOOTS(309),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_HELMET(310),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_CHESTPLATE(311),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_LEGGINGS(312),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_BOOTS(313),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_HELMET(314),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_CHESTPLATE(315),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_LEGGINGS(316),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_BOOTS(317),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FLINT(318),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PORK(319),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GRILLED_PORK(320),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PAINTING(321),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLDEN_APPLE(322),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SIGN(323),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WOOD_DOOR(324),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BUCKET(325),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WATER_BUCKET(326),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LAVA_BUCKET(327),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MINECART(328),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SADDLE(329),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_DOOR(330),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE(331),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SNOW_BALL(332),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOAT(333),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEATHER(334),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MILK_BUCKET(335),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CLAY_BRICK(336),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CLAY_BALL(337),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SUGAR_CANE(338),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PAPER(339),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOOK(340),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SLIME_BALL(341),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_STORAGE_MINECART(342),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_POWERED_MINECART(343),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_EGG(344),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COMPASS(345),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FISHING_ROD(346),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WATCH(347),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GLOWSTONE_DUST(348),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RAW_FISH(349),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COOKED_FISH(350),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_INK_SACK(351, org.bukkit.material.Dye.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BONE(352),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SUGAR(353),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CAKE(354),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BED(355),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIODE(356),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COOKIE(357),
-    /**
-     * @see org.bukkit.map.MapView
-     */
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MAP(358, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SHEARS(359),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MELON(360),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PUMPKIN_SEEDS(361),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MELON_SEEDS(362),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RAW_BEEF(363),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COOKED_BEEF(364),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RAW_CHICKEN(365),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COOKED_CHICKEN(366),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ROTTEN_FLESH(367),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ENDER_PEARL(368),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BLAZE_ROD(369),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GHAST_TEAR(370),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_NUGGET(371),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHER_STALK(372),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_POTION(373, org.bukkit.material.MaterialData.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GLASS_BOTTLE(374),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPIDER_EYE(375),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FERMENTED_SPIDER_EYE(376),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BLAZE_POWDER(377),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MAGMA_CREAM(378),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BREWING_STAND_ITEM(379),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CAULDRON_ITEM(380),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_EYE_OF_ENDER(381),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPECKLED_MELON(382),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MONSTER_EGG(383, org.bukkit.material.SpawnEgg.class),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_EXP_BOTTLE(384),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FIREBALL(385),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOOK_AND_QUILL(386),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_WRITTEN_BOOK(387),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_EMERALD(388),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ITEM_FRAME(389),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FLOWER_POT_ITEM(390),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CARROT_ITEM(391),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_POTATO_ITEM(392),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BAKED_POTATO(393),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_POISONOUS_POTATO(394),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_EMPTY_MAP(395),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLDEN_CARROT(396),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SKULL_ITEM(397),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CARROT_STICK(398),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHER_STAR(399),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PUMPKIN_PIE(400),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FIREWORK(401),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_FIREWORK_CHARGE(402),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ENCHANTED_BOOK(403),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_REDSTONE_COMPARATOR(404),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NETHER_BRICK_ITEM(405),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_QUARTZ(406),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_EXPLOSIVE_MINECART(407),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_HOPPER_MINECART(408),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PRISMARINE_SHARD(409),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_PRISMARINE_CRYSTALS(410),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RABBIT(411),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COOKED_RABBIT(412),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RABBIT_STEW(413),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RABBIT_FOOT(414),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RABBIT_HIDE(415),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ARMOR_STAND(416),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_BARDING(417),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_BARDING(418),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DIAMOND_BARDING(419),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LEASH(420),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_NAME_TAG(421),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COMMAND_MINECART(422),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_MUTTON(423),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_COOKED_MUTTON(424),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BANNER(425),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_END_CRYSTAL(426),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPRUCE_DOOR_ITEM(427),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BIRCH_DOOR_ITEM(428),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_JUNGLE_DOOR_ITEM(429),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ACACIA_DOOR_ITEM(430),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DARK_OAK_DOOR_ITEM(431),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHORUS_FRUIT(432),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_CHORUS_FRUIT_POPPED(433),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BEETROOT(434),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BEETROOT_SEEDS(435),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BEETROOT_SOUP(436),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_DRAGONS_BREATH(437),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPLASH_POTION(438),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SPECTRAL_ARROW(439),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_TIPPED_ARROW(440),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_LINGERING_POTION(441),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SHIELD(442),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_ELYTRA(443),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOAT_SPRUCE(444),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOAT_BIRCH(445),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOAT_JUNGLE(446),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOAT_ACACIA(447),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_BOAT_DARK_OAK(448),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_TOTEM(449),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_SHULKER_SHELL(450),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_IRON_NUGGET(452),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_KNOWLEDGE_BOOK(453),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GOLD_RECORD(2256),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_GREEN_RECORD(2257),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_3(2258),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_4(2259),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_5(2260),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_6(2261),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_7(2262),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_8(2263),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_9(2264),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_10(2265),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_11(2266),
-    @Deprecated(since = "1.13", forRemoval = true)
-    LEGACY_RECORD_12(2267),
-    ;
-    //</editor-fold>
+public interface Material extends Keyed, Translatable, net.kyori.adventure.translation.Translatable {
+
+    // ---- vanilla constants (source-compatible with former enum constants) ----
+    Material ACACIA_BOAT = VanillaMaterial.ACACIA_BOAT;
+    Material ACACIA_CHEST_BOAT = VanillaMaterial.ACACIA_CHEST_BOAT;
+    Material AIR = VanillaMaterial.AIR;
+    Material ALLAY_SPAWN_EGG = VanillaMaterial.ALLAY_SPAWN_EGG;
+    Material AMETHYST_SHARD = VanillaMaterial.AMETHYST_SHARD;
+    Material ANGLER_POTTERY_SHERD = VanillaMaterial.ANGLER_POTTERY_SHERD;
+    Material APPLE = VanillaMaterial.APPLE;
+    Material ARCHER_POTTERY_SHERD = VanillaMaterial.ARCHER_POTTERY_SHERD;
+    Material ARMADILLO_SCUTE = VanillaMaterial.ARMADILLO_SCUTE;
+    Material ARMADILLO_SPAWN_EGG = VanillaMaterial.ARMADILLO_SPAWN_EGG;
+    Material ARMOR_STAND = VanillaMaterial.ARMOR_STAND;
+    Material ARMS_UP_POTTERY_SHERD = VanillaMaterial.ARMS_UP_POTTERY_SHERD;
+    Material ARROW = VanillaMaterial.ARROW;
+    Material AXOLOTL_BUCKET = VanillaMaterial.AXOLOTL_BUCKET;
+    Material AXOLOTL_SPAWN_EGG = VanillaMaterial.AXOLOTL_SPAWN_EGG;
+    Material BAKED_POTATO = VanillaMaterial.BAKED_POTATO;
+    Material BAMBOO_CHEST_RAFT = VanillaMaterial.BAMBOO_CHEST_RAFT;
+    Material BAMBOO_RAFT = VanillaMaterial.BAMBOO_RAFT;
+    Material BAT_SPAWN_EGG = VanillaMaterial.BAT_SPAWN_EGG;
+    Material BEE_SPAWN_EGG = VanillaMaterial.BEE_SPAWN_EGG;
+    Material BEEF = VanillaMaterial.BEEF;
+    Material BEETROOT = VanillaMaterial.BEETROOT;
+    Material BEETROOT_SEEDS = VanillaMaterial.BEETROOT_SEEDS;
+    Material BEETROOT_SOUP = VanillaMaterial.BEETROOT_SOUP;
+    Material BIRCH_BOAT = VanillaMaterial.BIRCH_BOAT;
+    Material BIRCH_CHEST_BOAT = VanillaMaterial.BIRCH_CHEST_BOAT;
+    Material BLACK_BUNDLE = VanillaMaterial.BLACK_BUNDLE;
+    Material BLACK_DYE = VanillaMaterial.BLACK_DYE;
+    Material BLACK_HARNESS = VanillaMaterial.BLACK_HARNESS;
+    Material BLADE_POTTERY_SHERD = VanillaMaterial.BLADE_POTTERY_SHERD;
+    Material BLAZE_POWDER = VanillaMaterial.BLAZE_POWDER;
+    Material BLAZE_ROD = VanillaMaterial.BLAZE_ROD;
+    Material BLAZE_SPAWN_EGG = VanillaMaterial.BLAZE_SPAWN_EGG;
+    Material BLUE_BUNDLE = VanillaMaterial.BLUE_BUNDLE;
+    Material BLUE_DYE = VanillaMaterial.BLUE_DYE;
+    Material BLUE_EGG = VanillaMaterial.BLUE_EGG;
+    Material BLUE_HARNESS = VanillaMaterial.BLUE_HARNESS;
+    Material BOGGED_SPAWN_EGG = VanillaMaterial.BOGGED_SPAWN_EGG;
+    Material BOLT_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material BONE = VanillaMaterial.BONE;
+    Material BONE_MEAL = VanillaMaterial.BONE_MEAL;
+    Material BOOK = VanillaMaterial.BOOK;
+    Material BORDURE_INDENTED_BANNER_PATTERN = VanillaMaterial.BORDURE_INDENTED_BANNER_PATTERN;
+    Material BOW = VanillaMaterial.BOW;
+    Material BOWL = VanillaMaterial.BOWL;
+    Material BREAD = VanillaMaterial.BREAD;
+    Material BREEZE_ROD = VanillaMaterial.BREEZE_ROD;
+    Material BREEZE_SPAWN_EGG = VanillaMaterial.BREEZE_SPAWN_EGG;
+    Material BREWER_POTTERY_SHERD = VanillaMaterial.BREWER_POTTERY_SHERD;
+    Material BRICK = VanillaMaterial.BRICK;
+    Material BROWN_BUNDLE = VanillaMaterial.BROWN_BUNDLE;
+    Material BROWN_DYE = VanillaMaterial.BROWN_DYE;
+    Material BROWN_EGG = VanillaMaterial.BROWN_EGG;
+    Material BROWN_HARNESS = VanillaMaterial.BROWN_HARNESS;
+    Material BRUSH = VanillaMaterial.BRUSH;
+    Material BUCKET = VanillaMaterial.BUCKET;
+    Material BUNDLE = VanillaMaterial.BUNDLE;
+    Material BURN_POTTERY_SHERD = VanillaMaterial.BURN_POTTERY_SHERD;
+    Material CAMEL_HUSK_SPAWN_EGG = VanillaMaterial.CAMEL_HUSK_SPAWN_EGG;
+    Material CAMEL_SPAWN_EGG = VanillaMaterial.CAMEL_SPAWN_EGG;
+    Material CARROT = VanillaMaterial.CARROT;
+    Material CARROT_ON_A_STICK = VanillaMaterial.CARROT_ON_A_STICK;
+    Material CAT_SPAWN_EGG = VanillaMaterial.CAT_SPAWN_EGG;
+    Material CAVE_SPIDER_SPAWN_EGG = VanillaMaterial.CAVE_SPIDER_SPAWN_EGG;
+    Material CHAINMAIL_BOOTS = VanillaMaterial.CHAINMAIL_BOOTS;
+    Material CHAINMAIL_CHESTPLATE = VanillaMaterial.CHAINMAIL_CHESTPLATE;
+    Material CHAINMAIL_HELMET = VanillaMaterial.CHAINMAIL_HELMET;
+    Material CHAINMAIL_LEGGINGS = VanillaMaterial.CHAINMAIL_LEGGINGS;
+    Material CHARCOAL = VanillaMaterial.CHARCOAL;
+    Material CHERRY_BOAT = VanillaMaterial.CHERRY_BOAT;
+    Material CHERRY_CHEST_BOAT = VanillaMaterial.CHERRY_CHEST_BOAT;
+    Material CHEST_MINECART = VanillaMaterial.CHEST_MINECART;
+    Material CHICKEN = VanillaMaterial.CHICKEN;
+    Material CHICKEN_SPAWN_EGG = VanillaMaterial.CHICKEN_SPAWN_EGG;
+    Material CHORUS_FRUIT = VanillaMaterial.CHORUS_FRUIT;
+    Material CLAY_BALL = VanillaMaterial.CLAY_BALL;
+    Material CLOCK = VanillaMaterial.CLOCK;
+    Material COAL = VanillaMaterial.COAL;
+    Material COAST_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.COAST_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material COCOA_BEANS = VanillaMaterial.COCOA_BEANS;
+    Material COD = VanillaMaterial.COD;
+    Material COD_BUCKET = VanillaMaterial.COD_BUCKET;
+    Material COD_SPAWN_EGG = VanillaMaterial.COD_SPAWN_EGG;
+    Material COMMAND_BLOCK_MINECART = VanillaMaterial.COMMAND_BLOCK_MINECART;
+    Material COMPASS = VanillaMaterial.COMPASS;
+    Material COOKED_BEEF = VanillaMaterial.COOKED_BEEF;
+    Material COOKED_CHICKEN = VanillaMaterial.COOKED_CHICKEN;
+    Material COOKED_COD = VanillaMaterial.COOKED_COD;
+    Material COOKED_MUTTON = VanillaMaterial.COOKED_MUTTON;
+    Material COOKED_PORKCHOP = VanillaMaterial.COOKED_PORKCHOP;
+    Material COOKED_RABBIT = VanillaMaterial.COOKED_RABBIT;
+    Material COOKED_SALMON = VanillaMaterial.COOKED_SALMON;
+    Material COOKIE = VanillaMaterial.COOKIE;
+    Material COPPER_AXE = VanillaMaterial.COPPER_AXE;
+    Material COPPER_BOOTS = VanillaMaterial.COPPER_BOOTS;
+    Material COPPER_CHESTPLATE = VanillaMaterial.COPPER_CHESTPLATE;
+    Material COPPER_GOLEM_SPAWN_EGG = VanillaMaterial.COPPER_GOLEM_SPAWN_EGG;
+    Material COPPER_HELMET = VanillaMaterial.COPPER_HELMET;
+    Material COPPER_HOE = VanillaMaterial.COPPER_HOE;
+    Material COPPER_HORSE_ARMOR = VanillaMaterial.COPPER_HORSE_ARMOR;
+    Material COPPER_INGOT = VanillaMaterial.COPPER_INGOT;
+    Material COPPER_LEGGINGS = VanillaMaterial.COPPER_LEGGINGS;
+    Material COPPER_NAUTILUS_ARMOR = VanillaMaterial.COPPER_NAUTILUS_ARMOR;
+    Material COPPER_NUGGET = VanillaMaterial.COPPER_NUGGET;
+    Material COPPER_PICKAXE = VanillaMaterial.COPPER_PICKAXE;
+    Material COPPER_SHOVEL = VanillaMaterial.COPPER_SHOVEL;
+    Material COPPER_SPEAR = VanillaMaterial.COPPER_SPEAR;
+    Material COPPER_SWORD = VanillaMaterial.COPPER_SWORD;
+    Material COW_SPAWN_EGG = VanillaMaterial.COW_SPAWN_EGG;
+    Material CREAKING_SPAWN_EGG = VanillaMaterial.CREAKING_SPAWN_EGG;
+    Material CREEPER_BANNER_PATTERN = VanillaMaterial.CREEPER_BANNER_PATTERN;
+    Material CREEPER_SPAWN_EGG = VanillaMaterial.CREEPER_SPAWN_EGG;
+    Material CROSSBOW = VanillaMaterial.CROSSBOW;
+    Material CYAN_BUNDLE = VanillaMaterial.CYAN_BUNDLE;
+    Material CYAN_DYE = VanillaMaterial.CYAN_DYE;
+    Material CYAN_HARNESS = VanillaMaterial.CYAN_HARNESS;
+    Material DANGER_POTTERY_SHERD = VanillaMaterial.DANGER_POTTERY_SHERD;
+    Material DARK_OAK_BOAT = VanillaMaterial.DARK_OAK_BOAT;
+    Material DARK_OAK_CHEST_BOAT = VanillaMaterial.DARK_OAK_CHEST_BOAT;
+    Material DEBUG_STICK = VanillaMaterial.DEBUG_STICK;
+    Material DIAMOND = VanillaMaterial.DIAMOND;
+    Material DIAMOND_AXE = VanillaMaterial.DIAMOND_AXE;
+    Material DIAMOND_BOOTS = VanillaMaterial.DIAMOND_BOOTS;
+    Material DIAMOND_CHESTPLATE = VanillaMaterial.DIAMOND_CHESTPLATE;
+    Material DIAMOND_HELMET = VanillaMaterial.DIAMOND_HELMET;
+    Material DIAMOND_HOE = VanillaMaterial.DIAMOND_HOE;
+    Material DIAMOND_HORSE_ARMOR = VanillaMaterial.DIAMOND_HORSE_ARMOR;
+    Material DIAMOND_LEGGINGS = VanillaMaterial.DIAMOND_LEGGINGS;
+    Material DIAMOND_NAUTILUS_ARMOR = VanillaMaterial.DIAMOND_NAUTILUS_ARMOR;
+    Material DIAMOND_PICKAXE = VanillaMaterial.DIAMOND_PICKAXE;
+    Material DIAMOND_SHOVEL = VanillaMaterial.DIAMOND_SHOVEL;
+    Material DIAMOND_SPEAR = VanillaMaterial.DIAMOND_SPEAR;
+    Material DIAMOND_SWORD = VanillaMaterial.DIAMOND_SWORD;
+    Material DISC_FRAGMENT_5 = VanillaMaterial.DISC_FRAGMENT_5;
+    Material DOLPHIN_SPAWN_EGG = VanillaMaterial.DOLPHIN_SPAWN_EGG;
+    Material DONKEY_SPAWN_EGG = VanillaMaterial.DONKEY_SPAWN_EGG;
+    Material DRAGON_BREATH = VanillaMaterial.DRAGON_BREATH;
+    Material DRIED_KELP = VanillaMaterial.DRIED_KELP;
+    Material DROWNED_SPAWN_EGG = VanillaMaterial.DROWNED_SPAWN_EGG;
+    Material DUNE_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material ECHO_SHARD = VanillaMaterial.ECHO_SHARD;
+    Material EGG = VanillaMaterial.EGG;
+    Material ELDER_GUARDIAN_SPAWN_EGG = VanillaMaterial.ELDER_GUARDIAN_SPAWN_EGG;
+    Material ELYTRA = VanillaMaterial.ELYTRA;
+    Material EMERALD = VanillaMaterial.EMERALD;
+    Material ENCHANTED_BOOK = VanillaMaterial.ENCHANTED_BOOK;
+    Material ENCHANTED_GOLDEN_APPLE = VanillaMaterial.ENCHANTED_GOLDEN_APPLE;
+    Material END_CRYSTAL = VanillaMaterial.END_CRYSTAL;
+    Material ENDER_DRAGON_SPAWN_EGG = VanillaMaterial.ENDER_DRAGON_SPAWN_EGG;
+    Material ENDER_EYE = VanillaMaterial.ENDER_EYE;
+    Material ENDER_PEARL = VanillaMaterial.ENDER_PEARL;
+    Material ENDERMAN_SPAWN_EGG = VanillaMaterial.ENDERMAN_SPAWN_EGG;
+    Material ENDERMITE_SPAWN_EGG = VanillaMaterial.ENDERMITE_SPAWN_EGG;
+    Material EVOKER_SPAWN_EGG = VanillaMaterial.EVOKER_SPAWN_EGG;
+    Material EXPERIENCE_BOTTLE = VanillaMaterial.EXPERIENCE_BOTTLE;
+    Material EXPLORER_POTTERY_SHERD = VanillaMaterial.EXPLORER_POTTERY_SHERD;
+    Material EYE_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.EYE_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material FEATHER = VanillaMaterial.FEATHER;
+    Material FERMENTED_SPIDER_EYE = VanillaMaterial.FERMENTED_SPIDER_EYE;
+    Material FIELD_MASONED_BANNER_PATTERN = VanillaMaterial.FIELD_MASONED_BANNER_PATTERN;
+    Material FILLED_MAP = VanillaMaterial.FILLED_MAP;
+    Material FIRE_CHARGE = VanillaMaterial.FIRE_CHARGE;
+    Material FIREWORK_ROCKET = VanillaMaterial.FIREWORK_ROCKET;
+    Material FIREWORK_STAR = VanillaMaterial.FIREWORK_STAR;
+    Material FISHING_ROD = VanillaMaterial.FISHING_ROD;
+    Material FLINT = VanillaMaterial.FLINT;
+    Material FLINT_AND_STEEL = VanillaMaterial.FLINT_AND_STEEL;
+    Material FLOW_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material FLOW_BANNER_PATTERN = VanillaMaterial.FLOW_BANNER_PATTERN;
+    Material FLOW_POTTERY_SHERD = VanillaMaterial.FLOW_POTTERY_SHERD;
+    Material FLOWER_BANNER_PATTERN = VanillaMaterial.FLOWER_BANNER_PATTERN;
+    Material FOX_SPAWN_EGG = VanillaMaterial.FOX_SPAWN_EGG;
+    Material FRIEND_POTTERY_SHERD = VanillaMaterial.FRIEND_POTTERY_SHERD;
+    Material FROG_SPAWN_EGG = VanillaMaterial.FROG_SPAWN_EGG;
+    Material FURNACE_MINECART = VanillaMaterial.FURNACE_MINECART;
+    Material GHAST_SPAWN_EGG = VanillaMaterial.GHAST_SPAWN_EGG;
+    Material GHAST_TEAR = VanillaMaterial.GHAST_TEAR;
+    Material GLASS_BOTTLE = VanillaMaterial.GLASS_BOTTLE;
+    Material GLISTERING_MELON_SLICE = VanillaMaterial.GLISTERING_MELON_SLICE;
+    Material GLOBE_BANNER_PATTERN = VanillaMaterial.GLOBE_BANNER_PATTERN;
+    Material GLOW_BERRIES = VanillaMaterial.GLOW_BERRIES;
+    Material GLOW_INK_SAC = VanillaMaterial.GLOW_INK_SAC;
+    Material GLOW_ITEM_FRAME = VanillaMaterial.GLOW_ITEM_FRAME;
+    Material GLOW_SQUID_SPAWN_EGG = VanillaMaterial.GLOW_SQUID_SPAWN_EGG;
+    Material GLOWSTONE_DUST = VanillaMaterial.GLOWSTONE_DUST;
+    Material GOAT_HORN = VanillaMaterial.GOAT_HORN;
+    Material GOAT_SPAWN_EGG = VanillaMaterial.GOAT_SPAWN_EGG;
+    Material GOLD_INGOT = VanillaMaterial.GOLD_INGOT;
+    Material GOLD_NUGGET = VanillaMaterial.GOLD_NUGGET;
+    Material GOLDEN_APPLE = VanillaMaterial.GOLDEN_APPLE;
+    Material GOLDEN_AXE = VanillaMaterial.GOLDEN_AXE;
+    Material GOLDEN_BOOTS = VanillaMaterial.GOLDEN_BOOTS;
+    Material GOLDEN_CARROT = VanillaMaterial.GOLDEN_CARROT;
+    Material GOLDEN_CHESTPLATE = VanillaMaterial.GOLDEN_CHESTPLATE;
+    Material GOLDEN_HELMET = VanillaMaterial.GOLDEN_HELMET;
+    Material GOLDEN_HOE = VanillaMaterial.GOLDEN_HOE;
+    Material GOLDEN_HORSE_ARMOR = VanillaMaterial.GOLDEN_HORSE_ARMOR;
+    Material GOLDEN_LEGGINGS = VanillaMaterial.GOLDEN_LEGGINGS;
+    Material GOLDEN_NAUTILUS_ARMOR = VanillaMaterial.GOLDEN_NAUTILUS_ARMOR;
+    Material GOLDEN_PICKAXE = VanillaMaterial.GOLDEN_PICKAXE;
+    Material GOLDEN_SHOVEL = VanillaMaterial.GOLDEN_SHOVEL;
+    Material GOLDEN_SPEAR = VanillaMaterial.GOLDEN_SPEAR;
+    Material GOLDEN_SWORD = VanillaMaterial.GOLDEN_SWORD;
+    Material GRAY_BUNDLE = VanillaMaterial.GRAY_BUNDLE;
+    Material GRAY_DYE = VanillaMaterial.GRAY_DYE;
+    Material GRAY_HARNESS = VanillaMaterial.GRAY_HARNESS;
+    Material GREEN_BUNDLE = VanillaMaterial.GREEN_BUNDLE;
+    Material GREEN_DYE = VanillaMaterial.GREEN_DYE;
+    Material GREEN_HARNESS = VanillaMaterial.GREEN_HARNESS;
+    Material GUARDIAN_SPAWN_EGG = VanillaMaterial.GUARDIAN_SPAWN_EGG;
+    Material GUNPOWDER = VanillaMaterial.GUNPOWDER;
+    Material GUSTER_BANNER_PATTERN = VanillaMaterial.GUSTER_BANNER_PATTERN;
+    Material GUSTER_POTTERY_SHERD = VanillaMaterial.GUSTER_POTTERY_SHERD;
+    Material HAPPY_GHAST_SPAWN_EGG = VanillaMaterial.HAPPY_GHAST_SPAWN_EGG;
+    Material HEART_OF_THE_SEA = VanillaMaterial.HEART_OF_THE_SEA;
+    Material HEART_POTTERY_SHERD = VanillaMaterial.HEART_POTTERY_SHERD;
+    Material HEARTBREAK_POTTERY_SHERD = VanillaMaterial.HEARTBREAK_POTTERY_SHERD;
+    Material HOGLIN_SPAWN_EGG = VanillaMaterial.HOGLIN_SPAWN_EGG;
+    Material HONEY_BOTTLE = VanillaMaterial.HONEY_BOTTLE;
+    Material HONEYCOMB = VanillaMaterial.HONEYCOMB;
+    Material HOPPER_MINECART = VanillaMaterial.HOPPER_MINECART;
+    Material HORSE_SPAWN_EGG = VanillaMaterial.HORSE_SPAWN_EGG;
+    Material HOST_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.HOST_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material HOWL_POTTERY_SHERD = VanillaMaterial.HOWL_POTTERY_SHERD;
+    Material HUSK_SPAWN_EGG = VanillaMaterial.HUSK_SPAWN_EGG;
+    Material INK_SAC = VanillaMaterial.INK_SAC;
+    Material IRON_AXE = VanillaMaterial.IRON_AXE;
+    Material IRON_BOOTS = VanillaMaterial.IRON_BOOTS;
+    Material IRON_CHESTPLATE = VanillaMaterial.IRON_CHESTPLATE;
+    Material IRON_GOLEM_SPAWN_EGG = VanillaMaterial.IRON_GOLEM_SPAWN_EGG;
+    Material IRON_HELMET = VanillaMaterial.IRON_HELMET;
+    Material IRON_HOE = VanillaMaterial.IRON_HOE;
+    Material IRON_HORSE_ARMOR = VanillaMaterial.IRON_HORSE_ARMOR;
+    Material IRON_INGOT = VanillaMaterial.IRON_INGOT;
+    Material IRON_LEGGINGS = VanillaMaterial.IRON_LEGGINGS;
+    Material IRON_NAUTILUS_ARMOR = VanillaMaterial.IRON_NAUTILUS_ARMOR;
+    Material IRON_NUGGET = VanillaMaterial.IRON_NUGGET;
+    Material IRON_PICKAXE = VanillaMaterial.IRON_PICKAXE;
+    Material IRON_SHOVEL = VanillaMaterial.IRON_SHOVEL;
+    Material IRON_SPEAR = VanillaMaterial.IRON_SPEAR;
+    Material IRON_SWORD = VanillaMaterial.IRON_SWORD;
+    Material ITEM_FRAME = VanillaMaterial.ITEM_FRAME;
+    Material JUNGLE_BOAT = VanillaMaterial.JUNGLE_BOAT;
+    Material JUNGLE_CHEST_BOAT = VanillaMaterial.JUNGLE_CHEST_BOAT;
+    Material KNOWLEDGE_BOOK = VanillaMaterial.KNOWLEDGE_BOOK;
+    Material LAPIS_LAZULI = VanillaMaterial.LAPIS_LAZULI;
+    Material LAVA_BUCKET = VanillaMaterial.LAVA_BUCKET;
+    Material LEAD = VanillaMaterial.LEAD;
+    Material LEATHER = VanillaMaterial.LEATHER;
+    Material LEATHER_BOOTS = VanillaMaterial.LEATHER_BOOTS;
+    Material LEATHER_CHESTPLATE = VanillaMaterial.LEATHER_CHESTPLATE;
+    Material LEATHER_HELMET = VanillaMaterial.LEATHER_HELMET;
+    Material LEATHER_HORSE_ARMOR = VanillaMaterial.LEATHER_HORSE_ARMOR;
+    Material LEATHER_LEGGINGS = VanillaMaterial.LEATHER_LEGGINGS;
+    Material LIGHT_BLUE_BUNDLE = VanillaMaterial.LIGHT_BLUE_BUNDLE;
+    Material LIGHT_BLUE_DYE = VanillaMaterial.LIGHT_BLUE_DYE;
+    Material LIGHT_BLUE_HARNESS = VanillaMaterial.LIGHT_BLUE_HARNESS;
+    Material LIGHT_GRAY_BUNDLE = VanillaMaterial.LIGHT_GRAY_BUNDLE;
+    Material LIGHT_GRAY_DYE = VanillaMaterial.LIGHT_GRAY_DYE;
+    Material LIGHT_GRAY_HARNESS = VanillaMaterial.LIGHT_GRAY_HARNESS;
+    Material LIME_BUNDLE = VanillaMaterial.LIME_BUNDLE;
+    Material LIME_DYE = VanillaMaterial.LIME_DYE;
+    Material LIME_HARNESS = VanillaMaterial.LIME_HARNESS;
+    Material LINGERING_POTION = VanillaMaterial.LINGERING_POTION;
+    Material LLAMA_SPAWN_EGG = VanillaMaterial.LLAMA_SPAWN_EGG;
+    Material MACE = VanillaMaterial.MACE;
+    Material MAGENTA_BUNDLE = VanillaMaterial.MAGENTA_BUNDLE;
+    Material MAGENTA_DYE = VanillaMaterial.MAGENTA_DYE;
+    Material MAGENTA_HARNESS = VanillaMaterial.MAGENTA_HARNESS;
+    Material MAGMA_CREAM = VanillaMaterial.MAGMA_CREAM;
+    Material MAGMA_CUBE_SPAWN_EGG = VanillaMaterial.MAGMA_CUBE_SPAWN_EGG;
+    Material MANGROVE_BOAT = VanillaMaterial.MANGROVE_BOAT;
+    Material MANGROVE_CHEST_BOAT = VanillaMaterial.MANGROVE_CHEST_BOAT;
+    Material MAP = VanillaMaterial.MAP;
+    Material MELON_SEEDS = VanillaMaterial.MELON_SEEDS;
+    Material MELON_SLICE = VanillaMaterial.MELON_SLICE;
+    Material MILK_BUCKET = VanillaMaterial.MILK_BUCKET;
+    Material MINECART = VanillaMaterial.MINECART;
+    Material MINER_POTTERY_SHERD = VanillaMaterial.MINER_POTTERY_SHERD;
+    Material MOJANG_BANNER_PATTERN = VanillaMaterial.MOJANG_BANNER_PATTERN;
+    Material MOOSHROOM_SPAWN_EGG = VanillaMaterial.MOOSHROOM_SPAWN_EGG;
+    Material MOURNER_POTTERY_SHERD = VanillaMaterial.MOURNER_POTTERY_SHERD;
+    Material MULE_SPAWN_EGG = VanillaMaterial.MULE_SPAWN_EGG;
+    Material MUSHROOM_STEW = VanillaMaterial.MUSHROOM_STEW;
+    Material MUSIC_DISC_5 = VanillaMaterial.MUSIC_DISC_5;
+    Material MUSIC_DISC_11 = VanillaMaterial.MUSIC_DISC_11;
+    Material MUSIC_DISC_13 = VanillaMaterial.MUSIC_DISC_13;
+    Material MUSIC_DISC_BLOCKS = VanillaMaterial.MUSIC_DISC_BLOCKS;
+    Material MUSIC_DISC_BOUNCE = VanillaMaterial.MUSIC_DISC_BOUNCE;
+    Material MUSIC_DISC_CAT = VanillaMaterial.MUSIC_DISC_CAT;
+    Material MUSIC_DISC_CHIRP = VanillaMaterial.MUSIC_DISC_CHIRP;
+    Material MUSIC_DISC_CREATOR = VanillaMaterial.MUSIC_DISC_CREATOR;
+    Material MUSIC_DISC_CREATOR_MUSIC_BOX = VanillaMaterial.MUSIC_DISC_CREATOR_MUSIC_BOX;
+    Material MUSIC_DISC_FAR = VanillaMaterial.MUSIC_DISC_FAR;
+    Material MUSIC_DISC_LAVA_CHICKEN = VanillaMaterial.MUSIC_DISC_LAVA_CHICKEN;
+    Material MUSIC_DISC_MALL = VanillaMaterial.MUSIC_DISC_MALL;
+    Material MUSIC_DISC_MELLOHI = VanillaMaterial.MUSIC_DISC_MELLOHI;
+    Material MUSIC_DISC_OTHERSIDE = VanillaMaterial.MUSIC_DISC_OTHERSIDE;
+    Material MUSIC_DISC_PIGSTEP = VanillaMaterial.MUSIC_DISC_PIGSTEP;
+    Material MUSIC_DISC_PRECIPICE = VanillaMaterial.MUSIC_DISC_PRECIPICE;
+    Material MUSIC_DISC_RELIC = VanillaMaterial.MUSIC_DISC_RELIC;
+    Material MUSIC_DISC_STAL = VanillaMaterial.MUSIC_DISC_STAL;
+    Material MUSIC_DISC_STRAD = VanillaMaterial.MUSIC_DISC_STRAD;
+    Material MUSIC_DISC_TEARS = VanillaMaterial.MUSIC_DISC_TEARS;
+    Material MUSIC_DISC_WAIT = VanillaMaterial.MUSIC_DISC_WAIT;
+    Material MUSIC_DISC_WARD = VanillaMaterial.MUSIC_DISC_WARD;
+    Material MUTTON = VanillaMaterial.MUTTON;
+    Material NAME_TAG = VanillaMaterial.NAME_TAG;
+    Material NAUTILUS_SHELL = VanillaMaterial.NAUTILUS_SHELL;
+    Material NAUTILUS_SPAWN_EGG = VanillaMaterial.NAUTILUS_SPAWN_EGG;
+    Material NETHER_BRICK = VanillaMaterial.NETHER_BRICK;
+    Material NETHER_STAR = VanillaMaterial.NETHER_STAR;
+    Material NETHERITE_AXE = VanillaMaterial.NETHERITE_AXE;
+    Material NETHERITE_BOOTS = VanillaMaterial.NETHERITE_BOOTS;
+    Material NETHERITE_CHESTPLATE = VanillaMaterial.NETHERITE_CHESTPLATE;
+    Material NETHERITE_HELMET = VanillaMaterial.NETHERITE_HELMET;
+    Material NETHERITE_HOE = VanillaMaterial.NETHERITE_HOE;
+    Material NETHERITE_HORSE_ARMOR = VanillaMaterial.NETHERITE_HORSE_ARMOR;
+    Material NETHERITE_INGOT = VanillaMaterial.NETHERITE_INGOT;
+    Material NETHERITE_LEGGINGS = VanillaMaterial.NETHERITE_LEGGINGS;
+    Material NETHERITE_NAUTILUS_ARMOR = VanillaMaterial.NETHERITE_NAUTILUS_ARMOR;
+    Material NETHERITE_PICKAXE = VanillaMaterial.NETHERITE_PICKAXE;
+    Material NETHERITE_SCRAP = VanillaMaterial.NETHERITE_SCRAP;
+    Material NETHERITE_SHOVEL = VanillaMaterial.NETHERITE_SHOVEL;
+    Material NETHERITE_SPEAR = VanillaMaterial.NETHERITE_SPEAR;
+    Material NETHERITE_SWORD = VanillaMaterial.NETHERITE_SWORD;
+    Material NETHERITE_UPGRADE_SMITHING_TEMPLATE = VanillaMaterial.NETHERITE_UPGRADE_SMITHING_TEMPLATE;
+    Material OAK_BOAT = VanillaMaterial.OAK_BOAT;
+    Material OAK_CHEST_BOAT = VanillaMaterial.OAK_CHEST_BOAT;
+    Material OCELOT_SPAWN_EGG = VanillaMaterial.OCELOT_SPAWN_EGG;
+    Material OMINOUS_BOTTLE = VanillaMaterial.OMINOUS_BOTTLE;
+    Material OMINOUS_TRIAL_KEY = VanillaMaterial.OMINOUS_TRIAL_KEY;
+    Material ORANGE_BUNDLE = VanillaMaterial.ORANGE_BUNDLE;
+    Material ORANGE_DYE = VanillaMaterial.ORANGE_DYE;
+    Material ORANGE_HARNESS = VanillaMaterial.ORANGE_HARNESS;
+    Material PAINTING = VanillaMaterial.PAINTING;
+    Material PALE_OAK_BOAT = VanillaMaterial.PALE_OAK_BOAT;
+    Material PALE_OAK_CHEST_BOAT = VanillaMaterial.PALE_OAK_CHEST_BOAT;
+    Material PANDA_SPAWN_EGG = VanillaMaterial.PANDA_SPAWN_EGG;
+    Material PAPER = VanillaMaterial.PAPER;
+    Material PARCHED_SPAWN_EGG = VanillaMaterial.PARCHED_SPAWN_EGG;
+    Material PARROT_SPAWN_EGG = VanillaMaterial.PARROT_SPAWN_EGG;
+    Material PHANTOM_MEMBRANE = VanillaMaterial.PHANTOM_MEMBRANE;
+    Material PHANTOM_SPAWN_EGG = VanillaMaterial.PHANTOM_SPAWN_EGG;
+    Material PIG_SPAWN_EGG = VanillaMaterial.PIG_SPAWN_EGG;
+    Material PIGLIN_BANNER_PATTERN = VanillaMaterial.PIGLIN_BANNER_PATTERN;
+    Material PIGLIN_BRUTE_SPAWN_EGG = VanillaMaterial.PIGLIN_BRUTE_SPAWN_EGG;
+    Material PIGLIN_SPAWN_EGG = VanillaMaterial.PIGLIN_SPAWN_EGG;
+    Material PILLAGER_SPAWN_EGG = VanillaMaterial.PILLAGER_SPAWN_EGG;
+    Material PINK_BUNDLE = VanillaMaterial.PINK_BUNDLE;
+    Material PINK_DYE = VanillaMaterial.PINK_DYE;
+    Material PINK_HARNESS = VanillaMaterial.PINK_HARNESS;
+    Material PITCHER_POD = VanillaMaterial.PITCHER_POD;
+    Material PLENTY_POTTERY_SHERD = VanillaMaterial.PLENTY_POTTERY_SHERD;
+    Material POISONOUS_POTATO = VanillaMaterial.POISONOUS_POTATO;
+    Material POLAR_BEAR_SPAWN_EGG = VanillaMaterial.POLAR_BEAR_SPAWN_EGG;
+    Material POPPED_CHORUS_FRUIT = VanillaMaterial.POPPED_CHORUS_FRUIT;
+    Material PORKCHOP = VanillaMaterial.PORKCHOP;
+    Material POTATO = VanillaMaterial.POTATO;
+    Material POTION = VanillaMaterial.POTION;
+    Material POWDER_SNOW_BUCKET = VanillaMaterial.POWDER_SNOW_BUCKET;
+    Material PRISMARINE_CRYSTALS = VanillaMaterial.PRISMARINE_CRYSTALS;
+    Material PRISMARINE_SHARD = VanillaMaterial.PRISMARINE_SHARD;
+    Material PRIZE_POTTERY_SHERD = VanillaMaterial.PRIZE_POTTERY_SHERD;
+    Material PUFFERFISH = VanillaMaterial.PUFFERFISH;
+    Material PUFFERFISH_BUCKET = VanillaMaterial.PUFFERFISH_BUCKET;
+    Material PUFFERFISH_SPAWN_EGG = VanillaMaterial.PUFFERFISH_SPAWN_EGG;
+    Material PUMPKIN_PIE = VanillaMaterial.PUMPKIN_PIE;
+    Material PUMPKIN_SEEDS = VanillaMaterial.PUMPKIN_SEEDS;
+    Material PURPLE_BUNDLE = VanillaMaterial.PURPLE_BUNDLE;
+    Material PURPLE_DYE = VanillaMaterial.PURPLE_DYE;
+    Material PURPLE_HARNESS = VanillaMaterial.PURPLE_HARNESS;
+    Material QUARTZ = VanillaMaterial.QUARTZ;
+    Material RABBIT = VanillaMaterial.RABBIT;
+    Material RABBIT_FOOT = VanillaMaterial.RABBIT_FOOT;
+    Material RABBIT_HIDE = VanillaMaterial.RABBIT_HIDE;
+    Material RABBIT_SPAWN_EGG = VanillaMaterial.RABBIT_SPAWN_EGG;
+    Material RABBIT_STEW = VanillaMaterial.RABBIT_STEW;
+    Material RAISER_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material RAVAGER_SPAWN_EGG = VanillaMaterial.RAVAGER_SPAWN_EGG;
+    Material RAW_COPPER = VanillaMaterial.RAW_COPPER;
+    Material RAW_GOLD = VanillaMaterial.RAW_GOLD;
+    Material RAW_IRON = VanillaMaterial.RAW_IRON;
+    Material RECOVERY_COMPASS = VanillaMaterial.RECOVERY_COMPASS;
+    Material RED_BUNDLE = VanillaMaterial.RED_BUNDLE;
+    Material RED_DYE = VanillaMaterial.RED_DYE;
+    Material RED_HARNESS = VanillaMaterial.RED_HARNESS;
+    Material REDSTONE = VanillaMaterial.REDSTONE;
+    Material RESIN_BRICK = VanillaMaterial.RESIN_BRICK;
+    Material RIB_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.RIB_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material ROTTEN_FLESH = VanillaMaterial.ROTTEN_FLESH;
+    Material SADDLE = VanillaMaterial.SADDLE;
+    Material SALMON = VanillaMaterial.SALMON;
+    Material SALMON_BUCKET = VanillaMaterial.SALMON_BUCKET;
+    Material SALMON_SPAWN_EGG = VanillaMaterial.SALMON_SPAWN_EGG;
+    Material SCRAPE_POTTERY_SHERD = VanillaMaterial.SCRAPE_POTTERY_SHERD;
+    Material SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material SHEAF_POTTERY_SHERD = VanillaMaterial.SHEAF_POTTERY_SHERD;
+    Material SHEARS = VanillaMaterial.SHEARS;
+    Material SHEEP_SPAWN_EGG = VanillaMaterial.SHEEP_SPAWN_EGG;
+    Material SHELTER_POTTERY_SHERD = VanillaMaterial.SHELTER_POTTERY_SHERD;
+    Material SHIELD = VanillaMaterial.SHIELD;
+    Material SHULKER_SHELL = VanillaMaterial.SHULKER_SHELL;
+    Material SHULKER_SPAWN_EGG = VanillaMaterial.SHULKER_SPAWN_EGG;
+    Material SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material SILVERFISH_SPAWN_EGG = VanillaMaterial.SILVERFISH_SPAWN_EGG;
+    Material SKELETON_HORSE_SPAWN_EGG = VanillaMaterial.SKELETON_HORSE_SPAWN_EGG;
+    Material SKELETON_SPAWN_EGG = VanillaMaterial.SKELETON_SPAWN_EGG;
+    Material SKULL_BANNER_PATTERN = VanillaMaterial.SKULL_BANNER_PATTERN;
+    Material SKULL_POTTERY_SHERD = VanillaMaterial.SKULL_POTTERY_SHERD;
+    Material SLIME_BALL = VanillaMaterial.SLIME_BALL;
+    Material SLIME_SPAWN_EGG = VanillaMaterial.SLIME_SPAWN_EGG;
+    Material SNIFFER_SPAWN_EGG = VanillaMaterial.SNIFFER_SPAWN_EGG;
+    Material SNORT_POTTERY_SHERD = VanillaMaterial.SNORT_POTTERY_SHERD;
+    Material SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material SNOW_GOLEM_SPAWN_EGG = VanillaMaterial.SNOW_GOLEM_SPAWN_EGG;
+    Material SNOWBALL = VanillaMaterial.SNOWBALL;
+    Material SPECTRAL_ARROW = VanillaMaterial.SPECTRAL_ARROW;
+    Material SPIDER_EYE = VanillaMaterial.SPIDER_EYE;
+    Material SPIDER_SPAWN_EGG = VanillaMaterial.SPIDER_SPAWN_EGG;
+    Material SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material SPLASH_POTION = VanillaMaterial.SPLASH_POTION;
+    Material SPRUCE_BOAT = VanillaMaterial.SPRUCE_BOAT;
+    Material SPRUCE_CHEST_BOAT = VanillaMaterial.SPRUCE_CHEST_BOAT;
+    Material SPYGLASS = VanillaMaterial.SPYGLASS;
+    Material SQUID_SPAWN_EGG = VanillaMaterial.SQUID_SPAWN_EGG;
+    Material STICK = VanillaMaterial.STICK;
+    Material STONE_AXE = VanillaMaterial.STONE_AXE;
+    Material STONE_HOE = VanillaMaterial.STONE_HOE;
+    Material STONE_PICKAXE = VanillaMaterial.STONE_PICKAXE;
+    Material STONE_SHOVEL = VanillaMaterial.STONE_SHOVEL;
+    Material STONE_SPEAR = VanillaMaterial.STONE_SPEAR;
+    Material STONE_SWORD = VanillaMaterial.STONE_SWORD;
+    Material STRAY_SPAWN_EGG = VanillaMaterial.STRAY_SPAWN_EGG;
+    Material STRIDER_SPAWN_EGG = VanillaMaterial.STRIDER_SPAWN_EGG;
+    Material STRING = VanillaMaterial.STRING;
+    Material SUGAR = VanillaMaterial.SUGAR;
+    Material SULFUR_CUBE_BUCKET = VanillaMaterial.SULFUR_CUBE_BUCKET;
+    Material SULFUR_CUBE_SPAWN_EGG = VanillaMaterial.SULFUR_CUBE_SPAWN_EGG;
+    Material SUSPICIOUS_STEW = VanillaMaterial.SUSPICIOUS_STEW;
+    Material SWEET_BERRIES = VanillaMaterial.SWEET_BERRIES;
+    Material TADPOLE_BUCKET = VanillaMaterial.TADPOLE_BUCKET;
+    Material TADPOLE_SPAWN_EGG = VanillaMaterial.TADPOLE_SPAWN_EGG;
+    Material TIDE_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material TIPPED_ARROW = VanillaMaterial.TIPPED_ARROW;
+    Material TNT_MINECART = VanillaMaterial.TNT_MINECART;
+    Material TORCHFLOWER_SEEDS = VanillaMaterial.TORCHFLOWER_SEEDS;
+    Material TOTEM_OF_UNDYING = VanillaMaterial.TOTEM_OF_UNDYING;
+    Material TRADER_LLAMA_SPAWN_EGG = VanillaMaterial.TRADER_LLAMA_SPAWN_EGG;
+    Material TRIAL_KEY = VanillaMaterial.TRIAL_KEY;
+    Material TRIDENT = VanillaMaterial.TRIDENT;
+    Material TROPICAL_FISH = VanillaMaterial.TROPICAL_FISH;
+    Material TROPICAL_FISH_BUCKET = VanillaMaterial.TROPICAL_FISH_BUCKET;
+    Material TROPICAL_FISH_SPAWN_EGG = VanillaMaterial.TROPICAL_FISH_SPAWN_EGG;
+    Material TURTLE_HELMET = VanillaMaterial.TURTLE_HELMET;
+    Material TURTLE_SCUTE = VanillaMaterial.TURTLE_SCUTE;
+    Material TURTLE_SPAWN_EGG = VanillaMaterial.TURTLE_SPAWN_EGG;
+    Material VEX_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.VEX_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material VEX_SPAWN_EGG = VanillaMaterial.VEX_SPAWN_EGG;
+    Material VILLAGER_SPAWN_EGG = VanillaMaterial.VILLAGER_SPAWN_EGG;
+    Material VINDICATOR_SPAWN_EGG = VanillaMaterial.VINDICATOR_SPAWN_EGG;
+    Material WANDERING_TRADER_SPAWN_EGG = VanillaMaterial.WANDERING_TRADER_SPAWN_EGG;
+    Material WARD_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.WARD_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material WARDEN_SPAWN_EGG = VanillaMaterial.WARDEN_SPAWN_EGG;
+    Material WARPED_FUNGUS_ON_A_STICK = VanillaMaterial.WARPED_FUNGUS_ON_A_STICK;
+    Material WATER_BUCKET = VanillaMaterial.WATER_BUCKET;
+    Material WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material WHEAT_SEEDS = VanillaMaterial.WHEAT_SEEDS;
+    Material WHITE_BUNDLE = VanillaMaterial.WHITE_BUNDLE;
+    Material WHITE_DYE = VanillaMaterial.WHITE_DYE;
+    Material WHITE_HARNESS = VanillaMaterial.WHITE_HARNESS;
+    Material WILD_ARMOR_TRIM_SMITHING_TEMPLATE = VanillaMaterial.WILD_ARMOR_TRIM_SMITHING_TEMPLATE;
+    Material WIND_CHARGE = VanillaMaterial.WIND_CHARGE;
+    Material WITCH_SPAWN_EGG = VanillaMaterial.WITCH_SPAWN_EGG;
+    Material WITHER_SKELETON_SPAWN_EGG = VanillaMaterial.WITHER_SKELETON_SPAWN_EGG;
+    Material WITHER_SPAWN_EGG = VanillaMaterial.WITHER_SPAWN_EGG;
+    Material WOLF_ARMOR = VanillaMaterial.WOLF_ARMOR;
+    Material WOLF_SPAWN_EGG = VanillaMaterial.WOLF_SPAWN_EGG;
+    Material WOODEN_AXE = VanillaMaterial.WOODEN_AXE;
+    Material WOODEN_HOE = VanillaMaterial.WOODEN_HOE;
+    Material WOODEN_PICKAXE = VanillaMaterial.WOODEN_PICKAXE;
+    Material WOODEN_SHOVEL = VanillaMaterial.WOODEN_SHOVEL;
+    Material WOODEN_SPEAR = VanillaMaterial.WOODEN_SPEAR;
+    Material WOODEN_SWORD = VanillaMaterial.WOODEN_SWORD;
+    Material WRITABLE_BOOK = VanillaMaterial.WRITABLE_BOOK;
+    Material WRITTEN_BOOK = VanillaMaterial.WRITTEN_BOOK;
+    Material YELLOW_BUNDLE = VanillaMaterial.YELLOW_BUNDLE;
+    Material YELLOW_DYE = VanillaMaterial.YELLOW_DYE;
+    Material YELLOW_HARNESS = VanillaMaterial.YELLOW_HARNESS;
+    Material ZOGLIN_SPAWN_EGG = VanillaMaterial.ZOGLIN_SPAWN_EGG;
+    Material ZOMBIE_HORSE_SPAWN_EGG = VanillaMaterial.ZOMBIE_HORSE_SPAWN_EGG;
+    Material ZOMBIE_NAUTILUS_SPAWN_EGG = VanillaMaterial.ZOMBIE_NAUTILUS_SPAWN_EGG;
+    Material ZOMBIE_SPAWN_EGG = VanillaMaterial.ZOMBIE_SPAWN_EGG;
+    Material ZOMBIE_VILLAGER_SPAWN_EGG = VanillaMaterial.ZOMBIE_VILLAGER_SPAWN_EGG;
+    Material ZOMBIFIED_PIGLIN_SPAWN_EGG = VanillaMaterial.ZOMBIFIED_PIGLIN_SPAWN_EGG;
+    Material ACACIA_BUTTON = VanillaMaterial.ACACIA_BUTTON;
+    Material ACACIA_DOOR = VanillaMaterial.ACACIA_DOOR;
+    Material ACACIA_FENCE = VanillaMaterial.ACACIA_FENCE;
+    Material ACACIA_FENCE_GATE = VanillaMaterial.ACACIA_FENCE_GATE;
+    Material ACACIA_HANGING_SIGN = VanillaMaterial.ACACIA_HANGING_SIGN;
+    Material ACACIA_LEAVES = VanillaMaterial.ACACIA_LEAVES;
+    Material ACACIA_LOG = VanillaMaterial.ACACIA_LOG;
+    Material ACACIA_PLANKS = VanillaMaterial.ACACIA_PLANKS;
+    Material ACACIA_PRESSURE_PLATE = VanillaMaterial.ACACIA_PRESSURE_PLATE;
+    Material ACACIA_SAPLING = VanillaMaterial.ACACIA_SAPLING;
+    Material ACACIA_SHELF = VanillaMaterial.ACACIA_SHELF;
+    Material ACACIA_SIGN = VanillaMaterial.ACACIA_SIGN;
+    Material ACACIA_SLAB = VanillaMaterial.ACACIA_SLAB;
+    Material ACACIA_STAIRS = VanillaMaterial.ACACIA_STAIRS;
+    Material ACACIA_TRAPDOOR = VanillaMaterial.ACACIA_TRAPDOOR;
+    Material ACACIA_WALL_HANGING_SIGN = VanillaMaterial.ACACIA_WALL_HANGING_SIGN;
+    Material ACACIA_WALL_SIGN = VanillaMaterial.ACACIA_WALL_SIGN;
+    Material ACACIA_WOOD = VanillaMaterial.ACACIA_WOOD;
+    Material ACTIVATOR_RAIL = VanillaMaterial.ACTIVATOR_RAIL;
+    Material ALLIUM = VanillaMaterial.ALLIUM;
+    Material AMETHYST_BLOCK = VanillaMaterial.AMETHYST_BLOCK;
+    Material AMETHYST_CLUSTER = VanillaMaterial.AMETHYST_CLUSTER;
+    Material ANCIENT_DEBRIS = VanillaMaterial.ANCIENT_DEBRIS;
+    Material ANDESITE = VanillaMaterial.ANDESITE;
+    Material ANDESITE_SLAB = VanillaMaterial.ANDESITE_SLAB;
+    Material ANDESITE_STAIRS = VanillaMaterial.ANDESITE_STAIRS;
+    Material ANDESITE_WALL = VanillaMaterial.ANDESITE_WALL;
+    Material ANVIL = VanillaMaterial.ANVIL;
+    Material ATTACHED_MELON_STEM = VanillaMaterial.ATTACHED_MELON_STEM;
+    Material ATTACHED_PUMPKIN_STEM = VanillaMaterial.ATTACHED_PUMPKIN_STEM;
+    Material AZALEA = VanillaMaterial.AZALEA;
+    Material AZALEA_LEAVES = VanillaMaterial.AZALEA_LEAVES;
+    Material AZURE_BLUET = VanillaMaterial.AZURE_BLUET;
+    Material BAMBOO = VanillaMaterial.BAMBOO;
+    Material BAMBOO_BLOCK = VanillaMaterial.BAMBOO_BLOCK;
+    Material BAMBOO_BUTTON = VanillaMaterial.BAMBOO_BUTTON;
+    Material BAMBOO_DOOR = VanillaMaterial.BAMBOO_DOOR;
+    Material BAMBOO_FENCE = VanillaMaterial.BAMBOO_FENCE;
+    Material BAMBOO_FENCE_GATE = VanillaMaterial.BAMBOO_FENCE_GATE;
+    Material BAMBOO_HANGING_SIGN = VanillaMaterial.BAMBOO_HANGING_SIGN;
+    Material BAMBOO_MOSAIC = VanillaMaterial.BAMBOO_MOSAIC;
+    Material BAMBOO_MOSAIC_SLAB = VanillaMaterial.BAMBOO_MOSAIC_SLAB;
+    Material BAMBOO_MOSAIC_STAIRS = VanillaMaterial.BAMBOO_MOSAIC_STAIRS;
+    Material BAMBOO_PLANKS = VanillaMaterial.BAMBOO_PLANKS;
+    Material BAMBOO_PRESSURE_PLATE = VanillaMaterial.BAMBOO_PRESSURE_PLATE;
+    Material BAMBOO_SAPLING = VanillaMaterial.BAMBOO_SAPLING;
+    Material BAMBOO_SHELF = VanillaMaterial.BAMBOO_SHELF;
+    Material BAMBOO_SIGN = VanillaMaterial.BAMBOO_SIGN;
+    Material BAMBOO_SLAB = VanillaMaterial.BAMBOO_SLAB;
+    Material BAMBOO_STAIRS = VanillaMaterial.BAMBOO_STAIRS;
+    Material BAMBOO_TRAPDOOR = VanillaMaterial.BAMBOO_TRAPDOOR;
+    Material BAMBOO_WALL_HANGING_SIGN = VanillaMaterial.BAMBOO_WALL_HANGING_SIGN;
+    Material BAMBOO_WALL_SIGN = VanillaMaterial.BAMBOO_WALL_SIGN;
+    Material BARREL = VanillaMaterial.BARREL;
+    Material BARRIER = VanillaMaterial.BARRIER;
+    Material BASALT = VanillaMaterial.BASALT;
+    Material BEACON = VanillaMaterial.BEACON;
+    Material BEDROCK = VanillaMaterial.BEDROCK;
+    Material BEE_NEST = VanillaMaterial.BEE_NEST;
+    Material BEEHIVE = VanillaMaterial.BEEHIVE;
+    Material BEETROOTS = VanillaMaterial.BEETROOTS;
+    Material BELL = VanillaMaterial.BELL;
+    Material BIG_DRIPLEAF = VanillaMaterial.BIG_DRIPLEAF;
+    Material BIG_DRIPLEAF_STEM = VanillaMaterial.BIG_DRIPLEAF_STEM;
+    Material BIRCH_BUTTON = VanillaMaterial.BIRCH_BUTTON;
+    Material BIRCH_DOOR = VanillaMaterial.BIRCH_DOOR;
+    Material BIRCH_FENCE = VanillaMaterial.BIRCH_FENCE;
+    Material BIRCH_FENCE_GATE = VanillaMaterial.BIRCH_FENCE_GATE;
+    Material BIRCH_HANGING_SIGN = VanillaMaterial.BIRCH_HANGING_SIGN;
+    Material BIRCH_LEAVES = VanillaMaterial.BIRCH_LEAVES;
+    Material BIRCH_LOG = VanillaMaterial.BIRCH_LOG;
+    Material BIRCH_PLANKS = VanillaMaterial.BIRCH_PLANKS;
+    Material BIRCH_PRESSURE_PLATE = VanillaMaterial.BIRCH_PRESSURE_PLATE;
+    Material BIRCH_SAPLING = VanillaMaterial.BIRCH_SAPLING;
+    Material BIRCH_SHELF = VanillaMaterial.BIRCH_SHELF;
+    Material BIRCH_SIGN = VanillaMaterial.BIRCH_SIGN;
+    Material BIRCH_SLAB = VanillaMaterial.BIRCH_SLAB;
+    Material BIRCH_STAIRS = VanillaMaterial.BIRCH_STAIRS;
+    Material BIRCH_TRAPDOOR = VanillaMaterial.BIRCH_TRAPDOOR;
+    Material BIRCH_WALL_HANGING_SIGN = VanillaMaterial.BIRCH_WALL_HANGING_SIGN;
+    Material BIRCH_WALL_SIGN = VanillaMaterial.BIRCH_WALL_SIGN;
+    Material BIRCH_WOOD = VanillaMaterial.BIRCH_WOOD;
+    Material BLACK_BANNER = VanillaMaterial.BLACK_BANNER;
+    Material BLACK_BED = VanillaMaterial.BLACK_BED;
+    Material BLACK_CANDLE = VanillaMaterial.BLACK_CANDLE;
+    Material BLACK_CANDLE_CAKE = VanillaMaterial.BLACK_CANDLE_CAKE;
+    Material BLACK_CARPET = VanillaMaterial.BLACK_CARPET;
+    Material BLACK_CONCRETE = VanillaMaterial.BLACK_CONCRETE;
+    Material BLACK_CONCRETE_POWDER = VanillaMaterial.BLACK_CONCRETE_POWDER;
+    Material BLACK_GLAZED_TERRACOTTA = VanillaMaterial.BLACK_GLAZED_TERRACOTTA;
+    Material BLACK_SHULKER_BOX = VanillaMaterial.BLACK_SHULKER_BOX;
+    Material BLACK_STAINED_GLASS = VanillaMaterial.BLACK_STAINED_GLASS;
+    Material BLACK_STAINED_GLASS_PANE = VanillaMaterial.BLACK_STAINED_GLASS_PANE;
+    Material BLACK_TERRACOTTA = VanillaMaterial.BLACK_TERRACOTTA;
+    Material BLACK_WALL_BANNER = VanillaMaterial.BLACK_WALL_BANNER;
+    Material BLACK_WOOL = VanillaMaterial.BLACK_WOOL;
+    Material BLACKSTONE = VanillaMaterial.BLACKSTONE;
+    Material BLACKSTONE_SLAB = VanillaMaterial.BLACKSTONE_SLAB;
+    Material BLACKSTONE_STAIRS = VanillaMaterial.BLACKSTONE_STAIRS;
+    Material BLACKSTONE_WALL = VanillaMaterial.BLACKSTONE_WALL;
+    Material BLAST_FURNACE = VanillaMaterial.BLAST_FURNACE;
+    Material BLUE_BANNER = VanillaMaterial.BLUE_BANNER;
+    Material BLUE_BED = VanillaMaterial.BLUE_BED;
+    Material BLUE_CANDLE = VanillaMaterial.BLUE_CANDLE;
+    Material BLUE_CANDLE_CAKE = VanillaMaterial.BLUE_CANDLE_CAKE;
+    Material BLUE_CARPET = VanillaMaterial.BLUE_CARPET;
+    Material BLUE_CONCRETE = VanillaMaterial.BLUE_CONCRETE;
+    Material BLUE_CONCRETE_POWDER = VanillaMaterial.BLUE_CONCRETE_POWDER;
+    Material BLUE_GLAZED_TERRACOTTA = VanillaMaterial.BLUE_GLAZED_TERRACOTTA;
+    Material BLUE_ICE = VanillaMaterial.BLUE_ICE;
+    Material BLUE_ORCHID = VanillaMaterial.BLUE_ORCHID;
+    Material BLUE_SHULKER_BOX = VanillaMaterial.BLUE_SHULKER_BOX;
+    Material BLUE_STAINED_GLASS = VanillaMaterial.BLUE_STAINED_GLASS;
+    Material BLUE_STAINED_GLASS_PANE = VanillaMaterial.BLUE_STAINED_GLASS_PANE;
+    Material BLUE_TERRACOTTA = VanillaMaterial.BLUE_TERRACOTTA;
+    Material BLUE_WALL_BANNER = VanillaMaterial.BLUE_WALL_BANNER;
+    Material BLUE_WOOL = VanillaMaterial.BLUE_WOOL;
+    Material BONE_BLOCK = VanillaMaterial.BONE_BLOCK;
+    Material BOOKSHELF = VanillaMaterial.BOOKSHELF;
+    Material BRAIN_CORAL = VanillaMaterial.BRAIN_CORAL;
+    Material BRAIN_CORAL_BLOCK = VanillaMaterial.BRAIN_CORAL_BLOCK;
+    Material BRAIN_CORAL_FAN = VanillaMaterial.BRAIN_CORAL_FAN;
+    Material BRAIN_CORAL_WALL_FAN = VanillaMaterial.BRAIN_CORAL_WALL_FAN;
+    Material BREWING_STAND = VanillaMaterial.BREWING_STAND;
+    Material BRICK_SLAB = VanillaMaterial.BRICK_SLAB;
+    Material BRICK_STAIRS = VanillaMaterial.BRICK_STAIRS;
+    Material BRICK_WALL = VanillaMaterial.BRICK_WALL;
+    Material BRICKS = VanillaMaterial.BRICKS;
+    Material BROWN_BANNER = VanillaMaterial.BROWN_BANNER;
+    Material BROWN_BED = VanillaMaterial.BROWN_BED;
+    Material BROWN_CANDLE = VanillaMaterial.BROWN_CANDLE;
+    Material BROWN_CANDLE_CAKE = VanillaMaterial.BROWN_CANDLE_CAKE;
+    Material BROWN_CARPET = VanillaMaterial.BROWN_CARPET;
+    Material BROWN_CONCRETE = VanillaMaterial.BROWN_CONCRETE;
+    Material BROWN_CONCRETE_POWDER = VanillaMaterial.BROWN_CONCRETE_POWDER;
+    Material BROWN_GLAZED_TERRACOTTA = VanillaMaterial.BROWN_GLAZED_TERRACOTTA;
+    Material BROWN_MUSHROOM = VanillaMaterial.BROWN_MUSHROOM;
+    Material BROWN_MUSHROOM_BLOCK = VanillaMaterial.BROWN_MUSHROOM_BLOCK;
+    Material BROWN_SHULKER_BOX = VanillaMaterial.BROWN_SHULKER_BOX;
+    Material BROWN_STAINED_GLASS = VanillaMaterial.BROWN_STAINED_GLASS;
+    Material BROWN_STAINED_GLASS_PANE = VanillaMaterial.BROWN_STAINED_GLASS_PANE;
+    Material BROWN_TERRACOTTA = VanillaMaterial.BROWN_TERRACOTTA;
+    Material BROWN_WALL_BANNER = VanillaMaterial.BROWN_WALL_BANNER;
+    Material BROWN_WOOL = VanillaMaterial.BROWN_WOOL;
+    Material BUBBLE_COLUMN = VanillaMaterial.BUBBLE_COLUMN;
+    Material BUBBLE_CORAL = VanillaMaterial.BUBBLE_CORAL;
+    Material BUBBLE_CORAL_BLOCK = VanillaMaterial.BUBBLE_CORAL_BLOCK;
+    Material BUBBLE_CORAL_FAN = VanillaMaterial.BUBBLE_CORAL_FAN;
+    Material BUBBLE_CORAL_WALL_FAN = VanillaMaterial.BUBBLE_CORAL_WALL_FAN;
+    Material BUDDING_AMETHYST = VanillaMaterial.BUDDING_AMETHYST;
+    Material BUSH = VanillaMaterial.BUSH;
+    Material CACTUS = VanillaMaterial.CACTUS;
+    Material CACTUS_FLOWER = VanillaMaterial.CACTUS_FLOWER;
+    Material CAKE = VanillaMaterial.CAKE;
+    Material CALCITE = VanillaMaterial.CALCITE;
+    Material CALIBRATED_SCULK_SENSOR = VanillaMaterial.CALIBRATED_SCULK_SENSOR;
+    Material CAMPFIRE = VanillaMaterial.CAMPFIRE;
+    Material CANDLE = VanillaMaterial.CANDLE;
+    Material CANDLE_CAKE = VanillaMaterial.CANDLE_CAKE;
+    Material CARROTS = VanillaMaterial.CARROTS;
+    Material CARTOGRAPHY_TABLE = VanillaMaterial.CARTOGRAPHY_TABLE;
+    Material CARVED_PUMPKIN = VanillaMaterial.CARVED_PUMPKIN;
+    Material CAULDRON = VanillaMaterial.CAULDRON;
+    Material CAVE_AIR = VanillaMaterial.CAVE_AIR;
+    Material CAVE_VINES = VanillaMaterial.CAVE_VINES;
+    Material CAVE_VINES_PLANT = VanillaMaterial.CAVE_VINES_PLANT;
+    Material CHAIN_COMMAND_BLOCK = VanillaMaterial.CHAIN_COMMAND_BLOCK;
+    Material CHERRY_BUTTON = VanillaMaterial.CHERRY_BUTTON;
+    Material CHERRY_DOOR = VanillaMaterial.CHERRY_DOOR;
+    Material CHERRY_FENCE = VanillaMaterial.CHERRY_FENCE;
+    Material CHERRY_FENCE_GATE = VanillaMaterial.CHERRY_FENCE_GATE;
+    Material CHERRY_HANGING_SIGN = VanillaMaterial.CHERRY_HANGING_SIGN;
+    Material CHERRY_LEAVES = VanillaMaterial.CHERRY_LEAVES;
+    Material CHERRY_LOG = VanillaMaterial.CHERRY_LOG;
+    Material CHERRY_PLANKS = VanillaMaterial.CHERRY_PLANKS;
+    Material CHERRY_PRESSURE_PLATE = VanillaMaterial.CHERRY_PRESSURE_PLATE;
+    Material CHERRY_SAPLING = VanillaMaterial.CHERRY_SAPLING;
+    Material CHERRY_SHELF = VanillaMaterial.CHERRY_SHELF;
+    Material CHERRY_SIGN = VanillaMaterial.CHERRY_SIGN;
+    Material CHERRY_SLAB = VanillaMaterial.CHERRY_SLAB;
+    Material CHERRY_STAIRS = VanillaMaterial.CHERRY_STAIRS;
+    Material CHERRY_TRAPDOOR = VanillaMaterial.CHERRY_TRAPDOOR;
+    Material CHERRY_WALL_HANGING_SIGN = VanillaMaterial.CHERRY_WALL_HANGING_SIGN;
+    Material CHERRY_WALL_SIGN = VanillaMaterial.CHERRY_WALL_SIGN;
+    Material CHERRY_WOOD = VanillaMaterial.CHERRY_WOOD;
+    Material CHEST = VanillaMaterial.CHEST;
+    Material CHIPPED_ANVIL = VanillaMaterial.CHIPPED_ANVIL;
+    Material CHISELED_BOOKSHELF = VanillaMaterial.CHISELED_BOOKSHELF;
+    Material CHISELED_CINNABAR = VanillaMaterial.CHISELED_CINNABAR;
+    Material CHISELED_COPPER = VanillaMaterial.CHISELED_COPPER;
+    Material CHISELED_DEEPSLATE = VanillaMaterial.CHISELED_DEEPSLATE;
+    Material CHISELED_NETHER_BRICKS = VanillaMaterial.CHISELED_NETHER_BRICKS;
+    Material CHISELED_POLISHED_BLACKSTONE = VanillaMaterial.CHISELED_POLISHED_BLACKSTONE;
+    Material CHISELED_QUARTZ_BLOCK = VanillaMaterial.CHISELED_QUARTZ_BLOCK;
+    Material CHISELED_RED_SANDSTONE = VanillaMaterial.CHISELED_RED_SANDSTONE;
+    Material CHISELED_RESIN_BRICKS = VanillaMaterial.CHISELED_RESIN_BRICKS;
+    Material CHISELED_SANDSTONE = VanillaMaterial.CHISELED_SANDSTONE;
+    Material CHISELED_STONE_BRICKS = VanillaMaterial.CHISELED_STONE_BRICKS;
+    Material CHISELED_SULFUR = VanillaMaterial.CHISELED_SULFUR;
+    Material CHISELED_TUFF = VanillaMaterial.CHISELED_TUFF;
+    Material CHISELED_TUFF_BRICKS = VanillaMaterial.CHISELED_TUFF_BRICKS;
+    Material CHORUS_FLOWER = VanillaMaterial.CHORUS_FLOWER;
+    Material CHORUS_PLANT = VanillaMaterial.CHORUS_PLANT;
+    Material CINNABAR = VanillaMaterial.CINNABAR;
+    Material CINNABAR_BRICK_SLAB = VanillaMaterial.CINNABAR_BRICK_SLAB;
+    Material CINNABAR_BRICK_STAIRS = VanillaMaterial.CINNABAR_BRICK_STAIRS;
+    Material CINNABAR_BRICK_WALL = VanillaMaterial.CINNABAR_BRICK_WALL;
+    Material CINNABAR_BRICKS = VanillaMaterial.CINNABAR_BRICKS;
+    Material CINNABAR_SLAB = VanillaMaterial.CINNABAR_SLAB;
+    Material CINNABAR_STAIRS = VanillaMaterial.CINNABAR_STAIRS;
+    Material CINNABAR_WALL = VanillaMaterial.CINNABAR_WALL;
+    Material CLAY = VanillaMaterial.CLAY;
+    Material CLOSED_EYEBLOSSOM = VanillaMaterial.CLOSED_EYEBLOSSOM;
+    Material COAL_BLOCK = VanillaMaterial.COAL_BLOCK;
+    Material COAL_ORE = VanillaMaterial.COAL_ORE;
+    Material COARSE_DIRT = VanillaMaterial.COARSE_DIRT;
+    Material COBBLED_DEEPSLATE = VanillaMaterial.COBBLED_DEEPSLATE;
+    Material COBBLED_DEEPSLATE_SLAB = VanillaMaterial.COBBLED_DEEPSLATE_SLAB;
+    Material COBBLED_DEEPSLATE_STAIRS = VanillaMaterial.COBBLED_DEEPSLATE_STAIRS;
+    Material COBBLED_DEEPSLATE_WALL = VanillaMaterial.COBBLED_DEEPSLATE_WALL;
+    Material COBBLESTONE = VanillaMaterial.COBBLESTONE;
+    Material COBBLESTONE_SLAB = VanillaMaterial.COBBLESTONE_SLAB;
+    Material COBBLESTONE_STAIRS = VanillaMaterial.COBBLESTONE_STAIRS;
+    Material COBBLESTONE_WALL = VanillaMaterial.COBBLESTONE_WALL;
+    Material COBWEB = VanillaMaterial.COBWEB;
+    Material COCOA = VanillaMaterial.COCOA;
+    Material COMMAND_BLOCK = VanillaMaterial.COMMAND_BLOCK;
+    Material COMPARATOR = VanillaMaterial.COMPARATOR;
+    Material COMPOSTER = VanillaMaterial.COMPOSTER;
+    Material CONDUIT = VanillaMaterial.CONDUIT;
+    Material COPPER_BARS = VanillaMaterial.COPPER_BARS;
+    Material COPPER_BLOCK = VanillaMaterial.COPPER_BLOCK;
+    Material COPPER_BULB = VanillaMaterial.COPPER_BULB;
+    Material COPPER_CHAIN = VanillaMaterial.COPPER_CHAIN;
+    Material COPPER_CHEST = VanillaMaterial.COPPER_CHEST;
+    Material COPPER_DOOR = VanillaMaterial.COPPER_DOOR;
+    Material COPPER_GOLEM_STATUE = VanillaMaterial.COPPER_GOLEM_STATUE;
+    Material COPPER_GRATE = VanillaMaterial.COPPER_GRATE;
+    Material COPPER_LANTERN = VanillaMaterial.COPPER_LANTERN;
+    Material COPPER_ORE = VanillaMaterial.COPPER_ORE;
+    Material COPPER_TORCH = VanillaMaterial.COPPER_TORCH;
+    Material COPPER_TRAPDOOR = VanillaMaterial.COPPER_TRAPDOOR;
+    Material COPPER_WALL_TORCH = VanillaMaterial.COPPER_WALL_TORCH;
+    Material CORNFLOWER = VanillaMaterial.CORNFLOWER;
+    Material CRACKED_DEEPSLATE_BRICKS = VanillaMaterial.CRACKED_DEEPSLATE_BRICKS;
+    Material CRACKED_DEEPSLATE_TILES = VanillaMaterial.CRACKED_DEEPSLATE_TILES;
+    Material CRACKED_NETHER_BRICKS = VanillaMaterial.CRACKED_NETHER_BRICKS;
+    Material CRACKED_POLISHED_BLACKSTONE_BRICKS = VanillaMaterial.CRACKED_POLISHED_BLACKSTONE_BRICKS;
+    Material CRACKED_STONE_BRICKS = VanillaMaterial.CRACKED_STONE_BRICKS;
+    Material CRAFTER = VanillaMaterial.CRAFTER;
+    Material CRAFTING_TABLE = VanillaMaterial.CRAFTING_TABLE;
+    Material CREAKING_HEART = VanillaMaterial.CREAKING_HEART;
+    Material CREEPER_HEAD = VanillaMaterial.CREEPER_HEAD;
+    Material CREEPER_WALL_HEAD = VanillaMaterial.CREEPER_WALL_HEAD;
+    Material CRIMSON_BUTTON = VanillaMaterial.CRIMSON_BUTTON;
+    Material CRIMSON_DOOR = VanillaMaterial.CRIMSON_DOOR;
+    Material CRIMSON_FENCE = VanillaMaterial.CRIMSON_FENCE;
+    Material CRIMSON_FENCE_GATE = VanillaMaterial.CRIMSON_FENCE_GATE;
+    Material CRIMSON_FUNGUS = VanillaMaterial.CRIMSON_FUNGUS;
+    Material CRIMSON_HANGING_SIGN = VanillaMaterial.CRIMSON_HANGING_SIGN;
+    Material CRIMSON_HYPHAE = VanillaMaterial.CRIMSON_HYPHAE;
+    Material CRIMSON_NYLIUM = VanillaMaterial.CRIMSON_NYLIUM;
+    Material CRIMSON_PLANKS = VanillaMaterial.CRIMSON_PLANKS;
+    Material CRIMSON_PRESSURE_PLATE = VanillaMaterial.CRIMSON_PRESSURE_PLATE;
+    Material CRIMSON_ROOTS = VanillaMaterial.CRIMSON_ROOTS;
+    Material CRIMSON_SHELF = VanillaMaterial.CRIMSON_SHELF;
+    Material CRIMSON_SIGN = VanillaMaterial.CRIMSON_SIGN;
+    Material CRIMSON_SLAB = VanillaMaterial.CRIMSON_SLAB;
+    Material CRIMSON_STAIRS = VanillaMaterial.CRIMSON_STAIRS;
+    Material CRIMSON_STEM = VanillaMaterial.CRIMSON_STEM;
+    Material CRIMSON_TRAPDOOR = VanillaMaterial.CRIMSON_TRAPDOOR;
+    Material CRIMSON_WALL_HANGING_SIGN = VanillaMaterial.CRIMSON_WALL_HANGING_SIGN;
+    Material CRIMSON_WALL_SIGN = VanillaMaterial.CRIMSON_WALL_SIGN;
+    Material CRYING_OBSIDIAN = VanillaMaterial.CRYING_OBSIDIAN;
+    Material CUT_COPPER = VanillaMaterial.CUT_COPPER;
+    Material CUT_COPPER_SLAB = VanillaMaterial.CUT_COPPER_SLAB;
+    Material CUT_COPPER_STAIRS = VanillaMaterial.CUT_COPPER_STAIRS;
+    Material CUT_RED_SANDSTONE = VanillaMaterial.CUT_RED_SANDSTONE;
+    Material CUT_RED_SANDSTONE_SLAB = VanillaMaterial.CUT_RED_SANDSTONE_SLAB;
+    Material CUT_SANDSTONE = VanillaMaterial.CUT_SANDSTONE;
+    Material CUT_SANDSTONE_SLAB = VanillaMaterial.CUT_SANDSTONE_SLAB;
+    Material CYAN_BANNER = VanillaMaterial.CYAN_BANNER;
+    Material CYAN_BED = VanillaMaterial.CYAN_BED;
+    Material CYAN_CANDLE = VanillaMaterial.CYAN_CANDLE;
+    Material CYAN_CANDLE_CAKE = VanillaMaterial.CYAN_CANDLE_CAKE;
+    Material CYAN_CARPET = VanillaMaterial.CYAN_CARPET;
+    Material CYAN_CONCRETE = VanillaMaterial.CYAN_CONCRETE;
+    Material CYAN_CONCRETE_POWDER = VanillaMaterial.CYAN_CONCRETE_POWDER;
+    Material CYAN_GLAZED_TERRACOTTA = VanillaMaterial.CYAN_GLAZED_TERRACOTTA;
+    Material CYAN_SHULKER_BOX = VanillaMaterial.CYAN_SHULKER_BOX;
+    Material CYAN_STAINED_GLASS = VanillaMaterial.CYAN_STAINED_GLASS;
+    Material CYAN_STAINED_GLASS_PANE = VanillaMaterial.CYAN_STAINED_GLASS_PANE;
+    Material CYAN_TERRACOTTA = VanillaMaterial.CYAN_TERRACOTTA;
+    Material CYAN_WALL_BANNER = VanillaMaterial.CYAN_WALL_BANNER;
+    Material CYAN_WOOL = VanillaMaterial.CYAN_WOOL;
+    Material DAMAGED_ANVIL = VanillaMaterial.DAMAGED_ANVIL;
+    Material DANDELION = VanillaMaterial.DANDELION;
+    Material DARK_OAK_BUTTON = VanillaMaterial.DARK_OAK_BUTTON;
+    Material DARK_OAK_DOOR = VanillaMaterial.DARK_OAK_DOOR;
+    Material DARK_OAK_FENCE = VanillaMaterial.DARK_OAK_FENCE;
+    Material DARK_OAK_FENCE_GATE = VanillaMaterial.DARK_OAK_FENCE_GATE;
+    Material DARK_OAK_HANGING_SIGN = VanillaMaterial.DARK_OAK_HANGING_SIGN;
+    Material DARK_OAK_LEAVES = VanillaMaterial.DARK_OAK_LEAVES;
+    Material DARK_OAK_LOG = VanillaMaterial.DARK_OAK_LOG;
+    Material DARK_OAK_PLANKS = VanillaMaterial.DARK_OAK_PLANKS;
+    Material DARK_OAK_PRESSURE_PLATE = VanillaMaterial.DARK_OAK_PRESSURE_PLATE;
+    Material DARK_OAK_SAPLING = VanillaMaterial.DARK_OAK_SAPLING;
+    Material DARK_OAK_SHELF = VanillaMaterial.DARK_OAK_SHELF;
+    Material DARK_OAK_SIGN = VanillaMaterial.DARK_OAK_SIGN;
+    Material DARK_OAK_SLAB = VanillaMaterial.DARK_OAK_SLAB;
+    Material DARK_OAK_STAIRS = VanillaMaterial.DARK_OAK_STAIRS;
+    Material DARK_OAK_TRAPDOOR = VanillaMaterial.DARK_OAK_TRAPDOOR;
+    Material DARK_OAK_WALL_HANGING_SIGN = VanillaMaterial.DARK_OAK_WALL_HANGING_SIGN;
+    Material DARK_OAK_WALL_SIGN = VanillaMaterial.DARK_OAK_WALL_SIGN;
+    Material DARK_OAK_WOOD = VanillaMaterial.DARK_OAK_WOOD;
+    Material DARK_PRISMARINE = VanillaMaterial.DARK_PRISMARINE;
+    Material DARK_PRISMARINE_SLAB = VanillaMaterial.DARK_PRISMARINE_SLAB;
+    Material DARK_PRISMARINE_STAIRS = VanillaMaterial.DARK_PRISMARINE_STAIRS;
+    Material DAYLIGHT_DETECTOR = VanillaMaterial.DAYLIGHT_DETECTOR;
+    Material DEAD_BRAIN_CORAL = VanillaMaterial.DEAD_BRAIN_CORAL;
+    Material DEAD_BRAIN_CORAL_BLOCK = VanillaMaterial.DEAD_BRAIN_CORAL_BLOCK;
+    Material DEAD_BRAIN_CORAL_FAN = VanillaMaterial.DEAD_BRAIN_CORAL_FAN;
+    Material DEAD_BRAIN_CORAL_WALL_FAN = VanillaMaterial.DEAD_BRAIN_CORAL_WALL_FAN;
+    Material DEAD_BUBBLE_CORAL = VanillaMaterial.DEAD_BUBBLE_CORAL;
+    Material DEAD_BUBBLE_CORAL_BLOCK = VanillaMaterial.DEAD_BUBBLE_CORAL_BLOCK;
+    Material DEAD_BUBBLE_CORAL_FAN = VanillaMaterial.DEAD_BUBBLE_CORAL_FAN;
+    Material DEAD_BUBBLE_CORAL_WALL_FAN = VanillaMaterial.DEAD_BUBBLE_CORAL_WALL_FAN;
+    Material DEAD_BUSH = VanillaMaterial.DEAD_BUSH;
+    Material DEAD_FIRE_CORAL = VanillaMaterial.DEAD_FIRE_CORAL;
+    Material DEAD_FIRE_CORAL_BLOCK = VanillaMaterial.DEAD_FIRE_CORAL_BLOCK;
+    Material DEAD_FIRE_CORAL_FAN = VanillaMaterial.DEAD_FIRE_CORAL_FAN;
+    Material DEAD_FIRE_CORAL_WALL_FAN = VanillaMaterial.DEAD_FIRE_CORAL_WALL_FAN;
+    Material DEAD_HORN_CORAL = VanillaMaterial.DEAD_HORN_CORAL;
+    Material DEAD_HORN_CORAL_BLOCK = VanillaMaterial.DEAD_HORN_CORAL_BLOCK;
+    Material DEAD_HORN_CORAL_FAN = VanillaMaterial.DEAD_HORN_CORAL_FAN;
+    Material DEAD_HORN_CORAL_WALL_FAN = VanillaMaterial.DEAD_HORN_CORAL_WALL_FAN;
+    Material DEAD_TUBE_CORAL = VanillaMaterial.DEAD_TUBE_CORAL;
+    Material DEAD_TUBE_CORAL_BLOCK = VanillaMaterial.DEAD_TUBE_CORAL_BLOCK;
+    Material DEAD_TUBE_CORAL_FAN = VanillaMaterial.DEAD_TUBE_CORAL_FAN;
+    Material DEAD_TUBE_CORAL_WALL_FAN = VanillaMaterial.DEAD_TUBE_CORAL_WALL_FAN;
+    Material DECORATED_POT = VanillaMaterial.DECORATED_POT;
+    Material DEEPSLATE = VanillaMaterial.DEEPSLATE;
+    Material DEEPSLATE_BRICK_SLAB = VanillaMaterial.DEEPSLATE_BRICK_SLAB;
+    Material DEEPSLATE_BRICK_STAIRS = VanillaMaterial.DEEPSLATE_BRICK_STAIRS;
+    Material DEEPSLATE_BRICK_WALL = VanillaMaterial.DEEPSLATE_BRICK_WALL;
+    Material DEEPSLATE_BRICKS = VanillaMaterial.DEEPSLATE_BRICKS;
+    Material DEEPSLATE_COAL_ORE = VanillaMaterial.DEEPSLATE_COAL_ORE;
+    Material DEEPSLATE_COPPER_ORE = VanillaMaterial.DEEPSLATE_COPPER_ORE;
+    Material DEEPSLATE_DIAMOND_ORE = VanillaMaterial.DEEPSLATE_DIAMOND_ORE;
+    Material DEEPSLATE_EMERALD_ORE = VanillaMaterial.DEEPSLATE_EMERALD_ORE;
+    Material DEEPSLATE_GOLD_ORE = VanillaMaterial.DEEPSLATE_GOLD_ORE;
+    Material DEEPSLATE_IRON_ORE = VanillaMaterial.DEEPSLATE_IRON_ORE;
+    Material DEEPSLATE_LAPIS_ORE = VanillaMaterial.DEEPSLATE_LAPIS_ORE;
+    Material DEEPSLATE_REDSTONE_ORE = VanillaMaterial.DEEPSLATE_REDSTONE_ORE;
+    Material DEEPSLATE_TILE_SLAB = VanillaMaterial.DEEPSLATE_TILE_SLAB;
+    Material DEEPSLATE_TILE_STAIRS = VanillaMaterial.DEEPSLATE_TILE_STAIRS;
+    Material DEEPSLATE_TILE_WALL = VanillaMaterial.DEEPSLATE_TILE_WALL;
+    Material DEEPSLATE_TILES = VanillaMaterial.DEEPSLATE_TILES;
+    Material DETECTOR_RAIL = VanillaMaterial.DETECTOR_RAIL;
+    Material DIAMOND_BLOCK = VanillaMaterial.DIAMOND_BLOCK;
+    Material DIAMOND_ORE = VanillaMaterial.DIAMOND_ORE;
+    Material DIORITE = VanillaMaterial.DIORITE;
+    Material DIORITE_SLAB = VanillaMaterial.DIORITE_SLAB;
+    Material DIORITE_STAIRS = VanillaMaterial.DIORITE_STAIRS;
+    Material DIORITE_WALL = VanillaMaterial.DIORITE_WALL;
+    Material DIRT = VanillaMaterial.DIRT;
+    Material DIRT_PATH = VanillaMaterial.DIRT_PATH;
+    Material DISPENSER = VanillaMaterial.DISPENSER;
+    Material DRAGON_EGG = VanillaMaterial.DRAGON_EGG;
+    Material DRAGON_HEAD = VanillaMaterial.DRAGON_HEAD;
+    Material DRAGON_WALL_HEAD = VanillaMaterial.DRAGON_WALL_HEAD;
+    Material DRIED_GHAST = VanillaMaterial.DRIED_GHAST;
+    Material DRIED_KELP_BLOCK = VanillaMaterial.DRIED_KELP_BLOCK;
+    Material DRIPSTONE_BLOCK = VanillaMaterial.DRIPSTONE_BLOCK;
+    Material DROPPER = VanillaMaterial.DROPPER;
+    Material EMERALD_BLOCK = VanillaMaterial.EMERALD_BLOCK;
+    Material EMERALD_ORE = VanillaMaterial.EMERALD_ORE;
+    Material ENCHANTING_TABLE = VanillaMaterial.ENCHANTING_TABLE;
+    Material END_GATEWAY = VanillaMaterial.END_GATEWAY;
+    Material END_PORTAL = VanillaMaterial.END_PORTAL;
+    Material END_PORTAL_FRAME = VanillaMaterial.END_PORTAL_FRAME;
+    Material END_ROD = VanillaMaterial.END_ROD;
+    Material END_STONE = VanillaMaterial.END_STONE;
+    Material END_STONE_BRICK_SLAB = VanillaMaterial.END_STONE_BRICK_SLAB;
+    Material END_STONE_BRICK_STAIRS = VanillaMaterial.END_STONE_BRICK_STAIRS;
+    Material END_STONE_BRICK_WALL = VanillaMaterial.END_STONE_BRICK_WALL;
+    Material END_STONE_BRICKS = VanillaMaterial.END_STONE_BRICKS;
+    Material ENDER_CHEST = VanillaMaterial.ENDER_CHEST;
+    Material EXPOSED_CHISELED_COPPER = VanillaMaterial.EXPOSED_CHISELED_COPPER;
+    Material EXPOSED_COPPER = VanillaMaterial.EXPOSED_COPPER;
+    Material EXPOSED_COPPER_BARS = VanillaMaterial.EXPOSED_COPPER_BARS;
+    Material EXPOSED_COPPER_BULB = VanillaMaterial.EXPOSED_COPPER_BULB;
+    Material EXPOSED_COPPER_CHAIN = VanillaMaterial.EXPOSED_COPPER_CHAIN;
+    Material EXPOSED_COPPER_CHEST = VanillaMaterial.EXPOSED_COPPER_CHEST;
+    Material EXPOSED_COPPER_DOOR = VanillaMaterial.EXPOSED_COPPER_DOOR;
+    Material EXPOSED_COPPER_GOLEM_STATUE = VanillaMaterial.EXPOSED_COPPER_GOLEM_STATUE;
+    Material EXPOSED_COPPER_GRATE = VanillaMaterial.EXPOSED_COPPER_GRATE;
+    Material EXPOSED_COPPER_LANTERN = VanillaMaterial.EXPOSED_COPPER_LANTERN;
+    Material EXPOSED_COPPER_TRAPDOOR = VanillaMaterial.EXPOSED_COPPER_TRAPDOOR;
+    Material EXPOSED_CUT_COPPER = VanillaMaterial.EXPOSED_CUT_COPPER;
+    Material EXPOSED_CUT_COPPER_SLAB = VanillaMaterial.EXPOSED_CUT_COPPER_SLAB;
+    Material EXPOSED_CUT_COPPER_STAIRS = VanillaMaterial.EXPOSED_CUT_COPPER_STAIRS;
+    Material EXPOSED_LIGHTNING_ROD = VanillaMaterial.EXPOSED_LIGHTNING_ROD;
+    Material FARMLAND = VanillaMaterial.FARMLAND;
+    Material FERN = VanillaMaterial.FERN;
+    Material FIRE = VanillaMaterial.FIRE;
+    Material FIRE_CORAL = VanillaMaterial.FIRE_CORAL;
+    Material FIRE_CORAL_BLOCK = VanillaMaterial.FIRE_CORAL_BLOCK;
+    Material FIRE_CORAL_FAN = VanillaMaterial.FIRE_CORAL_FAN;
+    Material FIRE_CORAL_WALL_FAN = VanillaMaterial.FIRE_CORAL_WALL_FAN;
+    Material FIREFLY_BUSH = VanillaMaterial.FIREFLY_BUSH;
+    Material FLETCHING_TABLE = VanillaMaterial.FLETCHING_TABLE;
+    Material FLOWER_POT = VanillaMaterial.FLOWER_POT;
+    Material FLOWERING_AZALEA = VanillaMaterial.FLOWERING_AZALEA;
+    Material FLOWERING_AZALEA_LEAVES = VanillaMaterial.FLOWERING_AZALEA_LEAVES;
+    Material FROGSPAWN = VanillaMaterial.FROGSPAWN;
+    Material FROSTED_ICE = VanillaMaterial.FROSTED_ICE;
+    Material FURNACE = VanillaMaterial.FURNACE;
+    Material GILDED_BLACKSTONE = VanillaMaterial.GILDED_BLACKSTONE;
+    Material GLASS = VanillaMaterial.GLASS;
+    Material GLASS_PANE = VanillaMaterial.GLASS_PANE;
+    Material GLOW_LICHEN = VanillaMaterial.GLOW_LICHEN;
+    Material GLOWSTONE = VanillaMaterial.GLOWSTONE;
+    Material GOLD_BLOCK = VanillaMaterial.GOLD_BLOCK;
+    Material GOLD_ORE = VanillaMaterial.GOLD_ORE;
+    Material GOLDEN_DANDELION = VanillaMaterial.GOLDEN_DANDELION;
+    Material GRANITE = VanillaMaterial.GRANITE;
+    Material GRANITE_SLAB = VanillaMaterial.GRANITE_SLAB;
+    Material GRANITE_STAIRS = VanillaMaterial.GRANITE_STAIRS;
+    Material GRANITE_WALL = VanillaMaterial.GRANITE_WALL;
+    Material GRASS_BLOCK = VanillaMaterial.GRASS_BLOCK;
+    Material GRAVEL = VanillaMaterial.GRAVEL;
+    Material GRAY_BANNER = VanillaMaterial.GRAY_BANNER;
+    Material GRAY_BED = VanillaMaterial.GRAY_BED;
+    Material GRAY_CANDLE = VanillaMaterial.GRAY_CANDLE;
+    Material GRAY_CANDLE_CAKE = VanillaMaterial.GRAY_CANDLE_CAKE;
+    Material GRAY_CARPET = VanillaMaterial.GRAY_CARPET;
+    Material GRAY_CONCRETE = VanillaMaterial.GRAY_CONCRETE;
+    Material GRAY_CONCRETE_POWDER = VanillaMaterial.GRAY_CONCRETE_POWDER;
+    Material GRAY_GLAZED_TERRACOTTA = VanillaMaterial.GRAY_GLAZED_TERRACOTTA;
+    Material GRAY_SHULKER_BOX = VanillaMaterial.GRAY_SHULKER_BOX;
+    Material GRAY_STAINED_GLASS = VanillaMaterial.GRAY_STAINED_GLASS;
+    Material GRAY_STAINED_GLASS_PANE = VanillaMaterial.GRAY_STAINED_GLASS_PANE;
+    Material GRAY_TERRACOTTA = VanillaMaterial.GRAY_TERRACOTTA;
+    Material GRAY_WALL_BANNER = VanillaMaterial.GRAY_WALL_BANNER;
+    Material GRAY_WOOL = VanillaMaterial.GRAY_WOOL;
+    Material GREEN_BANNER = VanillaMaterial.GREEN_BANNER;
+    Material GREEN_BED = VanillaMaterial.GREEN_BED;
+    Material GREEN_CANDLE = VanillaMaterial.GREEN_CANDLE;
+    Material GREEN_CANDLE_CAKE = VanillaMaterial.GREEN_CANDLE_CAKE;
+    Material GREEN_CARPET = VanillaMaterial.GREEN_CARPET;
+    Material GREEN_CONCRETE = VanillaMaterial.GREEN_CONCRETE;
+    Material GREEN_CONCRETE_POWDER = VanillaMaterial.GREEN_CONCRETE_POWDER;
+    Material GREEN_GLAZED_TERRACOTTA = VanillaMaterial.GREEN_GLAZED_TERRACOTTA;
+    Material GREEN_SHULKER_BOX = VanillaMaterial.GREEN_SHULKER_BOX;
+    Material GREEN_STAINED_GLASS = VanillaMaterial.GREEN_STAINED_GLASS;
+    Material GREEN_STAINED_GLASS_PANE = VanillaMaterial.GREEN_STAINED_GLASS_PANE;
+    Material GREEN_TERRACOTTA = VanillaMaterial.GREEN_TERRACOTTA;
+    Material GREEN_WALL_BANNER = VanillaMaterial.GREEN_WALL_BANNER;
+    Material GREEN_WOOL = VanillaMaterial.GREEN_WOOL;
+    Material GRINDSTONE = VanillaMaterial.GRINDSTONE;
+    Material HANGING_ROOTS = VanillaMaterial.HANGING_ROOTS;
+    Material HAY_BLOCK = VanillaMaterial.HAY_BLOCK;
+    Material HEAVY_CORE = VanillaMaterial.HEAVY_CORE;
+    Material HEAVY_WEIGHTED_PRESSURE_PLATE = VanillaMaterial.HEAVY_WEIGHTED_PRESSURE_PLATE;
+    Material HONEY_BLOCK = VanillaMaterial.HONEY_BLOCK;
+    Material HONEYCOMB_BLOCK = VanillaMaterial.HONEYCOMB_BLOCK;
+    Material HOPPER = VanillaMaterial.HOPPER;
+    Material HORN_CORAL = VanillaMaterial.HORN_CORAL;
+    Material HORN_CORAL_BLOCK = VanillaMaterial.HORN_CORAL_BLOCK;
+    Material HORN_CORAL_FAN = VanillaMaterial.HORN_CORAL_FAN;
+    Material HORN_CORAL_WALL_FAN = VanillaMaterial.HORN_CORAL_WALL_FAN;
+    Material ICE = VanillaMaterial.ICE;
+    Material INFESTED_CHISELED_STONE_BRICKS = VanillaMaterial.INFESTED_CHISELED_STONE_BRICKS;
+    Material INFESTED_COBBLESTONE = VanillaMaterial.INFESTED_COBBLESTONE;
+    Material INFESTED_CRACKED_STONE_BRICKS = VanillaMaterial.INFESTED_CRACKED_STONE_BRICKS;
+    Material INFESTED_DEEPSLATE = VanillaMaterial.INFESTED_DEEPSLATE;
+    Material INFESTED_MOSSY_STONE_BRICKS = VanillaMaterial.INFESTED_MOSSY_STONE_BRICKS;
+    Material INFESTED_STONE = VanillaMaterial.INFESTED_STONE;
+    Material INFESTED_STONE_BRICKS = VanillaMaterial.INFESTED_STONE_BRICKS;
+    Material IRON_BARS = VanillaMaterial.IRON_BARS;
+    Material IRON_BLOCK = VanillaMaterial.IRON_BLOCK;
+    Material IRON_CHAIN = VanillaMaterial.IRON_CHAIN;
+    Material IRON_DOOR = VanillaMaterial.IRON_DOOR;
+    Material IRON_ORE = VanillaMaterial.IRON_ORE;
+    Material IRON_TRAPDOOR = VanillaMaterial.IRON_TRAPDOOR;
+    Material JACK_O_LANTERN = VanillaMaterial.JACK_O_LANTERN;
+    Material JIGSAW = VanillaMaterial.JIGSAW;
+    Material JUKEBOX = VanillaMaterial.JUKEBOX;
+    Material JUNGLE_BUTTON = VanillaMaterial.JUNGLE_BUTTON;
+    Material JUNGLE_DOOR = VanillaMaterial.JUNGLE_DOOR;
+    Material JUNGLE_FENCE = VanillaMaterial.JUNGLE_FENCE;
+    Material JUNGLE_FENCE_GATE = VanillaMaterial.JUNGLE_FENCE_GATE;
+    Material JUNGLE_HANGING_SIGN = VanillaMaterial.JUNGLE_HANGING_SIGN;
+    Material JUNGLE_LEAVES = VanillaMaterial.JUNGLE_LEAVES;
+    Material JUNGLE_LOG = VanillaMaterial.JUNGLE_LOG;
+    Material JUNGLE_PLANKS = VanillaMaterial.JUNGLE_PLANKS;
+    Material JUNGLE_PRESSURE_PLATE = VanillaMaterial.JUNGLE_PRESSURE_PLATE;
+    Material JUNGLE_SAPLING = VanillaMaterial.JUNGLE_SAPLING;
+    Material JUNGLE_SHELF = VanillaMaterial.JUNGLE_SHELF;
+    Material JUNGLE_SIGN = VanillaMaterial.JUNGLE_SIGN;
+    Material JUNGLE_SLAB = VanillaMaterial.JUNGLE_SLAB;
+    Material JUNGLE_STAIRS = VanillaMaterial.JUNGLE_STAIRS;
+    Material JUNGLE_TRAPDOOR = VanillaMaterial.JUNGLE_TRAPDOOR;
+    Material JUNGLE_WALL_HANGING_SIGN = VanillaMaterial.JUNGLE_WALL_HANGING_SIGN;
+    Material JUNGLE_WALL_SIGN = VanillaMaterial.JUNGLE_WALL_SIGN;
+    Material JUNGLE_WOOD = VanillaMaterial.JUNGLE_WOOD;
+    Material KELP = VanillaMaterial.KELP;
+    Material KELP_PLANT = VanillaMaterial.KELP_PLANT;
+    Material LADDER = VanillaMaterial.LADDER;
+    Material LANTERN = VanillaMaterial.LANTERN;
+    Material LAPIS_BLOCK = VanillaMaterial.LAPIS_BLOCK;
+    Material LAPIS_ORE = VanillaMaterial.LAPIS_ORE;
+    Material LARGE_AMETHYST_BUD = VanillaMaterial.LARGE_AMETHYST_BUD;
+    Material LARGE_FERN = VanillaMaterial.LARGE_FERN;
+    Material LAVA = VanillaMaterial.LAVA;
+    Material LAVA_CAULDRON = VanillaMaterial.LAVA_CAULDRON;
+    Material LEAF_LITTER = VanillaMaterial.LEAF_LITTER;
+    Material LECTERN = VanillaMaterial.LECTERN;
+    Material LEVER = VanillaMaterial.LEVER;
+    Material LIGHT = VanillaMaterial.LIGHT;
+    Material LIGHT_BLUE_BANNER = VanillaMaterial.LIGHT_BLUE_BANNER;
+    Material LIGHT_BLUE_BED = VanillaMaterial.LIGHT_BLUE_BED;
+    Material LIGHT_BLUE_CANDLE = VanillaMaterial.LIGHT_BLUE_CANDLE;
+    Material LIGHT_BLUE_CANDLE_CAKE = VanillaMaterial.LIGHT_BLUE_CANDLE_CAKE;
+    Material LIGHT_BLUE_CARPET = VanillaMaterial.LIGHT_BLUE_CARPET;
+    Material LIGHT_BLUE_CONCRETE = VanillaMaterial.LIGHT_BLUE_CONCRETE;
+    Material LIGHT_BLUE_CONCRETE_POWDER = VanillaMaterial.LIGHT_BLUE_CONCRETE_POWDER;
+    Material LIGHT_BLUE_GLAZED_TERRACOTTA = VanillaMaterial.LIGHT_BLUE_GLAZED_TERRACOTTA;
+    Material LIGHT_BLUE_SHULKER_BOX = VanillaMaterial.LIGHT_BLUE_SHULKER_BOX;
+    Material LIGHT_BLUE_STAINED_GLASS = VanillaMaterial.LIGHT_BLUE_STAINED_GLASS;
+    Material LIGHT_BLUE_STAINED_GLASS_PANE = VanillaMaterial.LIGHT_BLUE_STAINED_GLASS_PANE;
+    Material LIGHT_BLUE_TERRACOTTA = VanillaMaterial.LIGHT_BLUE_TERRACOTTA;
+    Material LIGHT_BLUE_WALL_BANNER = VanillaMaterial.LIGHT_BLUE_WALL_BANNER;
+    Material LIGHT_BLUE_WOOL = VanillaMaterial.LIGHT_BLUE_WOOL;
+    Material LIGHT_GRAY_BANNER = VanillaMaterial.LIGHT_GRAY_BANNER;
+    Material LIGHT_GRAY_BED = VanillaMaterial.LIGHT_GRAY_BED;
+    Material LIGHT_GRAY_CANDLE = VanillaMaterial.LIGHT_GRAY_CANDLE;
+    Material LIGHT_GRAY_CANDLE_CAKE = VanillaMaterial.LIGHT_GRAY_CANDLE_CAKE;
+    Material LIGHT_GRAY_CARPET = VanillaMaterial.LIGHT_GRAY_CARPET;
+    Material LIGHT_GRAY_CONCRETE = VanillaMaterial.LIGHT_GRAY_CONCRETE;
+    Material LIGHT_GRAY_CONCRETE_POWDER = VanillaMaterial.LIGHT_GRAY_CONCRETE_POWDER;
+    Material LIGHT_GRAY_GLAZED_TERRACOTTA = VanillaMaterial.LIGHT_GRAY_GLAZED_TERRACOTTA;
+    Material LIGHT_GRAY_SHULKER_BOX = VanillaMaterial.LIGHT_GRAY_SHULKER_BOX;
+    Material LIGHT_GRAY_STAINED_GLASS = VanillaMaterial.LIGHT_GRAY_STAINED_GLASS;
+    Material LIGHT_GRAY_STAINED_GLASS_PANE = VanillaMaterial.LIGHT_GRAY_STAINED_GLASS_PANE;
+    Material LIGHT_GRAY_TERRACOTTA = VanillaMaterial.LIGHT_GRAY_TERRACOTTA;
+    Material LIGHT_GRAY_WALL_BANNER = VanillaMaterial.LIGHT_GRAY_WALL_BANNER;
+    Material LIGHT_GRAY_WOOL = VanillaMaterial.LIGHT_GRAY_WOOL;
+    Material LIGHT_WEIGHTED_PRESSURE_PLATE = VanillaMaterial.LIGHT_WEIGHTED_PRESSURE_PLATE;
+    Material LIGHTNING_ROD = VanillaMaterial.LIGHTNING_ROD;
+    Material LILAC = VanillaMaterial.LILAC;
+    Material LILY_OF_THE_VALLEY = VanillaMaterial.LILY_OF_THE_VALLEY;
+    Material LILY_PAD = VanillaMaterial.LILY_PAD;
+    Material LIME_BANNER = VanillaMaterial.LIME_BANNER;
+    Material LIME_BED = VanillaMaterial.LIME_BED;
+    Material LIME_CANDLE = VanillaMaterial.LIME_CANDLE;
+    Material LIME_CANDLE_CAKE = VanillaMaterial.LIME_CANDLE_CAKE;
+    Material LIME_CARPET = VanillaMaterial.LIME_CARPET;
+    Material LIME_CONCRETE = VanillaMaterial.LIME_CONCRETE;
+    Material LIME_CONCRETE_POWDER = VanillaMaterial.LIME_CONCRETE_POWDER;
+    Material LIME_GLAZED_TERRACOTTA = VanillaMaterial.LIME_GLAZED_TERRACOTTA;
+    Material LIME_SHULKER_BOX = VanillaMaterial.LIME_SHULKER_BOX;
+    Material LIME_STAINED_GLASS = VanillaMaterial.LIME_STAINED_GLASS;
+    Material LIME_STAINED_GLASS_PANE = VanillaMaterial.LIME_STAINED_GLASS_PANE;
+    Material LIME_TERRACOTTA = VanillaMaterial.LIME_TERRACOTTA;
+    Material LIME_WALL_BANNER = VanillaMaterial.LIME_WALL_BANNER;
+    Material LIME_WOOL = VanillaMaterial.LIME_WOOL;
+    Material LODESTONE = VanillaMaterial.LODESTONE;
+    Material LOOM = VanillaMaterial.LOOM;
+    Material MAGENTA_BANNER = VanillaMaterial.MAGENTA_BANNER;
+    Material MAGENTA_BED = VanillaMaterial.MAGENTA_BED;
+    Material MAGENTA_CANDLE = VanillaMaterial.MAGENTA_CANDLE;
+    Material MAGENTA_CANDLE_CAKE = VanillaMaterial.MAGENTA_CANDLE_CAKE;
+    Material MAGENTA_CARPET = VanillaMaterial.MAGENTA_CARPET;
+    Material MAGENTA_CONCRETE = VanillaMaterial.MAGENTA_CONCRETE;
+    Material MAGENTA_CONCRETE_POWDER = VanillaMaterial.MAGENTA_CONCRETE_POWDER;
+    Material MAGENTA_GLAZED_TERRACOTTA = VanillaMaterial.MAGENTA_GLAZED_TERRACOTTA;
+    Material MAGENTA_SHULKER_BOX = VanillaMaterial.MAGENTA_SHULKER_BOX;
+    Material MAGENTA_STAINED_GLASS = VanillaMaterial.MAGENTA_STAINED_GLASS;
+    Material MAGENTA_STAINED_GLASS_PANE = VanillaMaterial.MAGENTA_STAINED_GLASS_PANE;
+    Material MAGENTA_TERRACOTTA = VanillaMaterial.MAGENTA_TERRACOTTA;
+    Material MAGENTA_WALL_BANNER = VanillaMaterial.MAGENTA_WALL_BANNER;
+    Material MAGENTA_WOOL = VanillaMaterial.MAGENTA_WOOL;
+    Material MAGMA_BLOCK = VanillaMaterial.MAGMA_BLOCK;
+    Material MANGROVE_BUTTON = VanillaMaterial.MANGROVE_BUTTON;
+    Material MANGROVE_DOOR = VanillaMaterial.MANGROVE_DOOR;
+    Material MANGROVE_FENCE = VanillaMaterial.MANGROVE_FENCE;
+    Material MANGROVE_FENCE_GATE = VanillaMaterial.MANGROVE_FENCE_GATE;
+    Material MANGROVE_HANGING_SIGN = VanillaMaterial.MANGROVE_HANGING_SIGN;
+    Material MANGROVE_LEAVES = VanillaMaterial.MANGROVE_LEAVES;
+    Material MANGROVE_LOG = VanillaMaterial.MANGROVE_LOG;
+    Material MANGROVE_PLANKS = VanillaMaterial.MANGROVE_PLANKS;
+    Material MANGROVE_PRESSURE_PLATE = VanillaMaterial.MANGROVE_PRESSURE_PLATE;
+    Material MANGROVE_PROPAGULE = VanillaMaterial.MANGROVE_PROPAGULE;
+    Material MANGROVE_ROOTS = VanillaMaterial.MANGROVE_ROOTS;
+    Material MANGROVE_SHELF = VanillaMaterial.MANGROVE_SHELF;
+    Material MANGROVE_SIGN = VanillaMaterial.MANGROVE_SIGN;
+    Material MANGROVE_SLAB = VanillaMaterial.MANGROVE_SLAB;
+    Material MANGROVE_STAIRS = VanillaMaterial.MANGROVE_STAIRS;
+    Material MANGROVE_TRAPDOOR = VanillaMaterial.MANGROVE_TRAPDOOR;
+    Material MANGROVE_WALL_HANGING_SIGN = VanillaMaterial.MANGROVE_WALL_HANGING_SIGN;
+    Material MANGROVE_WALL_SIGN = VanillaMaterial.MANGROVE_WALL_SIGN;
+    Material MANGROVE_WOOD = VanillaMaterial.MANGROVE_WOOD;
+    Material MEDIUM_AMETHYST_BUD = VanillaMaterial.MEDIUM_AMETHYST_BUD;
+    Material MELON = VanillaMaterial.MELON;
+    Material MELON_STEM = VanillaMaterial.MELON_STEM;
+    Material MOSS_BLOCK = VanillaMaterial.MOSS_BLOCK;
+    Material MOSS_CARPET = VanillaMaterial.MOSS_CARPET;
+    Material MOSSY_COBBLESTONE = VanillaMaterial.MOSSY_COBBLESTONE;
+    Material MOSSY_COBBLESTONE_SLAB = VanillaMaterial.MOSSY_COBBLESTONE_SLAB;
+    Material MOSSY_COBBLESTONE_STAIRS = VanillaMaterial.MOSSY_COBBLESTONE_STAIRS;
+    Material MOSSY_COBBLESTONE_WALL = VanillaMaterial.MOSSY_COBBLESTONE_WALL;
+    Material MOSSY_STONE_BRICK_SLAB = VanillaMaterial.MOSSY_STONE_BRICK_SLAB;
+    Material MOSSY_STONE_BRICK_STAIRS = VanillaMaterial.MOSSY_STONE_BRICK_STAIRS;
+    Material MOSSY_STONE_BRICK_WALL = VanillaMaterial.MOSSY_STONE_BRICK_WALL;
+    Material MOSSY_STONE_BRICKS = VanillaMaterial.MOSSY_STONE_BRICKS;
+    Material MOVING_PISTON = VanillaMaterial.MOVING_PISTON;
+    Material MUD = VanillaMaterial.MUD;
+    Material MUD_BRICK_SLAB = VanillaMaterial.MUD_BRICK_SLAB;
+    Material MUD_BRICK_STAIRS = VanillaMaterial.MUD_BRICK_STAIRS;
+    Material MUD_BRICK_WALL = VanillaMaterial.MUD_BRICK_WALL;
+    Material MUD_BRICKS = VanillaMaterial.MUD_BRICKS;
+    Material MUDDY_MANGROVE_ROOTS = VanillaMaterial.MUDDY_MANGROVE_ROOTS;
+    Material MUSHROOM_STEM = VanillaMaterial.MUSHROOM_STEM;
+    Material MYCELIUM = VanillaMaterial.MYCELIUM;
+    Material NETHER_BRICK_FENCE = VanillaMaterial.NETHER_BRICK_FENCE;
+    Material NETHER_BRICK_SLAB = VanillaMaterial.NETHER_BRICK_SLAB;
+    Material NETHER_BRICK_STAIRS = VanillaMaterial.NETHER_BRICK_STAIRS;
+    Material NETHER_BRICK_WALL = VanillaMaterial.NETHER_BRICK_WALL;
+    Material NETHER_BRICKS = VanillaMaterial.NETHER_BRICKS;
+    Material NETHER_GOLD_ORE = VanillaMaterial.NETHER_GOLD_ORE;
+    Material NETHER_PORTAL = VanillaMaterial.NETHER_PORTAL;
+    Material NETHER_QUARTZ_ORE = VanillaMaterial.NETHER_QUARTZ_ORE;
+    Material NETHER_SPROUTS = VanillaMaterial.NETHER_SPROUTS;
+    Material NETHER_WART = VanillaMaterial.NETHER_WART;
+    Material NETHER_WART_BLOCK = VanillaMaterial.NETHER_WART_BLOCK;
+    Material NETHERITE_BLOCK = VanillaMaterial.NETHERITE_BLOCK;
+    Material NETHERRACK = VanillaMaterial.NETHERRACK;
+    Material NOTE_BLOCK = VanillaMaterial.NOTE_BLOCK;
+    Material OAK_BUTTON = VanillaMaterial.OAK_BUTTON;
+    Material OAK_DOOR = VanillaMaterial.OAK_DOOR;
+    Material OAK_FENCE = VanillaMaterial.OAK_FENCE;
+    Material OAK_FENCE_GATE = VanillaMaterial.OAK_FENCE_GATE;
+    Material OAK_HANGING_SIGN = VanillaMaterial.OAK_HANGING_SIGN;
+    Material OAK_LEAVES = VanillaMaterial.OAK_LEAVES;
+    Material OAK_LOG = VanillaMaterial.OAK_LOG;
+    Material OAK_PLANKS = VanillaMaterial.OAK_PLANKS;
+    Material OAK_PRESSURE_PLATE = VanillaMaterial.OAK_PRESSURE_PLATE;
+    Material OAK_SAPLING = VanillaMaterial.OAK_SAPLING;
+    Material OAK_SHELF = VanillaMaterial.OAK_SHELF;
+    Material OAK_SIGN = VanillaMaterial.OAK_SIGN;
+    Material OAK_SLAB = VanillaMaterial.OAK_SLAB;
+    Material OAK_STAIRS = VanillaMaterial.OAK_STAIRS;
+    Material OAK_TRAPDOOR = VanillaMaterial.OAK_TRAPDOOR;
+    Material OAK_WALL_HANGING_SIGN = VanillaMaterial.OAK_WALL_HANGING_SIGN;
+    Material OAK_WALL_SIGN = VanillaMaterial.OAK_WALL_SIGN;
+    Material OAK_WOOD = VanillaMaterial.OAK_WOOD;
+    Material OBSERVER = VanillaMaterial.OBSERVER;
+    Material OBSIDIAN = VanillaMaterial.OBSIDIAN;
+    Material OCHRE_FROGLIGHT = VanillaMaterial.OCHRE_FROGLIGHT;
+    Material OPEN_EYEBLOSSOM = VanillaMaterial.OPEN_EYEBLOSSOM;
+    Material ORANGE_BANNER = VanillaMaterial.ORANGE_BANNER;
+    Material ORANGE_BED = VanillaMaterial.ORANGE_BED;
+    Material ORANGE_CANDLE = VanillaMaterial.ORANGE_CANDLE;
+    Material ORANGE_CANDLE_CAKE = VanillaMaterial.ORANGE_CANDLE_CAKE;
+    Material ORANGE_CARPET = VanillaMaterial.ORANGE_CARPET;
+    Material ORANGE_CONCRETE = VanillaMaterial.ORANGE_CONCRETE;
+    Material ORANGE_CONCRETE_POWDER = VanillaMaterial.ORANGE_CONCRETE_POWDER;
+    Material ORANGE_GLAZED_TERRACOTTA = VanillaMaterial.ORANGE_GLAZED_TERRACOTTA;
+    Material ORANGE_SHULKER_BOX = VanillaMaterial.ORANGE_SHULKER_BOX;
+    Material ORANGE_STAINED_GLASS = VanillaMaterial.ORANGE_STAINED_GLASS;
+    Material ORANGE_STAINED_GLASS_PANE = VanillaMaterial.ORANGE_STAINED_GLASS_PANE;
+    Material ORANGE_TERRACOTTA = VanillaMaterial.ORANGE_TERRACOTTA;
+    Material ORANGE_TULIP = VanillaMaterial.ORANGE_TULIP;
+    Material ORANGE_WALL_BANNER = VanillaMaterial.ORANGE_WALL_BANNER;
+    Material ORANGE_WOOL = VanillaMaterial.ORANGE_WOOL;
+    Material OXEYE_DAISY = VanillaMaterial.OXEYE_DAISY;
+    Material OXIDIZED_CHISELED_COPPER = VanillaMaterial.OXIDIZED_CHISELED_COPPER;
+    Material OXIDIZED_COPPER = VanillaMaterial.OXIDIZED_COPPER;
+    Material OXIDIZED_COPPER_BARS = VanillaMaterial.OXIDIZED_COPPER_BARS;
+    Material OXIDIZED_COPPER_BULB = VanillaMaterial.OXIDIZED_COPPER_BULB;
+    Material OXIDIZED_COPPER_CHAIN = VanillaMaterial.OXIDIZED_COPPER_CHAIN;
+    Material OXIDIZED_COPPER_CHEST = VanillaMaterial.OXIDIZED_COPPER_CHEST;
+    Material OXIDIZED_COPPER_DOOR = VanillaMaterial.OXIDIZED_COPPER_DOOR;
+    Material OXIDIZED_COPPER_GOLEM_STATUE = VanillaMaterial.OXIDIZED_COPPER_GOLEM_STATUE;
+    Material OXIDIZED_COPPER_GRATE = VanillaMaterial.OXIDIZED_COPPER_GRATE;
+    Material OXIDIZED_COPPER_LANTERN = VanillaMaterial.OXIDIZED_COPPER_LANTERN;
+    Material OXIDIZED_COPPER_TRAPDOOR = VanillaMaterial.OXIDIZED_COPPER_TRAPDOOR;
+    Material OXIDIZED_CUT_COPPER = VanillaMaterial.OXIDIZED_CUT_COPPER;
+    Material OXIDIZED_CUT_COPPER_SLAB = VanillaMaterial.OXIDIZED_CUT_COPPER_SLAB;
+    Material OXIDIZED_CUT_COPPER_STAIRS = VanillaMaterial.OXIDIZED_CUT_COPPER_STAIRS;
+    Material OXIDIZED_LIGHTNING_ROD = VanillaMaterial.OXIDIZED_LIGHTNING_ROD;
+    Material PACKED_ICE = VanillaMaterial.PACKED_ICE;
+    Material PACKED_MUD = VanillaMaterial.PACKED_MUD;
+    Material PALE_HANGING_MOSS = VanillaMaterial.PALE_HANGING_MOSS;
+    Material PALE_MOSS_BLOCK = VanillaMaterial.PALE_MOSS_BLOCK;
+    Material PALE_MOSS_CARPET = VanillaMaterial.PALE_MOSS_CARPET;
+    Material PALE_OAK_BUTTON = VanillaMaterial.PALE_OAK_BUTTON;
+    Material PALE_OAK_DOOR = VanillaMaterial.PALE_OAK_DOOR;
+    Material PALE_OAK_FENCE = VanillaMaterial.PALE_OAK_FENCE;
+    Material PALE_OAK_FENCE_GATE = VanillaMaterial.PALE_OAK_FENCE_GATE;
+    Material PALE_OAK_HANGING_SIGN = VanillaMaterial.PALE_OAK_HANGING_SIGN;
+    Material PALE_OAK_LEAVES = VanillaMaterial.PALE_OAK_LEAVES;
+    Material PALE_OAK_LOG = VanillaMaterial.PALE_OAK_LOG;
+    Material PALE_OAK_PLANKS = VanillaMaterial.PALE_OAK_PLANKS;
+    Material PALE_OAK_PRESSURE_PLATE = VanillaMaterial.PALE_OAK_PRESSURE_PLATE;
+    Material PALE_OAK_SAPLING = VanillaMaterial.PALE_OAK_SAPLING;
+    Material PALE_OAK_SHELF = VanillaMaterial.PALE_OAK_SHELF;
+    Material PALE_OAK_SIGN = VanillaMaterial.PALE_OAK_SIGN;
+    Material PALE_OAK_SLAB = VanillaMaterial.PALE_OAK_SLAB;
+    Material PALE_OAK_STAIRS = VanillaMaterial.PALE_OAK_STAIRS;
+    Material PALE_OAK_TRAPDOOR = VanillaMaterial.PALE_OAK_TRAPDOOR;
+    Material PALE_OAK_WALL_HANGING_SIGN = VanillaMaterial.PALE_OAK_WALL_HANGING_SIGN;
+    Material PALE_OAK_WALL_SIGN = VanillaMaterial.PALE_OAK_WALL_SIGN;
+    Material PALE_OAK_WOOD = VanillaMaterial.PALE_OAK_WOOD;
+    Material PEARLESCENT_FROGLIGHT = VanillaMaterial.PEARLESCENT_FROGLIGHT;
+    Material PEONY = VanillaMaterial.PEONY;
+    Material PETRIFIED_OAK_SLAB = VanillaMaterial.PETRIFIED_OAK_SLAB;
+    Material PIGLIN_HEAD = VanillaMaterial.PIGLIN_HEAD;
+    Material PIGLIN_WALL_HEAD = VanillaMaterial.PIGLIN_WALL_HEAD;
+    Material PINK_BANNER = VanillaMaterial.PINK_BANNER;
+    Material PINK_BED = VanillaMaterial.PINK_BED;
+    Material PINK_CANDLE = VanillaMaterial.PINK_CANDLE;
+    Material PINK_CANDLE_CAKE = VanillaMaterial.PINK_CANDLE_CAKE;
+    Material PINK_CARPET = VanillaMaterial.PINK_CARPET;
+    Material PINK_CONCRETE = VanillaMaterial.PINK_CONCRETE;
+    Material PINK_CONCRETE_POWDER = VanillaMaterial.PINK_CONCRETE_POWDER;
+    Material PINK_GLAZED_TERRACOTTA = VanillaMaterial.PINK_GLAZED_TERRACOTTA;
+    Material PINK_PETALS = VanillaMaterial.PINK_PETALS;
+    Material PINK_SHULKER_BOX = VanillaMaterial.PINK_SHULKER_BOX;
+    Material PINK_STAINED_GLASS = VanillaMaterial.PINK_STAINED_GLASS;
+    Material PINK_STAINED_GLASS_PANE = VanillaMaterial.PINK_STAINED_GLASS_PANE;
+    Material PINK_TERRACOTTA = VanillaMaterial.PINK_TERRACOTTA;
+    Material PINK_TULIP = VanillaMaterial.PINK_TULIP;
+    Material PINK_WALL_BANNER = VanillaMaterial.PINK_WALL_BANNER;
+    Material PINK_WOOL = VanillaMaterial.PINK_WOOL;
+    Material PISTON = VanillaMaterial.PISTON;
+    Material PISTON_HEAD = VanillaMaterial.PISTON_HEAD;
+    Material PITCHER_CROP = VanillaMaterial.PITCHER_CROP;
+    Material PITCHER_PLANT = VanillaMaterial.PITCHER_PLANT;
+    Material PLAYER_HEAD = VanillaMaterial.PLAYER_HEAD;
+    Material PLAYER_WALL_HEAD = VanillaMaterial.PLAYER_WALL_HEAD;
+    Material PODZOL = VanillaMaterial.PODZOL;
+    Material POINTED_DRIPSTONE = VanillaMaterial.POINTED_DRIPSTONE;
+    Material POLISHED_ANDESITE = VanillaMaterial.POLISHED_ANDESITE;
+    Material POLISHED_ANDESITE_SLAB = VanillaMaterial.POLISHED_ANDESITE_SLAB;
+    Material POLISHED_ANDESITE_STAIRS = VanillaMaterial.POLISHED_ANDESITE_STAIRS;
+    Material POLISHED_BASALT = VanillaMaterial.POLISHED_BASALT;
+    Material POLISHED_BLACKSTONE = VanillaMaterial.POLISHED_BLACKSTONE;
+    Material POLISHED_BLACKSTONE_BRICK_SLAB = VanillaMaterial.POLISHED_BLACKSTONE_BRICK_SLAB;
+    Material POLISHED_BLACKSTONE_BRICK_STAIRS = VanillaMaterial.POLISHED_BLACKSTONE_BRICK_STAIRS;
+    Material POLISHED_BLACKSTONE_BRICK_WALL = VanillaMaterial.POLISHED_BLACKSTONE_BRICK_WALL;
+    Material POLISHED_BLACKSTONE_BRICKS = VanillaMaterial.POLISHED_BLACKSTONE_BRICKS;
+    Material POLISHED_BLACKSTONE_BUTTON = VanillaMaterial.POLISHED_BLACKSTONE_BUTTON;
+    Material POLISHED_BLACKSTONE_PRESSURE_PLATE = VanillaMaterial.POLISHED_BLACKSTONE_PRESSURE_PLATE;
+    Material POLISHED_BLACKSTONE_SLAB = VanillaMaterial.POLISHED_BLACKSTONE_SLAB;
+    Material POLISHED_BLACKSTONE_STAIRS = VanillaMaterial.POLISHED_BLACKSTONE_STAIRS;
+    Material POLISHED_BLACKSTONE_WALL = VanillaMaterial.POLISHED_BLACKSTONE_WALL;
+    Material POLISHED_CINNABAR = VanillaMaterial.POLISHED_CINNABAR;
+    Material POLISHED_CINNABAR_SLAB = VanillaMaterial.POLISHED_CINNABAR_SLAB;
+    Material POLISHED_CINNABAR_STAIRS = VanillaMaterial.POLISHED_CINNABAR_STAIRS;
+    Material POLISHED_CINNABAR_WALL = VanillaMaterial.POLISHED_CINNABAR_WALL;
+    Material POLISHED_DEEPSLATE = VanillaMaterial.POLISHED_DEEPSLATE;
+    Material POLISHED_DEEPSLATE_SLAB = VanillaMaterial.POLISHED_DEEPSLATE_SLAB;
+    Material POLISHED_DEEPSLATE_STAIRS = VanillaMaterial.POLISHED_DEEPSLATE_STAIRS;
+    Material POLISHED_DEEPSLATE_WALL = VanillaMaterial.POLISHED_DEEPSLATE_WALL;
+    Material POLISHED_DIORITE = VanillaMaterial.POLISHED_DIORITE;
+    Material POLISHED_DIORITE_SLAB = VanillaMaterial.POLISHED_DIORITE_SLAB;
+    Material POLISHED_DIORITE_STAIRS = VanillaMaterial.POLISHED_DIORITE_STAIRS;
+    Material POLISHED_GRANITE = VanillaMaterial.POLISHED_GRANITE;
+    Material POLISHED_GRANITE_SLAB = VanillaMaterial.POLISHED_GRANITE_SLAB;
+    Material POLISHED_GRANITE_STAIRS = VanillaMaterial.POLISHED_GRANITE_STAIRS;
+    Material POLISHED_SULFUR = VanillaMaterial.POLISHED_SULFUR;
+    Material POLISHED_SULFUR_SLAB = VanillaMaterial.POLISHED_SULFUR_SLAB;
+    Material POLISHED_SULFUR_STAIRS = VanillaMaterial.POLISHED_SULFUR_STAIRS;
+    Material POLISHED_SULFUR_WALL = VanillaMaterial.POLISHED_SULFUR_WALL;
+    Material POLISHED_TUFF = VanillaMaterial.POLISHED_TUFF;
+    Material POLISHED_TUFF_SLAB = VanillaMaterial.POLISHED_TUFF_SLAB;
+    Material POLISHED_TUFF_STAIRS = VanillaMaterial.POLISHED_TUFF_STAIRS;
+    Material POLISHED_TUFF_WALL = VanillaMaterial.POLISHED_TUFF_WALL;
+    Material POPPY = VanillaMaterial.POPPY;
+    Material POTATOES = VanillaMaterial.POTATOES;
+    Material POTENT_SULFUR = VanillaMaterial.POTENT_SULFUR;
+    Material POTTED_ACACIA_SAPLING = VanillaMaterial.POTTED_ACACIA_SAPLING;
+    Material POTTED_ALLIUM = VanillaMaterial.POTTED_ALLIUM;
+    Material POTTED_AZALEA_BUSH = VanillaMaterial.POTTED_AZALEA_BUSH;
+    Material POTTED_AZURE_BLUET = VanillaMaterial.POTTED_AZURE_BLUET;
+    Material POTTED_BAMBOO = VanillaMaterial.POTTED_BAMBOO;
+    Material POTTED_BIRCH_SAPLING = VanillaMaterial.POTTED_BIRCH_SAPLING;
+    Material POTTED_BLUE_ORCHID = VanillaMaterial.POTTED_BLUE_ORCHID;
+    Material POTTED_BROWN_MUSHROOM = VanillaMaterial.POTTED_BROWN_MUSHROOM;
+    Material POTTED_CACTUS = VanillaMaterial.POTTED_CACTUS;
+    Material POTTED_CHERRY_SAPLING = VanillaMaterial.POTTED_CHERRY_SAPLING;
+    Material POTTED_CLOSED_EYEBLOSSOM = VanillaMaterial.POTTED_CLOSED_EYEBLOSSOM;
+    Material POTTED_CORNFLOWER = VanillaMaterial.POTTED_CORNFLOWER;
+    Material POTTED_CRIMSON_FUNGUS = VanillaMaterial.POTTED_CRIMSON_FUNGUS;
+    Material POTTED_CRIMSON_ROOTS = VanillaMaterial.POTTED_CRIMSON_ROOTS;
+    Material POTTED_DANDELION = VanillaMaterial.POTTED_DANDELION;
+    Material POTTED_DARK_OAK_SAPLING = VanillaMaterial.POTTED_DARK_OAK_SAPLING;
+    Material POTTED_DEAD_BUSH = VanillaMaterial.POTTED_DEAD_BUSH;
+    Material POTTED_FERN = VanillaMaterial.POTTED_FERN;
+    Material POTTED_FLOWERING_AZALEA_BUSH = VanillaMaterial.POTTED_FLOWERING_AZALEA_BUSH;
+    Material POTTED_GOLDEN_DANDELION = VanillaMaterial.POTTED_GOLDEN_DANDELION;
+    Material POTTED_JUNGLE_SAPLING = VanillaMaterial.POTTED_JUNGLE_SAPLING;
+    Material POTTED_LILY_OF_THE_VALLEY = VanillaMaterial.POTTED_LILY_OF_THE_VALLEY;
+    Material POTTED_MANGROVE_PROPAGULE = VanillaMaterial.POTTED_MANGROVE_PROPAGULE;
+    Material POTTED_OAK_SAPLING = VanillaMaterial.POTTED_OAK_SAPLING;
+    Material POTTED_OPEN_EYEBLOSSOM = VanillaMaterial.POTTED_OPEN_EYEBLOSSOM;
+    Material POTTED_ORANGE_TULIP = VanillaMaterial.POTTED_ORANGE_TULIP;
+    Material POTTED_OXEYE_DAISY = VanillaMaterial.POTTED_OXEYE_DAISY;
+    Material POTTED_PALE_OAK_SAPLING = VanillaMaterial.POTTED_PALE_OAK_SAPLING;
+    Material POTTED_PINK_TULIP = VanillaMaterial.POTTED_PINK_TULIP;
+    Material POTTED_POPPY = VanillaMaterial.POTTED_POPPY;
+    Material POTTED_RED_MUSHROOM = VanillaMaterial.POTTED_RED_MUSHROOM;
+    Material POTTED_RED_TULIP = VanillaMaterial.POTTED_RED_TULIP;
+    Material POTTED_SPRUCE_SAPLING = VanillaMaterial.POTTED_SPRUCE_SAPLING;
+    Material POTTED_TORCHFLOWER = VanillaMaterial.POTTED_TORCHFLOWER;
+    Material POTTED_WARPED_FUNGUS = VanillaMaterial.POTTED_WARPED_FUNGUS;
+    Material POTTED_WARPED_ROOTS = VanillaMaterial.POTTED_WARPED_ROOTS;
+    Material POTTED_WHITE_TULIP = VanillaMaterial.POTTED_WHITE_TULIP;
+    Material POTTED_WITHER_ROSE = VanillaMaterial.POTTED_WITHER_ROSE;
+    Material POWDER_SNOW = VanillaMaterial.POWDER_SNOW;
+    Material POWDER_SNOW_CAULDRON = VanillaMaterial.POWDER_SNOW_CAULDRON;
+    Material POWERED_RAIL = VanillaMaterial.POWERED_RAIL;
+    Material PRISMARINE = VanillaMaterial.PRISMARINE;
+    Material PRISMARINE_BRICK_SLAB = VanillaMaterial.PRISMARINE_BRICK_SLAB;
+    Material PRISMARINE_BRICK_STAIRS = VanillaMaterial.PRISMARINE_BRICK_STAIRS;
+    Material PRISMARINE_BRICKS = VanillaMaterial.PRISMARINE_BRICKS;
+    Material PRISMARINE_SLAB = VanillaMaterial.PRISMARINE_SLAB;
+    Material PRISMARINE_STAIRS = VanillaMaterial.PRISMARINE_STAIRS;
+    Material PRISMARINE_WALL = VanillaMaterial.PRISMARINE_WALL;
+    Material PUMPKIN = VanillaMaterial.PUMPKIN;
+    Material PUMPKIN_STEM = VanillaMaterial.PUMPKIN_STEM;
+    Material PURPLE_BANNER = VanillaMaterial.PURPLE_BANNER;
+    Material PURPLE_BED = VanillaMaterial.PURPLE_BED;
+    Material PURPLE_CANDLE = VanillaMaterial.PURPLE_CANDLE;
+    Material PURPLE_CANDLE_CAKE = VanillaMaterial.PURPLE_CANDLE_CAKE;
+    Material PURPLE_CARPET = VanillaMaterial.PURPLE_CARPET;
+    Material PURPLE_CONCRETE = VanillaMaterial.PURPLE_CONCRETE;
+    Material PURPLE_CONCRETE_POWDER = VanillaMaterial.PURPLE_CONCRETE_POWDER;
+    Material PURPLE_GLAZED_TERRACOTTA = VanillaMaterial.PURPLE_GLAZED_TERRACOTTA;
+    Material PURPLE_SHULKER_BOX = VanillaMaterial.PURPLE_SHULKER_BOX;
+    Material PURPLE_STAINED_GLASS = VanillaMaterial.PURPLE_STAINED_GLASS;
+    Material PURPLE_STAINED_GLASS_PANE = VanillaMaterial.PURPLE_STAINED_GLASS_PANE;
+    Material PURPLE_TERRACOTTA = VanillaMaterial.PURPLE_TERRACOTTA;
+    Material PURPLE_WALL_BANNER = VanillaMaterial.PURPLE_WALL_BANNER;
+    Material PURPLE_WOOL = VanillaMaterial.PURPLE_WOOL;
+    Material PURPUR_BLOCK = VanillaMaterial.PURPUR_BLOCK;
+    Material PURPUR_PILLAR = VanillaMaterial.PURPUR_PILLAR;
+    Material PURPUR_SLAB = VanillaMaterial.PURPUR_SLAB;
+    Material PURPUR_STAIRS = VanillaMaterial.PURPUR_STAIRS;
+    Material QUARTZ_BLOCK = VanillaMaterial.QUARTZ_BLOCK;
+    Material QUARTZ_BRICKS = VanillaMaterial.QUARTZ_BRICKS;
+    Material QUARTZ_PILLAR = VanillaMaterial.QUARTZ_PILLAR;
+    Material QUARTZ_SLAB = VanillaMaterial.QUARTZ_SLAB;
+    Material QUARTZ_STAIRS = VanillaMaterial.QUARTZ_STAIRS;
+    Material RAIL = VanillaMaterial.RAIL;
+    Material RAW_COPPER_BLOCK = VanillaMaterial.RAW_COPPER_BLOCK;
+    Material RAW_GOLD_BLOCK = VanillaMaterial.RAW_GOLD_BLOCK;
+    Material RAW_IRON_BLOCK = VanillaMaterial.RAW_IRON_BLOCK;
+    Material RED_BANNER = VanillaMaterial.RED_BANNER;
+    Material RED_BED = VanillaMaterial.RED_BED;
+    Material RED_CANDLE = VanillaMaterial.RED_CANDLE;
+    Material RED_CANDLE_CAKE = VanillaMaterial.RED_CANDLE_CAKE;
+    Material RED_CARPET = VanillaMaterial.RED_CARPET;
+    Material RED_CONCRETE = VanillaMaterial.RED_CONCRETE;
+    Material RED_CONCRETE_POWDER = VanillaMaterial.RED_CONCRETE_POWDER;
+    Material RED_GLAZED_TERRACOTTA = VanillaMaterial.RED_GLAZED_TERRACOTTA;
+    Material RED_MUSHROOM = VanillaMaterial.RED_MUSHROOM;
+    Material RED_MUSHROOM_BLOCK = VanillaMaterial.RED_MUSHROOM_BLOCK;
+    Material RED_NETHER_BRICK_SLAB = VanillaMaterial.RED_NETHER_BRICK_SLAB;
+    Material RED_NETHER_BRICK_STAIRS = VanillaMaterial.RED_NETHER_BRICK_STAIRS;
+    Material RED_NETHER_BRICK_WALL = VanillaMaterial.RED_NETHER_BRICK_WALL;
+    Material RED_NETHER_BRICKS = VanillaMaterial.RED_NETHER_BRICKS;
+    Material RED_SAND = VanillaMaterial.RED_SAND;
+    Material RED_SANDSTONE = VanillaMaterial.RED_SANDSTONE;
+    Material RED_SANDSTONE_SLAB = VanillaMaterial.RED_SANDSTONE_SLAB;
+    Material RED_SANDSTONE_STAIRS = VanillaMaterial.RED_SANDSTONE_STAIRS;
+    Material RED_SANDSTONE_WALL = VanillaMaterial.RED_SANDSTONE_WALL;
+    Material RED_SHULKER_BOX = VanillaMaterial.RED_SHULKER_BOX;
+    Material RED_STAINED_GLASS = VanillaMaterial.RED_STAINED_GLASS;
+    Material RED_STAINED_GLASS_PANE = VanillaMaterial.RED_STAINED_GLASS_PANE;
+    Material RED_TERRACOTTA = VanillaMaterial.RED_TERRACOTTA;
+    Material RED_TULIP = VanillaMaterial.RED_TULIP;
+    Material RED_WALL_BANNER = VanillaMaterial.RED_WALL_BANNER;
+    Material RED_WOOL = VanillaMaterial.RED_WOOL;
+    Material REDSTONE_BLOCK = VanillaMaterial.REDSTONE_BLOCK;
+    Material REDSTONE_LAMP = VanillaMaterial.REDSTONE_LAMP;
+    Material REDSTONE_ORE = VanillaMaterial.REDSTONE_ORE;
+    Material REDSTONE_TORCH = VanillaMaterial.REDSTONE_TORCH;
+    Material REDSTONE_WALL_TORCH = VanillaMaterial.REDSTONE_WALL_TORCH;
+    Material REDSTONE_WIRE = VanillaMaterial.REDSTONE_WIRE;
+    Material REINFORCED_DEEPSLATE = VanillaMaterial.REINFORCED_DEEPSLATE;
+    Material REPEATER = VanillaMaterial.REPEATER;
+    Material REPEATING_COMMAND_BLOCK = VanillaMaterial.REPEATING_COMMAND_BLOCK;
+    Material RESIN_BLOCK = VanillaMaterial.RESIN_BLOCK;
+    Material RESIN_BRICK_SLAB = VanillaMaterial.RESIN_BRICK_SLAB;
+    Material RESIN_BRICK_STAIRS = VanillaMaterial.RESIN_BRICK_STAIRS;
+    Material RESIN_BRICK_WALL = VanillaMaterial.RESIN_BRICK_WALL;
+    Material RESIN_BRICKS = VanillaMaterial.RESIN_BRICKS;
+    Material RESIN_CLUMP = VanillaMaterial.RESIN_CLUMP;
+    Material RESPAWN_ANCHOR = VanillaMaterial.RESPAWN_ANCHOR;
+    Material ROOTED_DIRT = VanillaMaterial.ROOTED_DIRT;
+    Material ROSE_BUSH = VanillaMaterial.ROSE_BUSH;
+    Material SAND = VanillaMaterial.SAND;
+    Material SANDSTONE = VanillaMaterial.SANDSTONE;
+    Material SANDSTONE_SLAB = VanillaMaterial.SANDSTONE_SLAB;
+    Material SANDSTONE_STAIRS = VanillaMaterial.SANDSTONE_STAIRS;
+    Material SANDSTONE_WALL = VanillaMaterial.SANDSTONE_WALL;
+    Material SCAFFOLDING = VanillaMaterial.SCAFFOLDING;
+    Material SCULK = VanillaMaterial.SCULK;
+    Material SCULK_CATALYST = VanillaMaterial.SCULK_CATALYST;
+    Material SCULK_SENSOR = VanillaMaterial.SCULK_SENSOR;
+    Material SCULK_SHRIEKER = VanillaMaterial.SCULK_SHRIEKER;
+    Material SCULK_VEIN = VanillaMaterial.SCULK_VEIN;
+    Material SEA_LANTERN = VanillaMaterial.SEA_LANTERN;
+    Material SEA_PICKLE = VanillaMaterial.SEA_PICKLE;
+    Material SEAGRASS = VanillaMaterial.SEAGRASS;
+    Material SHORT_DRY_GRASS = VanillaMaterial.SHORT_DRY_GRASS;
+    Material SHORT_GRASS = VanillaMaterial.SHORT_GRASS;
+    Material SHROOMLIGHT = VanillaMaterial.SHROOMLIGHT;
+    Material SHULKER_BOX = VanillaMaterial.SHULKER_BOX;
+    Material SKELETON_SKULL = VanillaMaterial.SKELETON_SKULL;
+    Material SKELETON_WALL_SKULL = VanillaMaterial.SKELETON_WALL_SKULL;
+    Material SLIME_BLOCK = VanillaMaterial.SLIME_BLOCK;
+    Material SMALL_AMETHYST_BUD = VanillaMaterial.SMALL_AMETHYST_BUD;
+    Material SMALL_DRIPLEAF = VanillaMaterial.SMALL_DRIPLEAF;
+    Material SMITHING_TABLE = VanillaMaterial.SMITHING_TABLE;
+    Material SMOKER = VanillaMaterial.SMOKER;
+    Material SMOOTH_BASALT = VanillaMaterial.SMOOTH_BASALT;
+    Material SMOOTH_QUARTZ = VanillaMaterial.SMOOTH_QUARTZ;
+    Material SMOOTH_QUARTZ_SLAB = VanillaMaterial.SMOOTH_QUARTZ_SLAB;
+    Material SMOOTH_QUARTZ_STAIRS = VanillaMaterial.SMOOTH_QUARTZ_STAIRS;
+    Material SMOOTH_RED_SANDSTONE = VanillaMaterial.SMOOTH_RED_SANDSTONE;
+    Material SMOOTH_RED_SANDSTONE_SLAB = VanillaMaterial.SMOOTH_RED_SANDSTONE_SLAB;
+    Material SMOOTH_RED_SANDSTONE_STAIRS = VanillaMaterial.SMOOTH_RED_SANDSTONE_STAIRS;
+    Material SMOOTH_SANDSTONE = VanillaMaterial.SMOOTH_SANDSTONE;
+    Material SMOOTH_SANDSTONE_SLAB = VanillaMaterial.SMOOTH_SANDSTONE_SLAB;
+    Material SMOOTH_SANDSTONE_STAIRS = VanillaMaterial.SMOOTH_SANDSTONE_STAIRS;
+    Material SMOOTH_STONE = VanillaMaterial.SMOOTH_STONE;
+    Material SMOOTH_STONE_SLAB = VanillaMaterial.SMOOTH_STONE_SLAB;
+    Material SNIFFER_EGG = VanillaMaterial.SNIFFER_EGG;
+    Material SNOW = VanillaMaterial.SNOW;
+    Material SNOW_BLOCK = VanillaMaterial.SNOW_BLOCK;
+    Material SOUL_CAMPFIRE = VanillaMaterial.SOUL_CAMPFIRE;
+    Material SOUL_FIRE = VanillaMaterial.SOUL_FIRE;
+    Material SOUL_LANTERN = VanillaMaterial.SOUL_LANTERN;
+    Material SOUL_SAND = VanillaMaterial.SOUL_SAND;
+    Material SOUL_SOIL = VanillaMaterial.SOUL_SOIL;
+    Material SOUL_TORCH = VanillaMaterial.SOUL_TORCH;
+    Material SOUL_WALL_TORCH = VanillaMaterial.SOUL_WALL_TORCH;
+    Material SPAWNER = VanillaMaterial.SPAWNER;
+    Material SPONGE = VanillaMaterial.SPONGE;
+    Material SPORE_BLOSSOM = VanillaMaterial.SPORE_BLOSSOM;
+    Material SPRUCE_BUTTON = VanillaMaterial.SPRUCE_BUTTON;
+    Material SPRUCE_DOOR = VanillaMaterial.SPRUCE_DOOR;
+    Material SPRUCE_FENCE = VanillaMaterial.SPRUCE_FENCE;
+    Material SPRUCE_FENCE_GATE = VanillaMaterial.SPRUCE_FENCE_GATE;
+    Material SPRUCE_HANGING_SIGN = VanillaMaterial.SPRUCE_HANGING_SIGN;
+    Material SPRUCE_LEAVES = VanillaMaterial.SPRUCE_LEAVES;
+    Material SPRUCE_LOG = VanillaMaterial.SPRUCE_LOG;
+    Material SPRUCE_PLANKS = VanillaMaterial.SPRUCE_PLANKS;
+    Material SPRUCE_PRESSURE_PLATE = VanillaMaterial.SPRUCE_PRESSURE_PLATE;
+    Material SPRUCE_SAPLING = VanillaMaterial.SPRUCE_SAPLING;
+    Material SPRUCE_SHELF = VanillaMaterial.SPRUCE_SHELF;
+    Material SPRUCE_SIGN = VanillaMaterial.SPRUCE_SIGN;
+    Material SPRUCE_SLAB = VanillaMaterial.SPRUCE_SLAB;
+    Material SPRUCE_STAIRS = VanillaMaterial.SPRUCE_STAIRS;
+    Material SPRUCE_TRAPDOOR = VanillaMaterial.SPRUCE_TRAPDOOR;
+    Material SPRUCE_WALL_HANGING_SIGN = VanillaMaterial.SPRUCE_WALL_HANGING_SIGN;
+    Material SPRUCE_WALL_SIGN = VanillaMaterial.SPRUCE_WALL_SIGN;
+    Material SPRUCE_WOOD = VanillaMaterial.SPRUCE_WOOD;
+    Material STICKY_PISTON = VanillaMaterial.STICKY_PISTON;
+    Material STONE = VanillaMaterial.STONE;
+    Material STONE_BRICK_SLAB = VanillaMaterial.STONE_BRICK_SLAB;
+    Material STONE_BRICK_STAIRS = VanillaMaterial.STONE_BRICK_STAIRS;
+    Material STONE_BRICK_WALL = VanillaMaterial.STONE_BRICK_WALL;
+    Material STONE_BRICKS = VanillaMaterial.STONE_BRICKS;
+    Material STONE_BUTTON = VanillaMaterial.STONE_BUTTON;
+    Material STONE_PRESSURE_PLATE = VanillaMaterial.STONE_PRESSURE_PLATE;
+    Material STONE_SLAB = VanillaMaterial.STONE_SLAB;
+    Material STONE_STAIRS = VanillaMaterial.STONE_STAIRS;
+    Material STONECUTTER = VanillaMaterial.STONECUTTER;
+    Material STRIPPED_ACACIA_LOG = VanillaMaterial.STRIPPED_ACACIA_LOG;
+    Material STRIPPED_ACACIA_WOOD = VanillaMaterial.STRIPPED_ACACIA_WOOD;
+    Material STRIPPED_BAMBOO_BLOCK = VanillaMaterial.STRIPPED_BAMBOO_BLOCK;
+    Material STRIPPED_BIRCH_LOG = VanillaMaterial.STRIPPED_BIRCH_LOG;
+    Material STRIPPED_BIRCH_WOOD = VanillaMaterial.STRIPPED_BIRCH_WOOD;
+    Material STRIPPED_CHERRY_LOG = VanillaMaterial.STRIPPED_CHERRY_LOG;
+    Material STRIPPED_CHERRY_WOOD = VanillaMaterial.STRIPPED_CHERRY_WOOD;
+    Material STRIPPED_CRIMSON_HYPHAE = VanillaMaterial.STRIPPED_CRIMSON_HYPHAE;
+    Material STRIPPED_CRIMSON_STEM = VanillaMaterial.STRIPPED_CRIMSON_STEM;
+    Material STRIPPED_DARK_OAK_LOG = VanillaMaterial.STRIPPED_DARK_OAK_LOG;
+    Material STRIPPED_DARK_OAK_WOOD = VanillaMaterial.STRIPPED_DARK_OAK_WOOD;
+    Material STRIPPED_JUNGLE_LOG = VanillaMaterial.STRIPPED_JUNGLE_LOG;
+    Material STRIPPED_JUNGLE_WOOD = VanillaMaterial.STRIPPED_JUNGLE_WOOD;
+    Material STRIPPED_MANGROVE_LOG = VanillaMaterial.STRIPPED_MANGROVE_LOG;
+    Material STRIPPED_MANGROVE_WOOD = VanillaMaterial.STRIPPED_MANGROVE_WOOD;
+    Material STRIPPED_OAK_LOG = VanillaMaterial.STRIPPED_OAK_LOG;
+    Material STRIPPED_OAK_WOOD = VanillaMaterial.STRIPPED_OAK_WOOD;
+    Material STRIPPED_PALE_OAK_LOG = VanillaMaterial.STRIPPED_PALE_OAK_LOG;
+    Material STRIPPED_PALE_OAK_WOOD = VanillaMaterial.STRIPPED_PALE_OAK_WOOD;
+    Material STRIPPED_SPRUCE_LOG = VanillaMaterial.STRIPPED_SPRUCE_LOG;
+    Material STRIPPED_SPRUCE_WOOD = VanillaMaterial.STRIPPED_SPRUCE_WOOD;
+    Material STRIPPED_WARPED_HYPHAE = VanillaMaterial.STRIPPED_WARPED_HYPHAE;
+    Material STRIPPED_WARPED_STEM = VanillaMaterial.STRIPPED_WARPED_STEM;
+    Material STRUCTURE_BLOCK = VanillaMaterial.STRUCTURE_BLOCK;
+    Material STRUCTURE_VOID = VanillaMaterial.STRUCTURE_VOID;
+    Material SUGAR_CANE = VanillaMaterial.SUGAR_CANE;
+    Material SULFUR = VanillaMaterial.SULFUR;
+    Material SULFUR_BRICK_SLAB = VanillaMaterial.SULFUR_BRICK_SLAB;
+    Material SULFUR_BRICK_STAIRS = VanillaMaterial.SULFUR_BRICK_STAIRS;
+    Material SULFUR_BRICK_WALL = VanillaMaterial.SULFUR_BRICK_WALL;
+    Material SULFUR_BRICKS = VanillaMaterial.SULFUR_BRICKS;
+    Material SULFUR_SLAB = VanillaMaterial.SULFUR_SLAB;
+    Material SULFUR_SPIKE = VanillaMaterial.SULFUR_SPIKE;
+    Material SULFUR_STAIRS = VanillaMaterial.SULFUR_STAIRS;
+    Material SULFUR_WALL = VanillaMaterial.SULFUR_WALL;
+    Material SUNFLOWER = VanillaMaterial.SUNFLOWER;
+    Material SUSPICIOUS_GRAVEL = VanillaMaterial.SUSPICIOUS_GRAVEL;
+    Material SUSPICIOUS_SAND = VanillaMaterial.SUSPICIOUS_SAND;
+    Material SWEET_BERRY_BUSH = VanillaMaterial.SWEET_BERRY_BUSH;
+    Material TALL_DRY_GRASS = VanillaMaterial.TALL_DRY_GRASS;
+    Material TALL_GRASS = VanillaMaterial.TALL_GRASS;
+    Material TALL_SEAGRASS = VanillaMaterial.TALL_SEAGRASS;
+    Material TARGET = VanillaMaterial.TARGET;
+    Material TERRACOTTA = VanillaMaterial.TERRACOTTA;
+    Material TEST_BLOCK = VanillaMaterial.TEST_BLOCK;
+    Material TEST_INSTANCE_BLOCK = VanillaMaterial.TEST_INSTANCE_BLOCK;
+    Material TINTED_GLASS = VanillaMaterial.TINTED_GLASS;
+    Material TNT = VanillaMaterial.TNT;
+    Material TORCH = VanillaMaterial.TORCH;
+    Material TORCHFLOWER = VanillaMaterial.TORCHFLOWER;
+    Material TORCHFLOWER_CROP = VanillaMaterial.TORCHFLOWER_CROP;
+    Material TRAPPED_CHEST = VanillaMaterial.TRAPPED_CHEST;
+    Material TRIAL_SPAWNER = VanillaMaterial.TRIAL_SPAWNER;
+    Material TRIPWIRE = VanillaMaterial.TRIPWIRE;
+    Material TRIPWIRE_HOOK = VanillaMaterial.TRIPWIRE_HOOK;
+    Material TUBE_CORAL = VanillaMaterial.TUBE_CORAL;
+    Material TUBE_CORAL_BLOCK = VanillaMaterial.TUBE_CORAL_BLOCK;
+    Material TUBE_CORAL_FAN = VanillaMaterial.TUBE_CORAL_FAN;
+    Material TUBE_CORAL_WALL_FAN = VanillaMaterial.TUBE_CORAL_WALL_FAN;
+    Material TUFF = VanillaMaterial.TUFF;
+    Material TUFF_BRICK_SLAB = VanillaMaterial.TUFF_BRICK_SLAB;
+    Material TUFF_BRICK_STAIRS = VanillaMaterial.TUFF_BRICK_STAIRS;
+    Material TUFF_BRICK_WALL = VanillaMaterial.TUFF_BRICK_WALL;
+    Material TUFF_BRICKS = VanillaMaterial.TUFF_BRICKS;
+    Material TUFF_SLAB = VanillaMaterial.TUFF_SLAB;
+    Material TUFF_STAIRS = VanillaMaterial.TUFF_STAIRS;
+    Material TUFF_WALL = VanillaMaterial.TUFF_WALL;
+    Material TURTLE_EGG = VanillaMaterial.TURTLE_EGG;
+    Material TWISTING_VINES = VanillaMaterial.TWISTING_VINES;
+    Material TWISTING_VINES_PLANT = VanillaMaterial.TWISTING_VINES_PLANT;
+    Material VAULT = VanillaMaterial.VAULT;
+    Material VERDANT_FROGLIGHT = VanillaMaterial.VERDANT_FROGLIGHT;
+    Material VINE = VanillaMaterial.VINE;
+    Material VOID_AIR = VanillaMaterial.VOID_AIR;
+    Material WALL_TORCH = VanillaMaterial.WALL_TORCH;
+    Material WARPED_BUTTON = VanillaMaterial.WARPED_BUTTON;
+    Material WARPED_DOOR = VanillaMaterial.WARPED_DOOR;
+    Material WARPED_FENCE = VanillaMaterial.WARPED_FENCE;
+    Material WARPED_FENCE_GATE = VanillaMaterial.WARPED_FENCE_GATE;
+    Material WARPED_FUNGUS = VanillaMaterial.WARPED_FUNGUS;
+    Material WARPED_HANGING_SIGN = VanillaMaterial.WARPED_HANGING_SIGN;
+    Material WARPED_HYPHAE = VanillaMaterial.WARPED_HYPHAE;
+    Material WARPED_NYLIUM = VanillaMaterial.WARPED_NYLIUM;
+    Material WARPED_PLANKS = VanillaMaterial.WARPED_PLANKS;
+    Material WARPED_PRESSURE_PLATE = VanillaMaterial.WARPED_PRESSURE_PLATE;
+    Material WARPED_ROOTS = VanillaMaterial.WARPED_ROOTS;
+    Material WARPED_SHELF = VanillaMaterial.WARPED_SHELF;
+    Material WARPED_SIGN = VanillaMaterial.WARPED_SIGN;
+    Material WARPED_SLAB = VanillaMaterial.WARPED_SLAB;
+    Material WARPED_STAIRS = VanillaMaterial.WARPED_STAIRS;
+    Material WARPED_STEM = VanillaMaterial.WARPED_STEM;
+    Material WARPED_TRAPDOOR = VanillaMaterial.WARPED_TRAPDOOR;
+    Material WARPED_WALL_HANGING_SIGN = VanillaMaterial.WARPED_WALL_HANGING_SIGN;
+    Material WARPED_WALL_SIGN = VanillaMaterial.WARPED_WALL_SIGN;
+    Material WARPED_WART_BLOCK = VanillaMaterial.WARPED_WART_BLOCK;
+    Material WATER = VanillaMaterial.WATER;
+    Material WATER_CAULDRON = VanillaMaterial.WATER_CAULDRON;
+    Material WAXED_CHISELED_COPPER = VanillaMaterial.WAXED_CHISELED_COPPER;
+    Material WAXED_COPPER_BARS = VanillaMaterial.WAXED_COPPER_BARS;
+    Material WAXED_COPPER_BLOCK = VanillaMaterial.WAXED_COPPER_BLOCK;
+    Material WAXED_COPPER_BULB = VanillaMaterial.WAXED_COPPER_BULB;
+    Material WAXED_COPPER_CHAIN = VanillaMaterial.WAXED_COPPER_CHAIN;
+    Material WAXED_COPPER_CHEST = VanillaMaterial.WAXED_COPPER_CHEST;
+    Material WAXED_COPPER_DOOR = VanillaMaterial.WAXED_COPPER_DOOR;
+    Material WAXED_COPPER_GOLEM_STATUE = VanillaMaterial.WAXED_COPPER_GOLEM_STATUE;
+    Material WAXED_COPPER_GRATE = VanillaMaterial.WAXED_COPPER_GRATE;
+    Material WAXED_COPPER_LANTERN = VanillaMaterial.WAXED_COPPER_LANTERN;
+    Material WAXED_COPPER_TRAPDOOR = VanillaMaterial.WAXED_COPPER_TRAPDOOR;
+    Material WAXED_CUT_COPPER = VanillaMaterial.WAXED_CUT_COPPER;
+    Material WAXED_CUT_COPPER_SLAB = VanillaMaterial.WAXED_CUT_COPPER_SLAB;
+    Material WAXED_CUT_COPPER_STAIRS = VanillaMaterial.WAXED_CUT_COPPER_STAIRS;
+    Material WAXED_EXPOSED_CHISELED_COPPER = VanillaMaterial.WAXED_EXPOSED_CHISELED_COPPER;
+    Material WAXED_EXPOSED_COPPER = VanillaMaterial.WAXED_EXPOSED_COPPER;
+    Material WAXED_EXPOSED_COPPER_BARS = VanillaMaterial.WAXED_EXPOSED_COPPER_BARS;
+    Material WAXED_EXPOSED_COPPER_BULB = VanillaMaterial.WAXED_EXPOSED_COPPER_BULB;
+    Material WAXED_EXPOSED_COPPER_CHAIN = VanillaMaterial.WAXED_EXPOSED_COPPER_CHAIN;
+    Material WAXED_EXPOSED_COPPER_CHEST = VanillaMaterial.WAXED_EXPOSED_COPPER_CHEST;
+    Material WAXED_EXPOSED_COPPER_DOOR = VanillaMaterial.WAXED_EXPOSED_COPPER_DOOR;
+    Material WAXED_EXPOSED_COPPER_GOLEM_STATUE = VanillaMaterial.WAXED_EXPOSED_COPPER_GOLEM_STATUE;
+    Material WAXED_EXPOSED_COPPER_GRATE = VanillaMaterial.WAXED_EXPOSED_COPPER_GRATE;
+    Material WAXED_EXPOSED_COPPER_LANTERN = VanillaMaterial.WAXED_EXPOSED_COPPER_LANTERN;
+    Material WAXED_EXPOSED_COPPER_TRAPDOOR = VanillaMaterial.WAXED_EXPOSED_COPPER_TRAPDOOR;
+    Material WAXED_EXPOSED_CUT_COPPER = VanillaMaterial.WAXED_EXPOSED_CUT_COPPER;
+    Material WAXED_EXPOSED_CUT_COPPER_SLAB = VanillaMaterial.WAXED_EXPOSED_CUT_COPPER_SLAB;
+    Material WAXED_EXPOSED_CUT_COPPER_STAIRS = VanillaMaterial.WAXED_EXPOSED_CUT_COPPER_STAIRS;
+    Material WAXED_EXPOSED_LIGHTNING_ROD = VanillaMaterial.WAXED_EXPOSED_LIGHTNING_ROD;
+    Material WAXED_LIGHTNING_ROD = VanillaMaterial.WAXED_LIGHTNING_ROD;
+    Material WAXED_OXIDIZED_CHISELED_COPPER = VanillaMaterial.WAXED_OXIDIZED_CHISELED_COPPER;
+    Material WAXED_OXIDIZED_COPPER = VanillaMaterial.WAXED_OXIDIZED_COPPER;
+    Material WAXED_OXIDIZED_COPPER_BARS = VanillaMaterial.WAXED_OXIDIZED_COPPER_BARS;
+    Material WAXED_OXIDIZED_COPPER_BULB = VanillaMaterial.WAXED_OXIDIZED_COPPER_BULB;
+    Material WAXED_OXIDIZED_COPPER_CHAIN = VanillaMaterial.WAXED_OXIDIZED_COPPER_CHAIN;
+    Material WAXED_OXIDIZED_COPPER_CHEST = VanillaMaterial.WAXED_OXIDIZED_COPPER_CHEST;
+    Material WAXED_OXIDIZED_COPPER_DOOR = VanillaMaterial.WAXED_OXIDIZED_COPPER_DOOR;
+    Material WAXED_OXIDIZED_COPPER_GOLEM_STATUE = VanillaMaterial.WAXED_OXIDIZED_COPPER_GOLEM_STATUE;
+    Material WAXED_OXIDIZED_COPPER_GRATE = VanillaMaterial.WAXED_OXIDIZED_COPPER_GRATE;
+    Material WAXED_OXIDIZED_COPPER_LANTERN = VanillaMaterial.WAXED_OXIDIZED_COPPER_LANTERN;
+    Material WAXED_OXIDIZED_COPPER_TRAPDOOR = VanillaMaterial.WAXED_OXIDIZED_COPPER_TRAPDOOR;
+    Material WAXED_OXIDIZED_CUT_COPPER = VanillaMaterial.WAXED_OXIDIZED_CUT_COPPER;
+    Material WAXED_OXIDIZED_CUT_COPPER_SLAB = VanillaMaterial.WAXED_OXIDIZED_CUT_COPPER_SLAB;
+    Material WAXED_OXIDIZED_CUT_COPPER_STAIRS = VanillaMaterial.WAXED_OXIDIZED_CUT_COPPER_STAIRS;
+    Material WAXED_OXIDIZED_LIGHTNING_ROD = VanillaMaterial.WAXED_OXIDIZED_LIGHTNING_ROD;
+    Material WAXED_WEATHERED_CHISELED_COPPER = VanillaMaterial.WAXED_WEATHERED_CHISELED_COPPER;
+    Material WAXED_WEATHERED_COPPER = VanillaMaterial.WAXED_WEATHERED_COPPER;
+    Material WAXED_WEATHERED_COPPER_BARS = VanillaMaterial.WAXED_WEATHERED_COPPER_BARS;
+    Material WAXED_WEATHERED_COPPER_BULB = VanillaMaterial.WAXED_WEATHERED_COPPER_BULB;
+    Material WAXED_WEATHERED_COPPER_CHAIN = VanillaMaterial.WAXED_WEATHERED_COPPER_CHAIN;
+    Material WAXED_WEATHERED_COPPER_CHEST = VanillaMaterial.WAXED_WEATHERED_COPPER_CHEST;
+    Material WAXED_WEATHERED_COPPER_DOOR = VanillaMaterial.WAXED_WEATHERED_COPPER_DOOR;
+    Material WAXED_WEATHERED_COPPER_GOLEM_STATUE = VanillaMaterial.WAXED_WEATHERED_COPPER_GOLEM_STATUE;
+    Material WAXED_WEATHERED_COPPER_GRATE = VanillaMaterial.WAXED_WEATHERED_COPPER_GRATE;
+    Material WAXED_WEATHERED_COPPER_LANTERN = VanillaMaterial.WAXED_WEATHERED_COPPER_LANTERN;
+    Material WAXED_WEATHERED_COPPER_TRAPDOOR = VanillaMaterial.WAXED_WEATHERED_COPPER_TRAPDOOR;
+    Material WAXED_WEATHERED_CUT_COPPER = VanillaMaterial.WAXED_WEATHERED_CUT_COPPER;
+    Material WAXED_WEATHERED_CUT_COPPER_SLAB = VanillaMaterial.WAXED_WEATHERED_CUT_COPPER_SLAB;
+    Material WAXED_WEATHERED_CUT_COPPER_STAIRS = VanillaMaterial.WAXED_WEATHERED_CUT_COPPER_STAIRS;
+    Material WAXED_WEATHERED_LIGHTNING_ROD = VanillaMaterial.WAXED_WEATHERED_LIGHTNING_ROD;
+    Material WEATHERED_CHISELED_COPPER = VanillaMaterial.WEATHERED_CHISELED_COPPER;
+    Material WEATHERED_COPPER = VanillaMaterial.WEATHERED_COPPER;
+    Material WEATHERED_COPPER_BARS = VanillaMaterial.WEATHERED_COPPER_BARS;
+    Material WEATHERED_COPPER_BULB = VanillaMaterial.WEATHERED_COPPER_BULB;
+    Material WEATHERED_COPPER_CHAIN = VanillaMaterial.WEATHERED_COPPER_CHAIN;
+    Material WEATHERED_COPPER_CHEST = VanillaMaterial.WEATHERED_COPPER_CHEST;
+    Material WEATHERED_COPPER_DOOR = VanillaMaterial.WEATHERED_COPPER_DOOR;
+    Material WEATHERED_COPPER_GOLEM_STATUE = VanillaMaterial.WEATHERED_COPPER_GOLEM_STATUE;
+    Material WEATHERED_COPPER_GRATE = VanillaMaterial.WEATHERED_COPPER_GRATE;
+    Material WEATHERED_COPPER_LANTERN = VanillaMaterial.WEATHERED_COPPER_LANTERN;
+    Material WEATHERED_COPPER_TRAPDOOR = VanillaMaterial.WEATHERED_COPPER_TRAPDOOR;
+    Material WEATHERED_CUT_COPPER = VanillaMaterial.WEATHERED_CUT_COPPER;
+    Material WEATHERED_CUT_COPPER_SLAB = VanillaMaterial.WEATHERED_CUT_COPPER_SLAB;
+    Material WEATHERED_CUT_COPPER_STAIRS = VanillaMaterial.WEATHERED_CUT_COPPER_STAIRS;
+    Material WEATHERED_LIGHTNING_ROD = VanillaMaterial.WEATHERED_LIGHTNING_ROD;
+    Material WEEPING_VINES = VanillaMaterial.WEEPING_VINES;
+    Material WEEPING_VINES_PLANT = VanillaMaterial.WEEPING_VINES_PLANT;
+    Material WET_SPONGE = VanillaMaterial.WET_SPONGE;
+    Material WHEAT = VanillaMaterial.WHEAT;
+    Material WHITE_BANNER = VanillaMaterial.WHITE_BANNER;
+    Material WHITE_BED = VanillaMaterial.WHITE_BED;
+    Material WHITE_CANDLE = VanillaMaterial.WHITE_CANDLE;
+    Material WHITE_CANDLE_CAKE = VanillaMaterial.WHITE_CANDLE_CAKE;
+    Material WHITE_CARPET = VanillaMaterial.WHITE_CARPET;
+    Material WHITE_CONCRETE = VanillaMaterial.WHITE_CONCRETE;
+    Material WHITE_CONCRETE_POWDER = VanillaMaterial.WHITE_CONCRETE_POWDER;
+    Material WHITE_GLAZED_TERRACOTTA = VanillaMaterial.WHITE_GLAZED_TERRACOTTA;
+    Material WHITE_SHULKER_BOX = VanillaMaterial.WHITE_SHULKER_BOX;
+    Material WHITE_STAINED_GLASS = VanillaMaterial.WHITE_STAINED_GLASS;
+    Material WHITE_STAINED_GLASS_PANE = VanillaMaterial.WHITE_STAINED_GLASS_PANE;
+    Material WHITE_TERRACOTTA = VanillaMaterial.WHITE_TERRACOTTA;
+    Material WHITE_TULIP = VanillaMaterial.WHITE_TULIP;
+    Material WHITE_WALL_BANNER = VanillaMaterial.WHITE_WALL_BANNER;
+    Material WHITE_WOOL = VanillaMaterial.WHITE_WOOL;
+    Material WILDFLOWERS = VanillaMaterial.WILDFLOWERS;
+    Material WITHER_ROSE = VanillaMaterial.WITHER_ROSE;
+    Material WITHER_SKELETON_SKULL = VanillaMaterial.WITHER_SKELETON_SKULL;
+    Material WITHER_SKELETON_WALL_SKULL = VanillaMaterial.WITHER_SKELETON_WALL_SKULL;
+    Material YELLOW_BANNER = VanillaMaterial.YELLOW_BANNER;
+    Material YELLOW_BED = VanillaMaterial.YELLOW_BED;
+    Material YELLOW_CANDLE = VanillaMaterial.YELLOW_CANDLE;
+    Material YELLOW_CANDLE_CAKE = VanillaMaterial.YELLOW_CANDLE_CAKE;
+    Material YELLOW_CARPET = VanillaMaterial.YELLOW_CARPET;
+    Material YELLOW_CONCRETE = VanillaMaterial.YELLOW_CONCRETE;
+    Material YELLOW_CONCRETE_POWDER = VanillaMaterial.YELLOW_CONCRETE_POWDER;
+    Material YELLOW_GLAZED_TERRACOTTA = VanillaMaterial.YELLOW_GLAZED_TERRACOTTA;
+    Material YELLOW_SHULKER_BOX = VanillaMaterial.YELLOW_SHULKER_BOX;
+    Material YELLOW_STAINED_GLASS = VanillaMaterial.YELLOW_STAINED_GLASS;
+    Material YELLOW_STAINED_GLASS_PANE = VanillaMaterial.YELLOW_STAINED_GLASS_PANE;
+    Material YELLOW_TERRACOTTA = VanillaMaterial.YELLOW_TERRACOTTA;
+    Material YELLOW_WALL_BANNER = VanillaMaterial.YELLOW_WALL_BANNER;
+    Material YELLOW_WOOL = VanillaMaterial.YELLOW_WOOL;
+    Material ZOMBIE_HEAD = VanillaMaterial.ZOMBIE_HEAD;
+    Material ZOMBIE_WALL_HEAD = VanillaMaterial.ZOMBIE_WALL_HEAD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_AIR = VanillaMaterial.LEGACY_AIR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE = VanillaMaterial.LEGACY_STONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GRASS = VanillaMaterial.LEGACY_GRASS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIRT = VanillaMaterial.LEGACY_DIRT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COBBLESTONE = VanillaMaterial.LEGACY_COBBLESTONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD = VanillaMaterial.LEGACY_WOOD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SAPLING = VanillaMaterial.LEGACY_SAPLING;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BEDROCK = VanillaMaterial.LEGACY_BEDROCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WATER = VanillaMaterial.LEGACY_WATER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STATIONARY_WATER = VanillaMaterial.LEGACY_STATIONARY_WATER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LAVA = VanillaMaterial.LEGACY_LAVA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STATIONARY_LAVA = VanillaMaterial.LEGACY_STATIONARY_LAVA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SAND = VanillaMaterial.LEGACY_SAND;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GRAVEL = VanillaMaterial.LEGACY_GRAVEL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_ORE = VanillaMaterial.LEGACY_GOLD_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_ORE = VanillaMaterial.LEGACY_IRON_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COAL_ORE = VanillaMaterial.LEGACY_COAL_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LOG = VanillaMaterial.LEGACY_LOG;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEAVES = VanillaMaterial.LEGACY_LEAVES;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPONGE = VanillaMaterial.LEGACY_SPONGE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GLASS = VanillaMaterial.LEGACY_GLASS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LAPIS_ORE = VanillaMaterial.LEGACY_LAPIS_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LAPIS_BLOCK = VanillaMaterial.LEGACY_LAPIS_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DISPENSER = VanillaMaterial.LEGACY_DISPENSER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SANDSTONE = VanillaMaterial.LEGACY_SANDSTONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NOTE_BLOCK = VanillaMaterial.LEGACY_NOTE_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BED_BLOCK = VanillaMaterial.LEGACY_BED_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_POWERED_RAIL = VanillaMaterial.LEGACY_POWERED_RAIL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DETECTOR_RAIL = VanillaMaterial.LEGACY_DETECTOR_RAIL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PISTON_STICKY_BASE = VanillaMaterial.LEGACY_PISTON_STICKY_BASE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WEB = VanillaMaterial.LEGACY_WEB;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LONG_GRASS = VanillaMaterial.LEGACY_LONG_GRASS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DEAD_BUSH = VanillaMaterial.LEGACY_DEAD_BUSH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PISTON_BASE = VanillaMaterial.LEGACY_PISTON_BASE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PISTON_EXTENSION = VanillaMaterial.LEGACY_PISTON_EXTENSION;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOL = VanillaMaterial.LEGACY_WOOL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PISTON_MOVING_PIECE = VanillaMaterial.LEGACY_PISTON_MOVING_PIECE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_YELLOW_FLOWER = VanillaMaterial.LEGACY_YELLOW_FLOWER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RED_ROSE = VanillaMaterial.LEGACY_RED_ROSE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BROWN_MUSHROOM = VanillaMaterial.LEGACY_BROWN_MUSHROOM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RED_MUSHROOM = VanillaMaterial.LEGACY_RED_MUSHROOM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_BLOCK = VanillaMaterial.LEGACY_GOLD_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_BLOCK = VanillaMaterial.LEGACY_IRON_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DOUBLE_STEP = VanillaMaterial.LEGACY_DOUBLE_STEP;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STEP = VanillaMaterial.LEGACY_STEP;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BRICK = VanillaMaterial.LEGACY_BRICK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_TNT = VanillaMaterial.LEGACY_TNT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOOKSHELF = VanillaMaterial.LEGACY_BOOKSHELF;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MOSSY_COBBLESTONE = VanillaMaterial.LEGACY_MOSSY_COBBLESTONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_OBSIDIAN = VanillaMaterial.LEGACY_OBSIDIAN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_TORCH = VanillaMaterial.LEGACY_TORCH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FIRE = VanillaMaterial.LEGACY_FIRE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MOB_SPAWNER = VanillaMaterial.LEGACY_MOB_SPAWNER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_STAIRS = VanillaMaterial.LEGACY_WOOD_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHEST = VanillaMaterial.LEGACY_CHEST;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_WIRE = VanillaMaterial.LEGACY_REDSTONE_WIRE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_ORE = VanillaMaterial.LEGACY_DIAMOND_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_BLOCK = VanillaMaterial.LEGACY_DIAMOND_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WORKBENCH = VanillaMaterial.LEGACY_WORKBENCH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CROPS = VanillaMaterial.LEGACY_CROPS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SOIL = VanillaMaterial.LEGACY_SOIL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FURNACE = VanillaMaterial.LEGACY_FURNACE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BURNING_FURNACE = VanillaMaterial.LEGACY_BURNING_FURNACE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SIGN_POST = VanillaMaterial.LEGACY_SIGN_POST;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOODEN_DOOR = VanillaMaterial.LEGACY_WOODEN_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LADDER = VanillaMaterial.LEGACY_LADDER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RAILS = VanillaMaterial.LEGACY_RAILS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COBBLESTONE_STAIRS = VanillaMaterial.LEGACY_COBBLESTONE_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WALL_SIGN = VanillaMaterial.LEGACY_WALL_SIGN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEVER = VanillaMaterial.LEGACY_LEVER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE_PLATE = VanillaMaterial.LEGACY_STONE_PLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_DOOR_BLOCK = VanillaMaterial.LEGACY_IRON_DOOR_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_PLATE = VanillaMaterial.LEGACY_WOOD_PLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_ORE = VanillaMaterial.LEGACY_REDSTONE_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GLOWING_REDSTONE_ORE = VanillaMaterial.LEGACY_GLOWING_REDSTONE_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_TORCH_OFF = VanillaMaterial.LEGACY_REDSTONE_TORCH_OFF;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_TORCH_ON = VanillaMaterial.LEGACY_REDSTONE_TORCH_ON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE_BUTTON = VanillaMaterial.LEGACY_STONE_BUTTON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SNOW = VanillaMaterial.LEGACY_SNOW;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ICE = VanillaMaterial.LEGACY_ICE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SNOW_BLOCK = VanillaMaterial.LEGACY_SNOW_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CACTUS = VanillaMaterial.LEGACY_CACTUS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CLAY = VanillaMaterial.LEGACY_CLAY;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SUGAR_CANE_BLOCK = VanillaMaterial.LEGACY_SUGAR_CANE_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_JUKEBOX = VanillaMaterial.LEGACY_JUKEBOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FENCE = VanillaMaterial.LEGACY_FENCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PUMPKIN = VanillaMaterial.LEGACY_PUMPKIN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHERRACK = VanillaMaterial.LEGACY_NETHERRACK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SOUL_SAND = VanillaMaterial.LEGACY_SOUL_SAND;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GLOWSTONE = VanillaMaterial.LEGACY_GLOWSTONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PORTAL = VanillaMaterial.LEGACY_PORTAL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_JACK_O_LANTERN = VanillaMaterial.LEGACY_JACK_O_LANTERN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CAKE_BLOCK = VanillaMaterial.LEGACY_CAKE_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIODE_BLOCK_OFF = VanillaMaterial.LEGACY_DIODE_BLOCK_OFF;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIODE_BLOCK_ON = VanillaMaterial.LEGACY_DIODE_BLOCK_ON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STAINED_GLASS = VanillaMaterial.LEGACY_STAINED_GLASS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_TRAP_DOOR = VanillaMaterial.LEGACY_TRAP_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MONSTER_EGGS = VanillaMaterial.LEGACY_MONSTER_EGGS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SMOOTH_BRICK = VanillaMaterial.LEGACY_SMOOTH_BRICK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_HUGE_MUSHROOM_1 = VanillaMaterial.LEGACY_HUGE_MUSHROOM_1;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_HUGE_MUSHROOM_2 = VanillaMaterial.LEGACY_HUGE_MUSHROOM_2;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_FENCE = VanillaMaterial.LEGACY_IRON_FENCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_THIN_GLASS = VanillaMaterial.LEGACY_THIN_GLASS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MELON_BLOCK = VanillaMaterial.LEGACY_MELON_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PUMPKIN_STEM = VanillaMaterial.LEGACY_PUMPKIN_STEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MELON_STEM = VanillaMaterial.LEGACY_MELON_STEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_VINE = VanillaMaterial.LEGACY_VINE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FENCE_GATE = VanillaMaterial.LEGACY_FENCE_GATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BRICK_STAIRS = VanillaMaterial.LEGACY_BRICK_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SMOOTH_STAIRS = VanillaMaterial.LEGACY_SMOOTH_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MYCEL = VanillaMaterial.LEGACY_MYCEL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WATER_LILY = VanillaMaterial.LEGACY_WATER_LILY;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHER_BRICK = VanillaMaterial.LEGACY_NETHER_BRICK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHER_FENCE = VanillaMaterial.LEGACY_NETHER_FENCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHER_BRICK_STAIRS = VanillaMaterial.LEGACY_NETHER_BRICK_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHER_WARTS = VanillaMaterial.LEGACY_NETHER_WARTS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ENCHANTMENT_TABLE = VanillaMaterial.LEGACY_ENCHANTMENT_TABLE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BREWING_STAND = VanillaMaterial.LEGACY_BREWING_STAND;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CAULDRON = VanillaMaterial.LEGACY_CAULDRON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ENDER_PORTAL = VanillaMaterial.LEGACY_ENDER_PORTAL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ENDER_PORTAL_FRAME = VanillaMaterial.LEGACY_ENDER_PORTAL_FRAME;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ENDER_STONE = VanillaMaterial.LEGACY_ENDER_STONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DRAGON_EGG = VanillaMaterial.LEGACY_DRAGON_EGG;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_LAMP_OFF = VanillaMaterial.LEGACY_REDSTONE_LAMP_OFF;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_LAMP_ON = VanillaMaterial.LEGACY_REDSTONE_LAMP_ON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_DOUBLE_STEP = VanillaMaterial.LEGACY_WOOD_DOUBLE_STEP;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_STEP = VanillaMaterial.LEGACY_WOOD_STEP;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COCOA = VanillaMaterial.LEGACY_COCOA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SANDSTONE_STAIRS = VanillaMaterial.LEGACY_SANDSTONE_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_EMERALD_ORE = VanillaMaterial.LEGACY_EMERALD_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ENDER_CHEST = VanillaMaterial.LEGACY_ENDER_CHEST;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_TRIPWIRE_HOOK = VanillaMaterial.LEGACY_TRIPWIRE_HOOK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_TRIPWIRE = VanillaMaterial.LEGACY_TRIPWIRE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_EMERALD_BLOCK = VanillaMaterial.LEGACY_EMERALD_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPRUCE_WOOD_STAIRS = VanillaMaterial.LEGACY_SPRUCE_WOOD_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BIRCH_WOOD_STAIRS = VanillaMaterial.LEGACY_BIRCH_WOOD_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_JUNGLE_WOOD_STAIRS = VanillaMaterial.LEGACY_JUNGLE_WOOD_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COMMAND = VanillaMaterial.LEGACY_COMMAND;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BEACON = VanillaMaterial.LEGACY_BEACON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COBBLE_WALL = VanillaMaterial.LEGACY_COBBLE_WALL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FLOWER_POT = VanillaMaterial.LEGACY_FLOWER_POT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CARROT = VanillaMaterial.LEGACY_CARROT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_POTATO = VanillaMaterial.LEGACY_POTATO;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_BUTTON = VanillaMaterial.LEGACY_WOOD_BUTTON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SKULL = VanillaMaterial.LEGACY_SKULL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ANVIL = VanillaMaterial.LEGACY_ANVIL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_TRAPPED_CHEST = VanillaMaterial.LEGACY_TRAPPED_CHEST;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_PLATE = VanillaMaterial.LEGACY_GOLD_PLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_PLATE = VanillaMaterial.LEGACY_IRON_PLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_COMPARATOR_OFF = VanillaMaterial.LEGACY_REDSTONE_COMPARATOR_OFF;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_COMPARATOR_ON = VanillaMaterial.LEGACY_REDSTONE_COMPARATOR_ON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DAYLIGHT_DETECTOR = VanillaMaterial.LEGACY_DAYLIGHT_DETECTOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_BLOCK = VanillaMaterial.LEGACY_REDSTONE_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_QUARTZ_ORE = VanillaMaterial.LEGACY_QUARTZ_ORE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_HOPPER = VanillaMaterial.LEGACY_HOPPER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_QUARTZ_BLOCK = VanillaMaterial.LEGACY_QUARTZ_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_QUARTZ_STAIRS = VanillaMaterial.LEGACY_QUARTZ_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ACTIVATOR_RAIL = VanillaMaterial.LEGACY_ACTIVATOR_RAIL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DROPPER = VanillaMaterial.LEGACY_DROPPER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STAINED_CLAY = VanillaMaterial.LEGACY_STAINED_CLAY;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STAINED_GLASS_PANE = VanillaMaterial.LEGACY_STAINED_GLASS_PANE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEAVES_2 = VanillaMaterial.LEGACY_LEAVES_2;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LOG_2 = VanillaMaterial.LEGACY_LOG_2;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ACACIA_STAIRS = VanillaMaterial.LEGACY_ACACIA_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DARK_OAK_STAIRS = VanillaMaterial.LEGACY_DARK_OAK_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SLIME_BLOCK = VanillaMaterial.LEGACY_SLIME_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BARRIER = VanillaMaterial.LEGACY_BARRIER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_TRAPDOOR = VanillaMaterial.LEGACY_IRON_TRAPDOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PRISMARINE = VanillaMaterial.LEGACY_PRISMARINE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SEA_LANTERN = VanillaMaterial.LEGACY_SEA_LANTERN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_HAY_BLOCK = VanillaMaterial.LEGACY_HAY_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CARPET = VanillaMaterial.LEGACY_CARPET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_HARD_CLAY = VanillaMaterial.LEGACY_HARD_CLAY;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COAL_BLOCK = VanillaMaterial.LEGACY_COAL_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PACKED_ICE = VanillaMaterial.LEGACY_PACKED_ICE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DOUBLE_PLANT = VanillaMaterial.LEGACY_DOUBLE_PLANT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STANDING_BANNER = VanillaMaterial.LEGACY_STANDING_BANNER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WALL_BANNER = VanillaMaterial.LEGACY_WALL_BANNER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DAYLIGHT_DETECTOR_INVERTED = VanillaMaterial.LEGACY_DAYLIGHT_DETECTOR_INVERTED;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RED_SANDSTONE = VanillaMaterial.LEGACY_RED_SANDSTONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RED_SANDSTONE_STAIRS = VanillaMaterial.LEGACY_RED_SANDSTONE_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DOUBLE_STONE_SLAB2 = VanillaMaterial.LEGACY_DOUBLE_STONE_SLAB2;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE_SLAB2 = VanillaMaterial.LEGACY_STONE_SLAB2;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPRUCE_FENCE_GATE = VanillaMaterial.LEGACY_SPRUCE_FENCE_GATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BIRCH_FENCE_GATE = VanillaMaterial.LEGACY_BIRCH_FENCE_GATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_JUNGLE_FENCE_GATE = VanillaMaterial.LEGACY_JUNGLE_FENCE_GATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DARK_OAK_FENCE_GATE = VanillaMaterial.LEGACY_DARK_OAK_FENCE_GATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ACACIA_FENCE_GATE = VanillaMaterial.LEGACY_ACACIA_FENCE_GATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPRUCE_FENCE = VanillaMaterial.LEGACY_SPRUCE_FENCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BIRCH_FENCE = VanillaMaterial.LEGACY_BIRCH_FENCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_JUNGLE_FENCE = VanillaMaterial.LEGACY_JUNGLE_FENCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DARK_OAK_FENCE = VanillaMaterial.LEGACY_DARK_OAK_FENCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ACACIA_FENCE = VanillaMaterial.LEGACY_ACACIA_FENCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPRUCE_DOOR = VanillaMaterial.LEGACY_SPRUCE_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BIRCH_DOOR = VanillaMaterial.LEGACY_BIRCH_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_JUNGLE_DOOR = VanillaMaterial.LEGACY_JUNGLE_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ACACIA_DOOR = VanillaMaterial.LEGACY_ACACIA_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DARK_OAK_DOOR = VanillaMaterial.LEGACY_DARK_OAK_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_END_ROD = VanillaMaterial.LEGACY_END_ROD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHORUS_PLANT = VanillaMaterial.LEGACY_CHORUS_PLANT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHORUS_FLOWER = VanillaMaterial.LEGACY_CHORUS_FLOWER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PURPUR_BLOCK = VanillaMaterial.LEGACY_PURPUR_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PURPUR_PILLAR = VanillaMaterial.LEGACY_PURPUR_PILLAR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PURPUR_STAIRS = VanillaMaterial.LEGACY_PURPUR_STAIRS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PURPUR_DOUBLE_SLAB = VanillaMaterial.LEGACY_PURPUR_DOUBLE_SLAB;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PURPUR_SLAB = VanillaMaterial.LEGACY_PURPUR_SLAB;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_END_BRICKS = VanillaMaterial.LEGACY_END_BRICKS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BEETROOT_BLOCK = VanillaMaterial.LEGACY_BEETROOT_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GRASS_PATH = VanillaMaterial.LEGACY_GRASS_PATH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_END_GATEWAY = VanillaMaterial.LEGACY_END_GATEWAY;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COMMAND_REPEATING = VanillaMaterial.LEGACY_COMMAND_REPEATING;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COMMAND_CHAIN = VanillaMaterial.LEGACY_COMMAND_CHAIN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FROSTED_ICE = VanillaMaterial.LEGACY_FROSTED_ICE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MAGMA = VanillaMaterial.LEGACY_MAGMA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHER_WART_BLOCK = VanillaMaterial.LEGACY_NETHER_WART_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RED_NETHER_BRICK = VanillaMaterial.LEGACY_RED_NETHER_BRICK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BONE_BLOCK = VanillaMaterial.LEGACY_BONE_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STRUCTURE_VOID = VanillaMaterial.LEGACY_STRUCTURE_VOID;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_OBSERVER = VanillaMaterial.LEGACY_OBSERVER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WHITE_SHULKER_BOX = VanillaMaterial.LEGACY_WHITE_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ORANGE_SHULKER_BOX = VanillaMaterial.LEGACY_ORANGE_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MAGENTA_SHULKER_BOX = VanillaMaterial.LEGACY_MAGENTA_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LIGHT_BLUE_SHULKER_BOX = VanillaMaterial.LEGACY_LIGHT_BLUE_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_YELLOW_SHULKER_BOX = VanillaMaterial.LEGACY_YELLOW_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LIME_SHULKER_BOX = VanillaMaterial.LEGACY_LIME_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PINK_SHULKER_BOX = VanillaMaterial.LEGACY_PINK_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GRAY_SHULKER_BOX = VanillaMaterial.LEGACY_GRAY_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SILVER_SHULKER_BOX = VanillaMaterial.LEGACY_SILVER_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CYAN_SHULKER_BOX = VanillaMaterial.LEGACY_CYAN_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PURPLE_SHULKER_BOX = VanillaMaterial.LEGACY_PURPLE_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BLUE_SHULKER_BOX = VanillaMaterial.LEGACY_BLUE_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BROWN_SHULKER_BOX = VanillaMaterial.LEGACY_BROWN_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GREEN_SHULKER_BOX = VanillaMaterial.LEGACY_GREEN_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RED_SHULKER_BOX = VanillaMaterial.LEGACY_RED_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BLACK_SHULKER_BOX = VanillaMaterial.LEGACY_BLACK_SHULKER_BOX;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WHITE_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_WHITE_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ORANGE_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_ORANGE_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MAGENTA_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_MAGENTA_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LIGHT_BLUE_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_LIGHT_BLUE_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_YELLOW_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_YELLOW_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LIME_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_LIME_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PINK_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_PINK_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GRAY_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_GRAY_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SILVER_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_SILVER_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CYAN_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_CYAN_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PURPLE_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_PURPLE_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BLUE_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_BLUE_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BROWN_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_BROWN_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GREEN_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_GREEN_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RED_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_RED_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BLACK_GLAZED_TERRACOTTA = VanillaMaterial.LEGACY_BLACK_GLAZED_TERRACOTTA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CONCRETE = VanillaMaterial.LEGACY_CONCRETE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CONCRETE_POWDER = VanillaMaterial.LEGACY_CONCRETE_POWDER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STRUCTURE_BLOCK = VanillaMaterial.LEGACY_STRUCTURE_BLOCK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_SPADE = VanillaMaterial.LEGACY_IRON_SPADE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_PICKAXE = VanillaMaterial.LEGACY_IRON_PICKAXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_AXE = VanillaMaterial.LEGACY_IRON_AXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FLINT_AND_STEEL = VanillaMaterial.LEGACY_FLINT_AND_STEEL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_APPLE = VanillaMaterial.LEGACY_APPLE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOW = VanillaMaterial.LEGACY_BOW;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ARROW = VanillaMaterial.LEGACY_ARROW;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COAL = VanillaMaterial.LEGACY_COAL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND = VanillaMaterial.LEGACY_DIAMOND;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_INGOT = VanillaMaterial.LEGACY_IRON_INGOT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_INGOT = VanillaMaterial.LEGACY_GOLD_INGOT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_SWORD = VanillaMaterial.LEGACY_IRON_SWORD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_SWORD = VanillaMaterial.LEGACY_WOOD_SWORD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_SPADE = VanillaMaterial.LEGACY_WOOD_SPADE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_PICKAXE = VanillaMaterial.LEGACY_WOOD_PICKAXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_AXE = VanillaMaterial.LEGACY_WOOD_AXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE_SWORD = VanillaMaterial.LEGACY_STONE_SWORD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE_SPADE = VanillaMaterial.LEGACY_STONE_SPADE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE_PICKAXE = VanillaMaterial.LEGACY_STONE_PICKAXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE_AXE = VanillaMaterial.LEGACY_STONE_AXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_SWORD = VanillaMaterial.LEGACY_DIAMOND_SWORD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_SPADE = VanillaMaterial.LEGACY_DIAMOND_SPADE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_PICKAXE = VanillaMaterial.LEGACY_DIAMOND_PICKAXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_AXE = VanillaMaterial.LEGACY_DIAMOND_AXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STICK = VanillaMaterial.LEGACY_STICK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOWL = VanillaMaterial.LEGACY_BOWL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MUSHROOM_SOUP = VanillaMaterial.LEGACY_MUSHROOM_SOUP;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_SWORD = VanillaMaterial.LEGACY_GOLD_SWORD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_SPADE = VanillaMaterial.LEGACY_GOLD_SPADE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_PICKAXE = VanillaMaterial.LEGACY_GOLD_PICKAXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_AXE = VanillaMaterial.LEGACY_GOLD_AXE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STRING = VanillaMaterial.LEGACY_STRING;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FEATHER = VanillaMaterial.LEGACY_FEATHER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SULPHUR = VanillaMaterial.LEGACY_SULPHUR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_HOE = VanillaMaterial.LEGACY_WOOD_HOE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STONE_HOE = VanillaMaterial.LEGACY_STONE_HOE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_HOE = VanillaMaterial.LEGACY_IRON_HOE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_HOE = VanillaMaterial.LEGACY_DIAMOND_HOE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_HOE = VanillaMaterial.LEGACY_GOLD_HOE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SEEDS = VanillaMaterial.LEGACY_SEEDS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WHEAT = VanillaMaterial.LEGACY_WHEAT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BREAD = VanillaMaterial.LEGACY_BREAD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEATHER_HELMET = VanillaMaterial.LEGACY_LEATHER_HELMET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEATHER_CHESTPLATE = VanillaMaterial.LEGACY_LEATHER_CHESTPLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEATHER_LEGGINGS = VanillaMaterial.LEGACY_LEATHER_LEGGINGS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEATHER_BOOTS = VanillaMaterial.LEGACY_LEATHER_BOOTS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHAINMAIL_HELMET = VanillaMaterial.LEGACY_CHAINMAIL_HELMET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHAINMAIL_CHESTPLATE = VanillaMaterial.LEGACY_CHAINMAIL_CHESTPLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHAINMAIL_LEGGINGS = VanillaMaterial.LEGACY_CHAINMAIL_LEGGINGS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHAINMAIL_BOOTS = VanillaMaterial.LEGACY_CHAINMAIL_BOOTS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_HELMET = VanillaMaterial.LEGACY_IRON_HELMET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_CHESTPLATE = VanillaMaterial.LEGACY_IRON_CHESTPLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_LEGGINGS = VanillaMaterial.LEGACY_IRON_LEGGINGS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_BOOTS = VanillaMaterial.LEGACY_IRON_BOOTS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_HELMET = VanillaMaterial.LEGACY_DIAMOND_HELMET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_CHESTPLATE = VanillaMaterial.LEGACY_DIAMOND_CHESTPLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_LEGGINGS = VanillaMaterial.LEGACY_DIAMOND_LEGGINGS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_BOOTS = VanillaMaterial.LEGACY_DIAMOND_BOOTS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_HELMET = VanillaMaterial.LEGACY_GOLD_HELMET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_CHESTPLATE = VanillaMaterial.LEGACY_GOLD_CHESTPLATE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_LEGGINGS = VanillaMaterial.LEGACY_GOLD_LEGGINGS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_BOOTS = VanillaMaterial.LEGACY_GOLD_BOOTS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FLINT = VanillaMaterial.LEGACY_FLINT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PORK = VanillaMaterial.LEGACY_PORK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GRILLED_PORK = VanillaMaterial.LEGACY_GRILLED_PORK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PAINTING = VanillaMaterial.LEGACY_PAINTING;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLDEN_APPLE = VanillaMaterial.LEGACY_GOLDEN_APPLE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SIGN = VanillaMaterial.LEGACY_SIGN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WOOD_DOOR = VanillaMaterial.LEGACY_WOOD_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BUCKET = VanillaMaterial.LEGACY_BUCKET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WATER_BUCKET = VanillaMaterial.LEGACY_WATER_BUCKET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LAVA_BUCKET = VanillaMaterial.LEGACY_LAVA_BUCKET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MINECART = VanillaMaterial.LEGACY_MINECART;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SADDLE = VanillaMaterial.LEGACY_SADDLE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_DOOR = VanillaMaterial.LEGACY_IRON_DOOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE = VanillaMaterial.LEGACY_REDSTONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SNOW_BALL = VanillaMaterial.LEGACY_SNOW_BALL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOAT = VanillaMaterial.LEGACY_BOAT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEATHER = VanillaMaterial.LEGACY_LEATHER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MILK_BUCKET = VanillaMaterial.LEGACY_MILK_BUCKET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CLAY_BRICK = VanillaMaterial.LEGACY_CLAY_BRICK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CLAY_BALL = VanillaMaterial.LEGACY_CLAY_BALL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SUGAR_CANE = VanillaMaterial.LEGACY_SUGAR_CANE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PAPER = VanillaMaterial.LEGACY_PAPER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOOK = VanillaMaterial.LEGACY_BOOK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SLIME_BALL = VanillaMaterial.LEGACY_SLIME_BALL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_STORAGE_MINECART = VanillaMaterial.LEGACY_STORAGE_MINECART;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_POWERED_MINECART = VanillaMaterial.LEGACY_POWERED_MINECART;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_EGG = VanillaMaterial.LEGACY_EGG;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COMPASS = VanillaMaterial.LEGACY_COMPASS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FISHING_ROD = VanillaMaterial.LEGACY_FISHING_ROD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WATCH = VanillaMaterial.LEGACY_WATCH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GLOWSTONE_DUST = VanillaMaterial.LEGACY_GLOWSTONE_DUST;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RAW_FISH = VanillaMaterial.LEGACY_RAW_FISH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COOKED_FISH = VanillaMaterial.LEGACY_COOKED_FISH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_INK_SACK = VanillaMaterial.LEGACY_INK_SACK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BONE = VanillaMaterial.LEGACY_BONE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SUGAR = VanillaMaterial.LEGACY_SUGAR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CAKE = VanillaMaterial.LEGACY_CAKE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BED = VanillaMaterial.LEGACY_BED;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIODE = VanillaMaterial.LEGACY_DIODE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COOKIE = VanillaMaterial.LEGACY_COOKIE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MAP = VanillaMaterial.LEGACY_MAP;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SHEARS = VanillaMaterial.LEGACY_SHEARS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MELON = VanillaMaterial.LEGACY_MELON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PUMPKIN_SEEDS = VanillaMaterial.LEGACY_PUMPKIN_SEEDS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MELON_SEEDS = VanillaMaterial.LEGACY_MELON_SEEDS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RAW_BEEF = VanillaMaterial.LEGACY_RAW_BEEF;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COOKED_BEEF = VanillaMaterial.LEGACY_COOKED_BEEF;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RAW_CHICKEN = VanillaMaterial.LEGACY_RAW_CHICKEN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COOKED_CHICKEN = VanillaMaterial.LEGACY_COOKED_CHICKEN;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ROTTEN_FLESH = VanillaMaterial.LEGACY_ROTTEN_FLESH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ENDER_PEARL = VanillaMaterial.LEGACY_ENDER_PEARL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BLAZE_ROD = VanillaMaterial.LEGACY_BLAZE_ROD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GHAST_TEAR = VanillaMaterial.LEGACY_GHAST_TEAR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_NUGGET = VanillaMaterial.LEGACY_GOLD_NUGGET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHER_STALK = VanillaMaterial.LEGACY_NETHER_STALK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_POTION = VanillaMaterial.LEGACY_POTION;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GLASS_BOTTLE = VanillaMaterial.LEGACY_GLASS_BOTTLE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPIDER_EYE = VanillaMaterial.LEGACY_SPIDER_EYE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FERMENTED_SPIDER_EYE = VanillaMaterial.LEGACY_FERMENTED_SPIDER_EYE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BLAZE_POWDER = VanillaMaterial.LEGACY_BLAZE_POWDER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MAGMA_CREAM = VanillaMaterial.LEGACY_MAGMA_CREAM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BREWING_STAND_ITEM = VanillaMaterial.LEGACY_BREWING_STAND_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CAULDRON_ITEM = VanillaMaterial.LEGACY_CAULDRON_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_EYE_OF_ENDER = VanillaMaterial.LEGACY_EYE_OF_ENDER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPECKLED_MELON = VanillaMaterial.LEGACY_SPECKLED_MELON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MONSTER_EGG = VanillaMaterial.LEGACY_MONSTER_EGG;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_EXP_BOTTLE = VanillaMaterial.LEGACY_EXP_BOTTLE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FIREBALL = VanillaMaterial.LEGACY_FIREBALL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOOK_AND_QUILL = VanillaMaterial.LEGACY_BOOK_AND_QUILL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_WRITTEN_BOOK = VanillaMaterial.LEGACY_WRITTEN_BOOK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_EMERALD = VanillaMaterial.LEGACY_EMERALD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ITEM_FRAME = VanillaMaterial.LEGACY_ITEM_FRAME;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FLOWER_POT_ITEM = VanillaMaterial.LEGACY_FLOWER_POT_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CARROT_ITEM = VanillaMaterial.LEGACY_CARROT_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_POTATO_ITEM = VanillaMaterial.LEGACY_POTATO_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BAKED_POTATO = VanillaMaterial.LEGACY_BAKED_POTATO;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_POISONOUS_POTATO = VanillaMaterial.LEGACY_POISONOUS_POTATO;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_EMPTY_MAP = VanillaMaterial.LEGACY_EMPTY_MAP;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLDEN_CARROT = VanillaMaterial.LEGACY_GOLDEN_CARROT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SKULL_ITEM = VanillaMaterial.LEGACY_SKULL_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CARROT_STICK = VanillaMaterial.LEGACY_CARROT_STICK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHER_STAR = VanillaMaterial.LEGACY_NETHER_STAR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PUMPKIN_PIE = VanillaMaterial.LEGACY_PUMPKIN_PIE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FIREWORK = VanillaMaterial.LEGACY_FIREWORK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_FIREWORK_CHARGE = VanillaMaterial.LEGACY_FIREWORK_CHARGE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ENCHANTED_BOOK = VanillaMaterial.LEGACY_ENCHANTED_BOOK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_REDSTONE_COMPARATOR = VanillaMaterial.LEGACY_REDSTONE_COMPARATOR;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NETHER_BRICK_ITEM = VanillaMaterial.LEGACY_NETHER_BRICK_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_QUARTZ = VanillaMaterial.LEGACY_QUARTZ;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_EXPLOSIVE_MINECART = VanillaMaterial.LEGACY_EXPLOSIVE_MINECART;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_HOPPER_MINECART = VanillaMaterial.LEGACY_HOPPER_MINECART;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PRISMARINE_SHARD = VanillaMaterial.LEGACY_PRISMARINE_SHARD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_PRISMARINE_CRYSTALS = VanillaMaterial.LEGACY_PRISMARINE_CRYSTALS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RABBIT = VanillaMaterial.LEGACY_RABBIT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COOKED_RABBIT = VanillaMaterial.LEGACY_COOKED_RABBIT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RABBIT_STEW = VanillaMaterial.LEGACY_RABBIT_STEW;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RABBIT_FOOT = VanillaMaterial.LEGACY_RABBIT_FOOT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RABBIT_HIDE = VanillaMaterial.LEGACY_RABBIT_HIDE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ARMOR_STAND = VanillaMaterial.LEGACY_ARMOR_STAND;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_BARDING = VanillaMaterial.LEGACY_IRON_BARDING;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_BARDING = VanillaMaterial.LEGACY_GOLD_BARDING;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DIAMOND_BARDING = VanillaMaterial.LEGACY_DIAMOND_BARDING;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LEASH = VanillaMaterial.LEGACY_LEASH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_NAME_TAG = VanillaMaterial.LEGACY_NAME_TAG;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COMMAND_MINECART = VanillaMaterial.LEGACY_COMMAND_MINECART;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_MUTTON = VanillaMaterial.LEGACY_MUTTON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_COOKED_MUTTON = VanillaMaterial.LEGACY_COOKED_MUTTON;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BANNER = VanillaMaterial.LEGACY_BANNER;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_END_CRYSTAL = VanillaMaterial.LEGACY_END_CRYSTAL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPRUCE_DOOR_ITEM = VanillaMaterial.LEGACY_SPRUCE_DOOR_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BIRCH_DOOR_ITEM = VanillaMaterial.LEGACY_BIRCH_DOOR_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_JUNGLE_DOOR_ITEM = VanillaMaterial.LEGACY_JUNGLE_DOOR_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ACACIA_DOOR_ITEM = VanillaMaterial.LEGACY_ACACIA_DOOR_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DARK_OAK_DOOR_ITEM = VanillaMaterial.LEGACY_DARK_OAK_DOOR_ITEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHORUS_FRUIT = VanillaMaterial.LEGACY_CHORUS_FRUIT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_CHORUS_FRUIT_POPPED = VanillaMaterial.LEGACY_CHORUS_FRUIT_POPPED;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BEETROOT = VanillaMaterial.LEGACY_BEETROOT;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BEETROOT_SEEDS = VanillaMaterial.LEGACY_BEETROOT_SEEDS;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BEETROOT_SOUP = VanillaMaterial.LEGACY_BEETROOT_SOUP;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_DRAGONS_BREATH = VanillaMaterial.LEGACY_DRAGONS_BREATH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPLASH_POTION = VanillaMaterial.LEGACY_SPLASH_POTION;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SPECTRAL_ARROW = VanillaMaterial.LEGACY_SPECTRAL_ARROW;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_TIPPED_ARROW = VanillaMaterial.LEGACY_TIPPED_ARROW;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_LINGERING_POTION = VanillaMaterial.LEGACY_LINGERING_POTION;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SHIELD = VanillaMaterial.LEGACY_SHIELD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_ELYTRA = VanillaMaterial.LEGACY_ELYTRA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOAT_SPRUCE = VanillaMaterial.LEGACY_BOAT_SPRUCE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOAT_BIRCH = VanillaMaterial.LEGACY_BOAT_BIRCH;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOAT_JUNGLE = VanillaMaterial.LEGACY_BOAT_JUNGLE;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOAT_ACACIA = VanillaMaterial.LEGACY_BOAT_ACACIA;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_BOAT_DARK_OAK = VanillaMaterial.LEGACY_BOAT_DARK_OAK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_TOTEM = VanillaMaterial.LEGACY_TOTEM;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_SHULKER_SHELL = VanillaMaterial.LEGACY_SHULKER_SHELL;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_IRON_NUGGET = VanillaMaterial.LEGACY_IRON_NUGGET;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_KNOWLEDGE_BOOK = VanillaMaterial.LEGACY_KNOWLEDGE_BOOK;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GOLD_RECORD = VanillaMaterial.LEGACY_GOLD_RECORD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_GREEN_RECORD = VanillaMaterial.LEGACY_GREEN_RECORD;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_3 = VanillaMaterial.LEGACY_RECORD_3;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_4 = VanillaMaterial.LEGACY_RECORD_4;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_5 = VanillaMaterial.LEGACY_RECORD_5;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_6 = VanillaMaterial.LEGACY_RECORD_6;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_7 = VanillaMaterial.LEGACY_RECORD_7;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_8 = VanillaMaterial.LEGACY_RECORD_8;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_9 = VanillaMaterial.LEGACY_RECORD_9;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_10 = VanillaMaterial.LEGACY_RECORD_10;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_11 = VanillaMaterial.LEGACY_RECORD_11;
+    @Deprecated(since = "1.13", forRemoval = true)
+    Material LEGACY_RECORD_12 = VanillaMaterial.LEGACY_RECORD_12;
 
     @Deprecated(since = "1.13", forRemoval = true)
-    public static final String LEGACY_PREFIX = "LEGACY_";
+    String LEGACY_PREFIX = "LEGACY_";
 
-    private final int id;
-    private final Constructor<? extends MaterialData> ctor;
-    private static final Map<String, Material> BY_NAME = Maps.newHashMap();
-    public final Class<?> data;
-    private final boolean legacy;
-    private final NamespacedKey key;
-    private final Supplier<ItemType> itemType;
-    private final Supplier<BlockType> blockType;
-
-    private Material(final int id) {
-        this(id, MaterialData.class);
-    }
-
-    private Material(final int id, final Class<?> data) {
-        this.id = id;
-        this.data = data;
-        this.legacy = this.name().startsWith(LEGACY_PREFIX);
-        this.key = NamespacedKey.minecraft(this.name().toLowerCase(Locale.ROOT));
-        // try to cache the constructor for this material
-        try {
-            if (MaterialData.class.isAssignableFrom(data)) {
-                this.ctor = (Constructor<? extends MaterialData>) data.getConstructor(Material.class, byte.class);
-            } else {
-                this.ctor = null;
-            }
-        } catch (NoSuchMethodException ex) {
-            throw new AssertionError(ex);
-        } catch (SecurityException ex) {
-            throw new AssertionError(ex);
-        }
-
-        this.itemType = Suppliers.memoize(() -> {
-            Material material = this;
-            if (isLegacy()) {
-                material = Bukkit.getUnsafe().fromLegacy(new MaterialData(this), true);
-            }
-            return Registry.ITEM.get(material.key);
-        });
-        this.blockType = Suppliers.memoize(() -> {
-            Material material = this;
-            if (isLegacy()) {
-                material = Bukkit.getUnsafe().fromLegacy(new MaterialData(this), false);
-            }
-            return Registry.BLOCK.get(material.key);
-        });
-    }
+    // ---- instance API ----
 
     // Paper start - add Translatable
     @Override
-    public @NotNull String translationKey() {
-        if (this.isItem()) {
-            return java.util.Objects.requireNonNull(this.asItemType()).translationKey();
-        } else {
-            return java.util.Objects.requireNonNull(this.asBlockType()).translationKey();
-        }
-    }
+    @NotNull String translationKey();
+
+
     // Paper end - add Translatable
 
     // Paper start - item rarity API
@@ -2846,9 +2672,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      */
     @NotNull
     @Deprecated(forRemoval = true, since = "1.20.5")
-    public io.papermc.paper.inventory.ItemRarity getItemRarity() {
-        return new org.bukkit.inventory.ItemStack(this).getRarity();
-    }
+    io.papermc.paper.inventory.ItemRarity getItemRarity();
+
+
     // Paper end - item rarity API
 
     // Paper start - item default attributes API
@@ -2863,9 +2689,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      */
     @NotNull
     @Deprecated(forRemoval = true, since = "1.20.5")
-    public Multimap<Attribute, AttributeModifier> getItemAttributes(@NotNull EquipmentSlot equipmentSlot) {
-        return this.getDefaultAttributeModifiers(equipmentSlot);
-    }
+    Multimap<Attribute, AttributeModifier> getItemAttributes(@NotNull EquipmentSlot equipmentSlot);
+
+
     // Paper end - item default attributes API
 
     // Paper start - isCollidable API
@@ -2875,12 +2701,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return true if collidable
      * @throws IllegalArgumentException if {@link #isBlock()} is false
      */
-    public boolean isCollidable() {
-        if (this.isBlock()) {
-            return this.asBlockType().hasCollision();
-        }
-        throw new IllegalArgumentException(this + " isn't a block type");
-    }
+    boolean isCollidable();
+
+
     // Paper end - isCollidable API
 
     /**
@@ -2890,10 +2713,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @apiNote Internal Use Only
      */
     @ApiStatus.Internal // Paper
-    public int getId() {
-        Preconditions.checkArgument(legacy, "Cannot get ID of Modern Material");
-        return id;
-    }
+    int getId();
+
+
 
     /**
      * Checks if this constant is a legacy material.
@@ -2901,16 +2723,15 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return legacy status
      */
     // @Deprecated(since = "1.13", forRemoval = true) // Paper - this is useful, don't deprecate
-    public boolean isLegacy() {
-        return legacy;
-    }
+    boolean isLegacy();
+
+
 
     @NotNull
     @Override
-    public NamespacedKey getKey() {
-        Preconditions.checkArgument(!legacy, "Cannot get key of Legacy Material");
-        return key;
-    }
+    NamespacedKey getKey();
+
+
 
     /**
      * Gets the maximum amount of this material that can be held in a stack.
@@ -2922,23 +2743,18 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      *
      * @return Maximum stack size for this material
      */
-    public int getMaxStackSize() {
-        if (this == LEGACY_AIR) {
-            return 0;
-        }
-        ItemType type = asItemType();
-        return type == null ? 64 : type.getMaxStackSize();
-    }
+    int getMaxStackSize();
+
+
 
     /**
      * Gets the maximum durability of this material
      *
      * @return Maximum durability for this material
      */
-    public short getMaxDurability() {
-        ItemType type = asItemType();
-        return type == null ? 0 : type.getMaxDurability();
-    }
+    short getMaxDurability();
+
+
 
     /**
      * Creates a new {@link BlockData} instance for this Material, with all
@@ -2947,9 +2763,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return new data instance
      */
     @NotNull
-    public BlockData createBlockData() {
-        return Bukkit.createBlockData(this);
-    }
+    BlockData createBlockData();
+
+
 
     /**
      * Creates a new {@link BlockData} instance for this Material, with
@@ -2959,9 +2775,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return new data instance
      */
     @NotNull
-    public BlockData createBlockData(@Nullable Consumer<? super BlockData> consumer) {
-        return Bukkit.createBlockData(this, consumer);
-    }
+    BlockData createBlockData(@Nullable Consumer<? super BlockData> consumer);
+
+
 
     /**
      * Creates a new {@link BlockData} instance for this Material, with all
@@ -2973,9 +2789,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @throws IllegalArgumentException if the specified data is not valid
      */
     @NotNull
-    public BlockData createBlockData(@Nullable String data) throws IllegalArgumentException {
-        return Bukkit.createBlockData(this, data);
-    }
+    BlockData createBlockData(@Nullable String data) throws IllegalArgumentException;
+
+
 
     /**
      * Gets the MaterialData class associated with this Material
@@ -2985,10 +2801,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      */
     @NotNull
     @Deprecated // Paper
-    public Class<? extends MaterialData> getData() {
-        Preconditions.checkArgument(legacy, "Cannot get data class of Modern Material");
-        return ctor.getDeclaringClass();
-    }
+    Class<? extends MaterialData> getData();
+
+
 
     /**
      * Constructs a new MaterialData relevant for this Material, with the
@@ -3000,32 +2815,18 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      */
     @Deprecated(since = "1.6.2")
     @NotNull
-    public MaterialData getNewData(final byte raw) {
-        Preconditions.checkArgument(legacy, "Cannot get new data of Modern Material");
-        try {
-            return ctor.newInstance(this, raw);
-        } catch (InstantiationException ex) {
-            final Throwable t = ex.getCause();
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            }
-            if (t instanceof Error) {
-                throw (Error) t;
-            }
-            throw new AssertionError(t);
-        } catch (Throwable t) {
-            throw new AssertionError(t);
-        }
-    }
+    MaterialData getNewData(final byte raw);
+
+
 
     /**
      * Checks if this Material is a placable block
      *
      * @return true if this material is a block
      */
-    public boolean isBlock() {
-        return asBlockType() != null;
-    }
+    boolean isBlock();
+
+
 
     /**
      * Checks if this Material provides the {@link io.papermc.paper.datacomponent.DataComponentTypes#FOOD} and
@@ -3033,138 +2834,43 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      *
      * @return true if this Material is edible.
      */
-    public boolean isEdible() {
-        ItemType type = asItemType();
-        return type != null && type.isEdible();
-    }
+    boolean isEdible();
 
-    /**
-     * Attempts to get the Material with the given name.
-     * <p>
-     * This is a normal lookup, names must be the precise name they are given
-     * in the enum.
-     *
-     * @param name Name of the material to get
-     * @return Material if found, or null
-     */
-    @Nullable
-    public static Material getMaterial(@NotNull final String name) {
-        return getMaterial(name, false);
-    }
 
-    /**
-     * Attempts to get the Material with the given name.
-     * <p>
-     * This is a normal lookup, names must be the precise name they are given in
-     * the enum (but optionally including the LEGACY_PREFIX if legacyName is
-     * true).
-     * <p>
-     * If legacyName is true, then the lookup will be against legacy materials,
-     * but the returned Material will be a modern material (ie this method is
-     * useful for updating stored data).
-     *
-     * @param name Name of the material to get
-     * @param legacyName whether this is a legacy name lookup
-     * @return Material if found, or null
-     */
-    @Nullable
-    public static Material getMaterial(@NotNull String name, boolean legacyName) {
-        if (legacyName) {
-            if (!name.startsWith(LEGACY_PREFIX)) {
-                name = LEGACY_PREFIX + name;
-            }
-
-            Material match = BY_NAME.get(name);
-            return Bukkit.getUnsafe().fromLegacy(match);
-        }
-
-        return BY_NAME.get(name);
-    }
-
-    /**
-     * Attempts to match the Material with the given name.
-     * <p>
-     * This is a match lookup; names will be stripped of the "minecraft:"
-     * namespace, converted to uppercase, then stripped of special characters in
-     * an attempt to format it like the enum.
-     *
-     * @param name Name of the material to get
-     * @return Material if found, or null
-     */
-    @Nullable
-    public static Material matchMaterial(@NotNull final String name) {
-        return matchMaterial(name, false);
-    }
-
-    /**
-     * Attempts to match the Material with the given name.
-     * <p>
-     * This is a match lookup; names will be stripped of the "minecraft:"
-     * namespace, converted to uppercase, then stripped of special characters in
-     * an attempt to format it like the enum.
-     *
-     * @param name Name of the material to get
-     * @param legacyName whether this is a legacy name (see
-     * {@link #getMaterial(java.lang.String, boolean)}
-     * @return Material if found, or null
-     */
-    @Nullable
-    public static Material matchMaterial(@NotNull final String name, boolean legacyName) {
-        Preconditions.checkArgument(name != null, "Name cannot be null");
-
-        String filtered = name;
-        if (filtered.startsWith(NamespacedKey.MINECRAFT + ":")) {
-            filtered = filtered.substring((NamespacedKey.MINECRAFT + ":").length());
-        }
-
-        filtered = filtered.toUpperCase(Locale.ROOT);
-
-        filtered = filtered.replaceAll("\\s+", "_").replaceAll("\\W", "");
-        return getMaterial(filtered, legacyName);
-    }
-
-    static {
-        for (Material material : values()) {
-            BY_NAME.put(material.name(), material);
-        }
-    }
 
     /**
      * @return True if this material represents a playable music disk.
      */
-    public boolean isRecord() {
-        ItemType type = asItemType();
-        return type != null && type.isRecord();
-    }
+    boolean isRecord();
+
+
 
     /**
      * Check if the material is a block and solid (can be built upon)
      *
      * @return True if this material is a block and solid
      */
-    public boolean isSolid() {
-        BlockType type = asBlockType();
-        return type != null && type.isSolid();
-    }
+    boolean isSolid();
+
+
 
     /**
      * Check if the material is an air block.
      *
      * @return True if this material is an air block.
      */
-    public boolean isAir() {
-        BlockType type = asBlockType();
-        return type != null && type.isAir();
-    }
+    boolean isAir();
+
+
 
     /**
      * @return If the type is either AIR, CAVE_AIR or VOID_AIR
      * @deprecated use {@link #isAir()}
      */
     @Deprecated(since = "1.21.5")
-    public boolean isEmpty() {
-        return this.isAir();
-    }
+    boolean isEmpty();
+
+
 
     /**
      * Check if the material is a block and does not block any light
@@ -3174,229 +2880,36 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * linked to the underlying server. Contributions welcome.
      */
     @Deprecated(since = "1.13", forRemoval = true)
-    public boolean isTransparent() {
-        if (!isBlock()) {
-            return false;
-        }
-        switch (this) {
-            //<editor-fold defaultstate="collapsed" desc="isTransparent">
-            // Start generate - Material#isTransparent
-            case ACACIA_BUTTON:
-            case ACACIA_SAPLING:
-            case ACTIVATOR_RAIL:
-            case AIR:
-            case ALLIUM:
-            case ATTACHED_MELON_STEM:
-            case ATTACHED_PUMPKIN_STEM:
-            case AZURE_BLUET:
-            case BARRIER:
-            case BEETROOTS:
-            case BIRCH_BUTTON:
-            case BIRCH_SAPLING:
-            case BLACK_CARPET:
-            case BLUE_CARPET:
-            case BLUE_ORCHID:
-            case BROWN_CARPET:
-            case BROWN_MUSHROOM:
-            case CARROTS:
-            case CAVE_AIR:
-            case CHORUS_FLOWER:
-            case CHORUS_PLANT:
-            case COCOA:
-            case COMPARATOR:
-            case CREEPER_HEAD:
-            case CREEPER_WALL_HEAD:
-            case CYAN_CARPET:
-            case DANDELION:
-            case DARK_OAK_BUTTON:
-            case DARK_OAK_SAPLING:
-            case DEAD_BUSH:
-            case DETECTOR_RAIL:
-            case DRAGON_HEAD:
-            case DRAGON_WALL_HEAD:
-            case END_GATEWAY:
-            case END_PORTAL:
-            case END_ROD:
-            case FERN:
-            case FIRE:
-            case FLOWER_POT:
-            case GRAY_CARPET:
-            case GREEN_CARPET:
-            case JUNGLE_BUTTON:
-            case JUNGLE_SAPLING:
-            case LADDER:
-            case LARGE_FERN:
-            case LEVER:
-            case LIGHT_BLUE_CARPET:
-            case LIGHT_GRAY_CARPET:
-            case LILAC:
-            case LILY_PAD:
-            case LIME_CARPET:
-            case MAGENTA_CARPET:
-            case MELON_STEM:
-            case NETHER_PORTAL:
-            case NETHER_WART:
-            case OAK_BUTTON:
-            case OAK_SAPLING:
-            case ORANGE_CARPET:
-            case ORANGE_TULIP:
-            case OXEYE_DAISY:
-            case PEONY:
-            case PINK_CARPET:
-            case PINK_TULIP:
-            case PLAYER_HEAD:
-            case PLAYER_WALL_HEAD:
-            case POPPY:
-            case POTATOES:
-            case POTTED_ACACIA_SAPLING:
-            case POTTED_ALLIUM:
-            case POTTED_AZALEA_BUSH:
-            case POTTED_AZURE_BLUET:
-            case POTTED_BIRCH_SAPLING:
-            case POTTED_BLUE_ORCHID:
-            case POTTED_BROWN_MUSHROOM:
-            case POTTED_CACTUS:
-            case POTTED_DANDELION:
-            case POTTED_DARK_OAK_SAPLING:
-            case POTTED_DEAD_BUSH:
-            case POTTED_FERN:
-            case POTTED_FLOWERING_AZALEA_BUSH:
-            case POTTED_JUNGLE_SAPLING:
-            case POTTED_OAK_SAPLING:
-            case POTTED_ORANGE_TULIP:
-            case POTTED_OXEYE_DAISY:
-            case POTTED_PINK_TULIP:
-            case POTTED_POPPY:
-            case POTTED_RED_MUSHROOM:
-            case POTTED_RED_TULIP:
-            case POTTED_SPRUCE_SAPLING:
-            case POTTED_WHITE_TULIP:
-            case POWERED_RAIL:
-            case PUMPKIN_STEM:
-            case PURPLE_CARPET:
-            case RAIL:
-            case REDSTONE_TORCH:
-            case REDSTONE_WALL_TORCH:
-            case REDSTONE_WIRE:
-            case RED_CARPET:
-            case RED_MUSHROOM:
-            case RED_TULIP:
-            case REPEATER:
-            case ROSE_BUSH:
-            case SHORT_GRASS:
-            case SKELETON_SKULL:
-            case SKELETON_WALL_SKULL:
-            case SNOW:
-            case SPRUCE_BUTTON:
-            case SPRUCE_SAPLING:
-            case STONE_BUTTON:
-            case STRUCTURE_VOID:
-            case SUGAR_CANE:
-            case SUNFLOWER:
-            case TALL_GRASS:
-            case TORCH:
-            case TRIPWIRE:
-            case TRIPWIRE_HOOK:
-            case VINE:
-            case VOID_AIR:
-            case WALL_TORCH:
-            case WHEAT:
-            case WHITE_CARPET:
-            case WHITE_TULIP:
-            case WITHER_SKELETON_SKULL:
-            case WITHER_SKELETON_WALL_SKULL:
-            case YELLOW_CARPET:
-            case ZOMBIE_HEAD:
-            case ZOMBIE_WALL_HEAD:
-            // End generate - Material#isTransparent
-            // ----- Legacy Separator -----
-            case LEGACY_AIR:
-            case LEGACY_SAPLING:
-            case LEGACY_POWERED_RAIL:
-            case LEGACY_DETECTOR_RAIL:
-            case LEGACY_LONG_GRASS:
-            case LEGACY_DEAD_BUSH:
-            case LEGACY_YELLOW_FLOWER:
-            case LEGACY_RED_ROSE:
-            case LEGACY_BROWN_MUSHROOM:
-            case LEGACY_RED_MUSHROOM:
-            case LEGACY_TORCH:
-            case LEGACY_FIRE:
-            case LEGACY_REDSTONE_WIRE:
-            case LEGACY_CROPS:
-            case LEGACY_LADDER:
-            case LEGACY_RAILS:
-            case LEGACY_LEVER:
-            case LEGACY_REDSTONE_TORCH_OFF:
-            case LEGACY_REDSTONE_TORCH_ON:
-            case LEGACY_STONE_BUTTON:
-            case LEGACY_SNOW:
-            case LEGACY_SUGAR_CANE_BLOCK:
-            case LEGACY_PORTAL:
-            case LEGACY_DIODE_BLOCK_OFF:
-            case LEGACY_DIODE_BLOCK_ON:
-            case LEGACY_PUMPKIN_STEM:
-            case LEGACY_MELON_STEM:
-            case LEGACY_VINE:
-            case LEGACY_WATER_LILY:
-            case LEGACY_NETHER_WARTS:
-            case LEGACY_ENDER_PORTAL:
-            case LEGACY_COCOA:
-            case LEGACY_TRIPWIRE_HOOK:
-            case LEGACY_TRIPWIRE:
-            case LEGACY_FLOWER_POT:
-            case LEGACY_CARROT:
-            case LEGACY_POTATO:
-            case LEGACY_WOOD_BUTTON:
-            case LEGACY_SKULL:
-            case LEGACY_REDSTONE_COMPARATOR_OFF:
-            case LEGACY_REDSTONE_COMPARATOR_ON:
-            case LEGACY_ACTIVATOR_RAIL:
-            case LEGACY_BARRIER:
-            case LEGACY_CARPET:
-            case LEGACY_DOUBLE_PLANT:
-            case LEGACY_END_ROD:
-            case LEGACY_CHORUS_PLANT:
-            case LEGACY_CHORUS_FLOWER:
-            case LEGACY_BEETROOT_BLOCK:
-            case LEGACY_END_GATEWAY:
-            case LEGACY_STRUCTURE_VOID:
-            //</editor-fold>
-                return true;
-            default:
-                return false;
-        }
-    }
+    boolean isTransparent();
+
+
 
     /**
      * Check if the material is a block and can catch fire
      *
      * @return True if this material is a block and can catch fire
      */
-    public boolean isFlammable() {
-        BlockType type = asBlockType();
-        return type != null && type.isFlammable();
-    }
+    boolean isFlammable();
+
+
 
     /**
      * Check if the material is a block and can burn away
      *
      * @return True if this material is a block and can burn away
      */
-    public boolean isBurnable() {
-        BlockType type = asBlockType();
-        return type != null && type.isBurnable();
-    }
+    boolean isBurnable();
+
+
 
     /**
      * Checks if this Material can be used as fuel in a Furnace
      *
      * @return true if this Material can be used as fuel.
      */
-    public boolean isFuel() {
-        ItemType type = asItemType();
-        return type != null && type.isFuel();
-    }
+    boolean isFuel();
+
+
 
     /**
      * Check if the material is a block and occludes light in the lighting engine.
@@ -3416,27 +2929,25 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      *
      * @return True if this material is a block and occludes light
      */
-    public boolean isOccluding() {
-        BlockType type = asBlockType();
-        return type != null && type.isOccluding();
-    }
+    boolean isOccluding();
+
+
 
     /**
      * @return True if this material is affected by gravity.
      */
-    public boolean hasGravity() {
-        BlockType type = asBlockType();
-        return type != null && type.hasGravity();
-    }
+    boolean hasGravity();
+
+
 
     /**
      * Checks if this Material is an obtainable item.
      *
      * @return true if this material is an item
      */
-    public boolean isItem() {
-        return asItemType() != null;
-    }
+    boolean isItem();
+
+
 
     /**
      * Checks if this Material can be interacted with.
@@ -3458,10 +2969,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * checks being true.
      */
     @Deprecated // Paper
-    public boolean isInteractable() {
-        BlockType type = asBlockType();
-        return type != null && type.isInteractable();
-    }
+    boolean isInteractable();
+
+
 
     /**
      * Obtains the block's hardness level (also known as "strength").
@@ -3472,12 +2982,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      *
      * @return the hardness of that material.
      */
-    public float getHardness() {
-        BlockType type = asBlockType();
-        Preconditions.checkArgument(type != null, "The Material is not a block!");
-        return type.getHardness();
+    float getHardness();
 
-    }
+
 
     /**
      * Obtains the blast resistance value (also known as block "durability").
@@ -3489,11 +2996,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      *
      * @return the blast resistance of that material.
      */
-    public float getBlastResistance() {
-        BlockType type = asBlockType();
-        Preconditions.checkArgument(type != null, "The Material is not a block!");
-        return type.getBlastResistance();
-    }
+    float getBlastResistance();
+
+
 
     /**
      * Returns a value that represents how 'slippery' the block is.
@@ -3507,11 +3012,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      *
      * @return the slipperiness of this block
      */
-    public float getSlipperiness() {
-        BlockType type = asBlockType();
-        Preconditions.checkArgument(type != null, "The Material is not a block!");
-        return type.getSlipperiness();
-    }
+    float getSlipperiness();
+
+
 
     /**
      * Determines the remaining item in a crafting grid after crafting with this
@@ -3522,11 +3025,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return the item left behind when crafting, or null if nothing is.
      */
     @Nullable
-    public Material getCraftingRemainingItem() {
-        ItemType type = asItemType();
-        Preconditions.checkArgument(type != null, "The Material is not an item!");
-        return type.getCraftingRemainingItem() == null ? null : type.getCraftingRemainingItem().asMaterial();
-    }
+    Material getCraftingRemainingItem();
+
+
 
     /**
      * Get the best suitable slot for this Material.
@@ -3536,12 +3037,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return the best EquipmentSlot for this Material
      */
     @NotNull
-    public EquipmentSlot getEquipmentSlot() {
-        ItemType type = asItemType();
-        Preconditions.checkArgument(type != null, "The Material is not an item!");
-        Equippable equippable = type.getDefaultData(DataComponentTypes.EQUIPPABLE);
-        return equippable == null ? EquipmentSlot.HAND : equippable.slot();
-    }
+    EquipmentSlot getEquipmentSlot();
+
+
 
     // Paper start - improve default item attribute API
     /**
@@ -3556,11 +3054,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return the immutable {@link Multimap} with the respective default
      * Attributes and modifiers, or an empty map if no attributes are set.
      */
-    public @NotNull @org.jetbrains.annotations.Unmodifiable Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers() {
-        final ItemType type = this.asItemType();
-        Preconditions.checkArgument(type != null, "The Material is not an item!");
-        return type.getDefaultAttributeModifiers();
-    }
+    @NotNull @org.jetbrains.annotations.Unmodifiable Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers();
+
+
     // Paper end - improve default item attribute API
 
     /**
@@ -3578,11 +3074,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * Attributes and modifiers, or an empty map if no attributes are set.
      */
     @NotNull
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
-        ItemType type = asItemType();
-        Preconditions.checkArgument(type != null, "The Material is not an item!");
-        return type.getDefaultAttributeModifiers(slot);
-    }
+    Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot);
+
+
 
     /**
      * Get the {@link CreativeCategory} to which this material belongs.
@@ -3592,10 +3086,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * longer implemented, will always be {@link CreativeCategory#BUILDING_BLOCKS} if not null
      */
     @Deprecated(since = "1.20.6", forRemoval = true)
-    public @Nullable CreativeCategory getCreativeCategory() {
-        ItemType type = asItemType();
-        return type == null ? null : type.getCreativeCategory();
-    }
+    @Nullable CreativeCategory getCreativeCategory();
+
+
 
     /**
      * Get the translation key of the item or block associated with this
@@ -3613,13 +3106,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
     @Override
     @NotNull
     @Deprecated(forRemoval = true) // Paper
-    public String getTranslationKey() {
-        if (this.isItem()) {
-            return asItemType().getTranslationKey();
-        } else {
-            return asBlockType().getTranslationKey();
-        }
-    }
+    String getTranslationKey();
+
+
 
     /**
      * Get the translation key of the block associated with this material, or
@@ -3629,10 +3118,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * or null if this material does not have an associated block
      */
     @Nullable
-    public String getBlockTranslationKey() {
-        BlockType type = asBlockType();
-        return type == null ? null : type.getTranslationKey();
-    }
+    String getBlockTranslationKey();
+
+
 
     /**
      * Get the translation key of the item associated with this material, or
@@ -3642,10 +3130,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * null if this material does not have an associated item.
      */
     @Nullable
-    public String getItemTranslationKey() {
-        ItemType type = asItemType();
-        return type == null ? null : type.getTranslationKey();
-    }
+    String getItemTranslationKey();
+
+
 
     /**
      * Checks whether this material is compostable (can be inserted into a
@@ -3654,9 +3141,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return true if this material is compostable
      * @see #getCompostChance()
      */
-    public boolean isCompostable() {
-        return isItem() && asItemType().isCompostable();
-    }
+    boolean isCompostable();
+
+
 
     /**
      * Get the chance that this material will successfully compost. The returned
@@ -3672,11 +3159,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @throws IllegalArgumentException if the material is not compostable
      * @see #isCompostable()
      */
-    public float getCompostChance() {
-        ItemType type = asItemType();
-        Preconditions.checkArgument(type != null, "The Material is not an item!");
-        return type.getCompostChance();
-    }
+    float getCompostChance();
+
+
 
     /**
      * Tries to convert this Material to an item type
@@ -3685,9 +3170,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      */
     @Nullable
     @org.jetbrains.annotations.Contract(pure = true) // Paper
-    public ItemType asItemType() {
-        return itemType.get();
-    }
+    ItemType asItemType();
+
+
 
     /**
      * Tries to convert this Material to a block type
@@ -3696,9 +3181,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      */
     @Nullable
     @org.jetbrains.annotations.Contract(pure = true) // Paper
-    public BlockType asBlockType() {
-        return blockType.get();
-    }
+    BlockType asBlockType();
+
+
 
     // Paper start - data component API
     /**
@@ -3710,10 +3195,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @see #hasDefaultData(io.papermc.paper.datacomponent.DataComponentType) for DataComponentType.NonValued
      * @throws IllegalArgumentException if {@link #isItem()} is {@code false}
      */
-    public @Nullable <T> T getDefaultData(final io.papermc.paper.datacomponent.DataComponentType.@NotNull Valued<T> type) {
-        Preconditions.checkArgument(this.asItemType() != null);
-        return this.asItemType().getDefaultData(type);
-    }
+    @Nullable <T> T getDefaultData(final io.papermc.paper.datacomponent.DataComponentType.@NotNull Valued<T> type);
+
+
 
     /**
      * Checks if the data component type has a default value for this item type.
@@ -3722,10 +3206,9 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return {@code true} if there is a default value
      * @throws IllegalArgumentException if {@link #isItem()} is {@code false}
      */
-    public boolean hasDefaultData(final io.papermc.paper.datacomponent.@NotNull DataComponentType type) {
-        Preconditions.checkArgument(this.asItemType() != null);
-        return this.asItemType().hasDefaultData(type);
-    }
+    boolean hasDefaultData(final io.papermc.paper.datacomponent.@NotNull DataComponentType type);
+
+
 
     /**
      * Gets the default data component types for this item type.
@@ -3733,9 +3216,171 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
      * @return an immutable set of data component types
      * @throws IllegalArgumentException if {@link #isItem()} is {@code false}
      */
-    public java.util.@org.jetbrains.annotations.Unmodifiable @NotNull Set<io.papermc.paper.datacomponent.DataComponentType> getDefaultDataTypes() {
-        Preconditions.checkArgument(this.asItemType() != null);
-        return this.asItemType().getDefaultDataTypes();
+    java.util.@org.jetbrains.annotations.Unmodifiable @NotNull Set<io.papermc.paper.datacomponent.DataComponentType> getDefaultDataTypes();
+
+    /**
+     * Enum-style constant name for vanilla types (e.g. {@code "STONE"}).
+     * Custom types return {@link #getKey()} as a string.
+     *
+     * <p>Source-compatible with former {@code Enum#name()}.
+     */
+    default @NotNull String name() {
+        if (this instanceof Enum<?> e) {
+            return e.name();
+        }
+        return getKey().toString();
     }
-    // Paper end - data component API
+
+    /**
+     * {@code true} when this is a vanilla Minecraft material constant.
+     */
+    default boolean isVanilla() {
+        return this instanceof VanillaMaterial;
+    }
+
+    /**
+     * {@code true} when this is a registered custom material (not a vanilla constant).
+     */
+    default boolean isCustom() {
+        return !isVanilla();
+    }
+
+    // ---- static lookup (compat with former enum statics) ----
+
+    /**
+     * All <em>vanilla</em> material constants (not custom registrations).
+     */
+    @NotNull
+    static Material[] values() {
+        final VanillaMaterial[] vanilla = VanillaMaterial.values();
+        final Material[] out = new Material[vanilla.length];
+        System.arraycopy(vanilla, 0, out, 0, vanilla.length);
+        return out;
+    }
+
+    /**
+     * Looks up a <em>vanilla</em> material by its enum constant name (e.g. {@code "STONE"}).
+     * Does not resolve custom material keys — use {@link #getByKey(NamespacedKey)} for that.
+     */
+    @NotNull
+    static Material valueOf(@NotNull final String name) {
+        return VanillaMaterial.valueOf(name);
+    }
+
+    /**
+     * Attempts to get the Material with the given name.
+     * <p>
+     * This is a normal lookup, names must be the precise name they are given
+     * in the enum.
+     *
+     * @param name Name of the material to get
+     * @return Material if found, or null
+     */
+    @Nullable
+    static Material getMaterial(@NotNull final String name) {
+        return getMaterial(name, false);
+    }
+
+    /**
+     * Attempts to get the Material with the given name.
+     * <p>
+     * This is a normal lookup, names must be the precise name they are given in
+     * the enum (but optionally including the LEGACY_PREFIX if legacyName is
+     * true).
+     * <p>
+     * If legacyName is true, then the lookup will be against legacy materials,
+     * but the returned Material will be a modern material (ie this method is
+     * useful for updating stored data).
+     *
+     * @param name Name of the material to get
+     * @param legacyName whether this is a legacy name lookup
+     * @return Material if found, or null
+     */
+    @Nullable
+    static Material getMaterial(@NotNull String name, boolean legacyName) {
+        if (legacyName) {
+            if (!name.startsWith(LEGACY_PREFIX)) {
+                name = LEGACY_PREFIX + name;
+            }
+            final VanillaMaterial match = VanillaMaterial.byName(name);
+            if (match == null) {
+                return null;
+            }
+            return Bukkit.getUnsafe().fromLegacy(match);
+        }
+        return VanillaMaterial.byName(name);
+    }
+
+    /**
+     * Attempts to match the Material with the given name.
+     * <p>
+     * This is a match lookup; names will be stripped of the "minecraft:"
+     * namespace, converted to uppercase, then stripped of special characters in
+     * an attempt to format it like the enum.
+     *
+     * @param name Name of the material to get
+     * @return Material if found, or null
+     */
+    @Nullable
+    static Material matchMaterial(@NotNull final String name) {
+        return matchMaterial(name, false);
+    }
+
+    /**
+     * Attempts to match the Material with the given name.
+     * <p>
+     * This is a match lookup; names will be stripped of the "minecraft:"
+     * namespace, converted to uppercase, then stripped of special characters in
+     * an attempt to format it like the enum.
+     *
+     * @param name Name of the material to get
+     * @param legacyName whether this is a legacy name (see
+     * {@link #getMaterial(java.lang.String, boolean)}
+     * @return Material if found, or null
+     */
+    @Nullable
+    static Material matchMaterial(@NotNull final String name, boolean legacyName) {
+        Preconditions.checkArgument(name != null, "Name cannot be null");
+
+        // Custom / namespaced key path (Task 5 will fully wire catalog; stub safe for now)
+        if (name.indexOf(':') >= 0) {
+            final NamespacedKey key = NamespacedKey.fromString(name);
+            if (key != null) {
+                final Material byKey = getByKey(key).orElse(null);
+                if (byKey != null) {
+                    return byKey;
+                }
+            }
+        }
+
+        String filtered = name;
+        if (filtered.startsWith(NamespacedKey.MINECRAFT + ":")) {
+            filtered = filtered.substring((NamespacedKey.MINECRAFT + ":").length());
+        }
+        filtered = filtered.toUpperCase(Locale.ROOT);
+        filtered = filtered.replaceAll("\\s+", "_").replaceAll("\\W", "");
+        return getMaterial(filtered, legacyName);
+    }
+
+    /**
+     * Resolve any material (vanilla or mintychochip custom catalog) by key.
+     * Vanilla-only until Task 5 wires CustomBlocks; implement empty custom branch first.
+     */
+    @NotNull
+    static Optional<Material> getByKey(@Nullable final NamespacedKey key) {
+        if (key == null) {
+            return Optional.empty();
+        }
+        // Task 5: CustomBlocks.get(key)
+        try {
+            final Material reg = Registry.MATERIAL.get(key);
+            if (reg != null) {
+                return Optional.of(reg);
+            }
+        } catch (final Throwable ignored) {
+            // bootstrap
+        }
+        final VanillaMaterial byName = VanillaMaterial.byName(key.getKey().toUpperCase(Locale.ROOT));
+        return Optional.ofNullable(byName);
+    }
 }
