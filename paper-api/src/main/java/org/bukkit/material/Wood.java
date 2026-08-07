@@ -71,7 +71,7 @@ public class Wood extends MaterialData {
      * @return TreeSpecies of this wood block
      */
     public TreeSpecies getSpecies() {
-        switch (getItemType()) {
+        switch ((org.bukkit.VanillaMaterial) getItemType()) {
             case LEGACY_WOOD:
             case LEGACY_WOOD_DOUBLE_STEP:
                 return TreeSpecies.getByData((byte) getData());
@@ -102,7 +102,7 @@ public class Wood extends MaterialData {
             case REDWOOD:
             case BIRCH:
             case JUNGLE:
-                switch (type) {
+                switch ((org.bukkit.VanillaMaterial) type) {
                     case LEGACY_LOG_2:
                         return Material.LEGACY_LOG;
                     case LEGACY_LEAVES_2:
@@ -112,7 +112,7 @@ public class Wood extends MaterialData {
                 break;
             case ACACIA:
             case DARK_OAK:
-                switch (type) {
+                switch ((org.bukkit.VanillaMaterial) type) {
                     case LEGACY_LOG:
                         return Material.LEGACY_LOG_2;
                     case LEGACY_LEAVES:
@@ -131,7 +131,7 @@ public class Wood extends MaterialData {
      */
     public void setSpecies(final TreeSpecies species) {
         boolean firstType = false;
-        switch (getItemType()) {
+        switch ((org.bukkit.VanillaMaterial) getItemType()) {
             case LEGACY_WOOD:
             case LEGACY_WOOD_DOUBLE_STEP:
                 setData(species.getData());

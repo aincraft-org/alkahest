@@ -76,7 +76,7 @@ public class Crops extends MaterialData {
      * @return CropState of this crop
      */
     public CropState getState() {
-        switch (getItemType()) {
+        switch ((org.bukkit.VanillaMaterial) getItemType()) {
             case LEGACY_CROPS:
             case LEGACY_CARROT:
             case LEGACY_POTATO:
@@ -107,7 +107,7 @@ public class Crops extends MaterialData {
      * @param state New growth state of this crop
      */
     public void setState(CropState state) {
-        switch (getItemType()) {
+        switch ((org.bukkit.VanillaMaterial) getItemType()) {
             case LEGACY_CROPS:
             case LEGACY_CARROT:
             case LEGACY_POTATO:

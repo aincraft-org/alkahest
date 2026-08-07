@@ -104,7 +104,10 @@ public class SmithingTrimRecipe extends SmithingRecipe implements ComplexRecipe 
     }
 
     private static TrimPattern patternFromMaterial(final @NotNull Material material) {
-        return switch (material) {
+        if (!(material instanceof org.bukkit.VanillaMaterial vanilla)) {
+            return TrimPattern.BOLT;
+        }
+        return switch (vanilla) {
             case BOLT_ARMOR_TRIM_SMITHING_TEMPLATE -> TrimPattern.BOLT;
             case COAST_ARMOR_TRIM_SMITHING_TEMPLATE -> TrimPattern.COAST;
             case DUNE_ARMOR_TRIM_SMITHING_TEMPLATE -> TrimPattern.DUNE;

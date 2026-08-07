@@ -39,7 +39,6 @@ import co.aikar.util.MRUMapCache;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -149,7 +148,8 @@ public class TimingHistory {
                                         public JSONPair apply(Map.Entry<EntityType, Counter> entry) {
                                             entityTypeSet.add(entry.getKey());
                                             return pair(
-                                                    String.valueOf(entry.getKey().ordinal()),
+                                                    // EntityType is no longer an enum — key string is stable
+                                                    String.valueOf(entry.getKey().getKey()),
                                                     entry.getValue().count()
                                             );
                                         }
@@ -160,7 +160,8 @@ public class TimingHistory {
                                     entry -> {
                                         tileEntityTypeSet.add(entry.getKey());
                                         return pair(
-                                            String.valueOf(entry.getKey().ordinal()),
+                                            // Material is an interface (not enum) after custom-block work
+                                            String.valueOf(entry.getKey().getKey()),
                                             entry.getValue().count()
                                         );
                                     }
@@ -208,11 +209,13 @@ public class TimingHistory {
 
         @SuppressWarnings("unchecked")
         final Map<EntityType, Counter> entityCounts = MRUMapCache.of(LoadingMap.of(
-                new EnumMap<EntityType, Counter>(EntityType.class), k -> new Counter()
+                // EntityType is an interface (not enum) after custom-entity work
+                new java.util.HashMap<EntityType, Counter>(), k -> new Counter()
         ));
         @SuppressWarnings("unchecked")
         final Map<Material, Counter> tileEntityCounts = MRUMapCache.of(LoadingMap.of(
-                new EnumMap<Material, Counter>(Material.class), k -> new Counter()
+                // Material is an interface (not enum) after custom-block work
+                new java.util.HashMap<Material, Counter>(), k -> new Counter()
         ));
 
         static class RegionId {
