@@ -3377,8 +3377,15 @@ public interface Material extends Keyed, Translatable, net.kyori.adventure.trans
             if (reg != null) {
                 return Optional.of(reg);
             }
+            // Registry miss: only path-fallback for minecraft namespace (mirror EntityType)
+            if (!NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+                return Optional.empty();
+            }
         } catch (final Throwable ignored) {
-            // bootstrap
+            // bootstrap — byName only for minecraft path
+            if (!NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+                return Optional.empty();
+            }
         }
         final VanillaMaterial byName = VanillaMaterial.byName(key.getKey().toUpperCase(Locale.ROOT));
         return Optional.ofNullable(byName);
