@@ -1,10 +1,15 @@
 --- a/net/minecraft/world/level/block/CocoaBlock.java
 +++ b/net/minecraft/world/level/block/CocoaBlock.java
-@@ -50,10 +_,10 @@
+@@ -50,10 +_,15 @@
  
      @Override
      protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
 -        if (level.getRandom().nextInt(5) == 0) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.shouldGrow(level, pos, this, random)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
 +        if (level.getRandom().nextFloat() < (level.spigotConfig.cocoaModifier / (100.0F * 5))) { // Spigot - SPIGOT-7159: Better modifier resolution
              int age = state.getValue(AGE);
              if (age < 2) {

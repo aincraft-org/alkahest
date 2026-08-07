@@ -1,8 +1,14 @@
 --- a/net/minecraft/world/level/block/CropBlock.java
 +++ b/net/minecraft/world/level/block/CropBlock.java
-@@ -81,8 +_,25 @@
+@@ -80,17 +_,44 @@
+         if (level.getRawBrightness(pos, 0) >= 9) {
              int age = this.getAge(state);
              if (age < this.getMaxAge()) {
++                // mintychochip start - climate/humidity crop ecology
++                if (!dev.mintychochip.ecology.CropEcology.shouldGrow(level, pos, this, random)) {
++                    return;
++                }
++                // mintychochip end - climate/humidity crop ecology
                  float growthSpeed = getGrowthSpeed(this, level, pos);
 -                if (random.nextInt((int)(25.0F / growthSpeed) + 1) == 0) {
 -                    level.setBlock(pos, this.getStateForAge(age + 1), Block.UPDATE_CLIENTS);
@@ -28,9 +34,14 @@
                  }
              }
          }
-@@ -90,7 +_,7 @@
+     }
  
      public void growCrops(final Level level, final BlockPos pos, final BlockState state) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.allowsForcedGrowth(level, pos, this)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
          int age = Math.min(this.getMaxAge(), this.getAge(state) + this.getBonemealAgeIncrease(level));
 -        level.setBlock(pos, this.getStateForAge(age), Block.UPDATE_CLIENTS);
 +        org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, pos, this.getStateForAge(age), Block.UPDATE_CLIENTS); // CraftBukkit

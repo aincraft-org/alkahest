@@ -8,16 +8,27 @@
  
      @Override
      public MapCodec<? extends SaplingBlock> codec() {
-@@ -43,7 +_,7 @@
+@@ -43,16 +_,59 @@
  
      @Override
      protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
 -        if (level.getMaxLocalRawBrightness(pos.above()) >= 9 && random.nextInt(7) == 0) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.shouldGrow(level, pos, this, random)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
 +        if (level.getMaxLocalRawBrightness(pos.above()) >= 9 && random.nextFloat() < (level.spigotConfig.saplingModifier / (100.0F * 7))) { // Spigot - SPIGOT-7159: Better modifier resolution
              this.advanceTree(level, pos, state, random);
          }
      }
-@@ -52,7 +_,40 @@
+ 
+     public void advanceTree(final ServerLevel level, final BlockPos pos, final BlockState state, final RandomSource random) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.allowsForcedGrowth(level, pos, this)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
          if (state.getValue(STAGE) == 0) {
              level.setBlock(pos, state.cycle(STAGE), Block.UPDATE_NONE);
          } else {

@@ -93,10 +93,10 @@ index bbc8899e2524f39a89525d6f54dc8bd0bded88d9..6de2929fda582cc4ceecd7bfe0b440ac
          ProfilerFiller profiler = Profiler.get();
          this.server.spark.executeMainThreadTasks(); // Paper - spark
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index df2c346996204003dbc99c0f33adaeb0e5293d01..762e3b71a8df572234b03dec60d2b6e1e339bb6a 100644
+index 96b9d17eea349d83c634fe45ee28161219cb3f38..3ebcde6994d3b4b8c0135cafda4b44c316a28957 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1466,6 +1466,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1483,6 +1483,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public boolean mayInteract(final Entity entity, final BlockPos pos) {
          return !(entity instanceof Player player && (this.server.isUnderSpawnProtection(this, pos, player) || !this.getWorldBorder().isWithinBounds(pos)));
      }

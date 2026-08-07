@@ -1,5 +1,17 @@
 --- a/net/minecraft/world/level/block/SugarCaneBlock.java
 +++ b/net/minecraft/world/level/block/SugarCaneBlock.java
+@@ -48,6 +_,11 @@
+ 
+     @Override
+     protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.shouldGrow(level, pos, this, random)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
+         if (level.isEmptyBlock(pos.above())) {
+             int height = 1;
+ 
 @@ -55,12 +_,13 @@
                  height++;
              }

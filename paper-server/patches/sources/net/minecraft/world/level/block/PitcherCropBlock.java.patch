@@ -8,9 +8,15 @@
          if (level instanceof ServerLevel serverLevel && entity instanceof Ravager && serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
              serverLevel.destroyBlock(pos, true, entity);
          }
-@@ -147,7 +_,7 @@
+@@ -146,8 +_,13 @@
+ 
      @Override
      public void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.shouldGrow(level, pos, this, random)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
          float growthSpeed = CropBlock.getGrowthSpeed(this, level, pos);
 -        boolean shouldProgressGrowth = random.nextInt((int)(25.0F / growthSpeed) + 1) == 0;
 +        boolean shouldProgressGrowth = random.nextFloat() < (level.spigotConfig.pitcherPlantModifier / (100.0F * (Math.floor(25.0F / growthSpeed) + 1))); // Paper - Fix Spigot growth modifiers
@@ -26,3 +32,15 @@
              if (isDouble(updatedAge)) {
                  level.setBlock(lowerPos.above(), newLowerState.setValue(HALF, DoubleBlockHalf.UPPER), Block.UPDATE_ALL);
              }
+@@ -215,6 +_,11 @@
+ 
+     @Override
+     public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.allowsForcedGrowth(level, pos, this)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
+         PitcherCropBlock.PosAndState lowerHalf = this.getLowerHalf(level, pos, state);
+         if (lowerHalf != null) {
+             this.grow(level, lowerHalf.state, lowerHalf.pos, 1);

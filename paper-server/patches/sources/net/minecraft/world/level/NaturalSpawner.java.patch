@@ -84,13 +84,39 @@
                              if (currentSpawnData == null) {
                                  Optional<MobSpawnSettings.SpawnerData> nextSpawnData = getRandomSpawnMobAt(
                                      level, structureManager, generator, mobCategory, level.random, pos
-@@ -195,7 +_,13 @@
+@@ -192,10 +_,39 @@
+                                 }
+ 
+                                 currentSpawnData = nextSpawnData.get();
++                                // mintychochip start - ecology animal selection for CREATURE natural spawns
++                                if (dev.mintychochip.ecology.AnimalEcology.shouldManageCategory(mobCategory)) {
++                                    net.minecraft.world.entity.EntityType<? extends Mob> ecoType =
++                                        dev.mintychochip.ecology.AnimalEcology.replaceCreatureType(level, pos, currentSpawnData.type());
++                                    if (ecoType != null) {
++                                        // Use 1-1 group; do not keep vanilla min/max (breaks canSpawnMobAt equality)
++                                        currentSpawnData = new MobSpawnSettings.SpawnerData(ecoType, 1, 1);
++                                    } else if (dev.mintychochip.ecology.AnimalEcology.isEnabled(level)) {
++                                        // No catalog candidate for this climate/season — skip inventing density
++                                        break;
++                                    }
++                                }
++                                // mintychochip end - ecology animal selection for CREATURE natural spawns
                                  max = currentSpawnData.minCount() + level.random.nextInt(1 + currentSpawnData.maxCount() - currentSpawnData.minCount());
                              }
  
 -                            if (isValidSpawnPostitionForType(level, mobCategory, structureManager, generator, currentSpawnData, pos, nearestPlayerDistanceSqr)
 +                            // Paper start - PreCreatureSpawnEvent
-+                            PreSpawnStatus doSpawning = isValidSpawnPostitionForType(level, mobCategory, structureManager, generator, currentSpawnData, pos, nearestPlayerDistanceSqr);
++                            // mintychochip: ecology CREATURE picks are not in biome SpawnerData lists — skip list membership
++                            PreSpawnStatus doSpawning = isValidSpawnPostitionForType(
++                                level, mobCategory, structureManager, generator, currentSpawnData, pos, nearestPlayerDistanceSqr,
++                                dev.mintychochip.ecology.AnimalEcology.shouldManageCategory(mobCategory)
++                                    && dev.mintychochip.ecology.AnimalEcology.isEnabled(level)
++                            );
++                            // Paper start - per player mob count backoff
++                            if (doSpawning == PreSpawnStatus.ABORT || doSpawning == PreSpawnStatus.CANCELLED) {
++                                level.getChunkSource().chunkMap.updateFailurePlayerMobTypeMap(pos.getX() >> 4, pos.getZ() >> 4, mobCategory);
++                            }
++                            // Paper end - per player mob count backoff
 +                            if (doSpawning == PreSpawnStatus.ABORT) {
 +                                return;
 +                            }
@@ -136,10 +162,26 @@
          final ServerLevel level,
          final MobCategory mobCategory,
          final StructureManager structureManager,
-@@ -253,14 +_,27 @@
+@@ -253,14 +_,43 @@
          final BlockPos.MutableBlockPos pos,
          final double nearestPlayerDistanceSqr
      ) {
++        return isValidSpawnPostitionForType(
++            level, mobCategory, structureManager, generator, currentSpawnData, pos, nearestPlayerDistanceSqr, false
++        );
++    }
++
++    // mintychochip: skipBiomeSpawnListCheck — ecology catalog types are not in biome WeightedLists
++    private static PreSpawnStatus isValidSpawnPostitionForType(
++        final ServerLevel level,
++        final MobCategory mobCategory,
++        final StructureManager structureManager,
++        final ChunkGenerator generator,
++        final MobSpawnSettings.SpawnerData currentSpawnData,
++        final BlockPos.MutableBlockPos pos,
++        final double nearestPlayerDistanceSqr,
++        final boolean skipBiomeSpawnListCheck
++    ) {
 +        // Paper start - PreCreatureSpawnEvent
          EntityType<?> type = currentSpawnData.type();
 -        return type.getCategory() != MobCategory.MISC
@@ -157,7 +199,8 @@
 +        // Paper end - PreCreatureSpawnEvent
              && (type.canSpawnFarFromPlayer() || !(nearestPlayerDistanceSqr > type.getCategory().getDespawnDistance() * type.getCategory().getDespawnDistance()))
              && type.canSummon()
-             && canSpawnMobAt(level, structureManager, generator, mobCategory, currentSpawnData, pos)
+-            && canSpawnMobAt(level, structureManager, generator, mobCategory, currentSpawnData, pos)
++            && (skipBiomeSpawnListCheck || canSpawnMobAt(level, structureManager, generator, mobCategory, currentSpawnData, pos))
              && SpawnPlacements.isSpawnPositionOk(type, level, pos)
              && SpawnPlacements.checkSpawnRules(type, level, EntitySpawnReason.NATURAL, pos, level.random)
              && level.noCollision(type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5));

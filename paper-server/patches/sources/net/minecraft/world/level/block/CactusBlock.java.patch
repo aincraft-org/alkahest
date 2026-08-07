@@ -1,6 +1,17 @@
 --- a/net/minecraft/world/level/block/CactusBlock.java
 +++ b/net/minecraft/world/level/block/CactusBlock.java
-@@ -58,18 +_,18 @@
+@@ -52,24 +_,29 @@
+ 
+     @Override
+     protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.shouldGrow(level, pos, this, random)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
+         BlockPos above = pos.above();
+         if (level.isEmptyBlock(above)) {
+             int height = 1;
              int age = state.getValue(AGE);
  
              while (level.getBlockState(pos.below(height)).is(this)) {

@@ -1,6 +1,6 @@
 --- a/net/minecraft/util/SimpleBitStorage.java
 +++ b/net/minecraft/util/SimpleBitStorage.java
-@@ -204,8 +_,8 @@
+@@ -204,37 +_,15 @@
      private final long mask;
      private final int size;
      private final int valuesPerLong;
@@ -11,6 +11,38 @@
      private final int divideShift;
  
      public SimpleBitStorage(final int bits, final int size, final int[] values) {
+         this(bits, size);
+-        int outputIndex = 0;
+-
+-        int inputOffset;
+-        for (inputOffset = 0; inputOffset <= size - this.valuesPerLong; inputOffset += this.valuesPerLong) {
+-            long packedValue = 0L;
+-
+-            for (int indexInLong = this.valuesPerLong - 1; indexInLong >= 0; indexInLong--) {
+-                packedValue <<= bits;
+-                packedValue |= values[inputOffset + indexInLong] & this.mask;
+-            }
+-
+-            this.data[outputIndex++] = packedValue;
+-        }
+-
+-        int remainderCount = size - inputOffset;
+-        if (remainderCount > 0) {
+-            long lastPackedValue = 0L;
+-
+-            for (int indexInLong = remainderCount - 1; indexInLong >= 0; indexInLong--) {
+-                lastPackedValue <<= bits;
+-                lastPackedValue |= values[inputOffset + indexInLong] & this.mask;
+-            }
+-
+-            this.data[outputIndex] = lastPackedValue;
+-        }
++        // mintychochip start - SIMD bulk pack for chunk load reencode
++        dev.mintychochip.chunkload.BitStorageKernels.pack(values, this.bits, this.size, this.data);
++        // mintychochip end - SIMD bulk pack for chunk load reencode
+     }
+ 
+     public SimpleBitStorage(final int bits, final int size) {
 @@ -248,8 +_,8 @@
          this.mask = (1L << bits) - 1L;
          this.valuesPerLong = (char)(64 / bits);
@@ -61,3 +93,36 @@
          int cellIndex = this.cellIndex(index);
          long cellValue = this.data[cellIndex];
          int bitIndex = (index - cellIndex * this.valuesPerLong) * this.bits;
+@@ -332,29 +_,9 @@
+ 
+     @Override
+     public void unpack(final int[] output) {
+-        int dataLength = this.data.length;
+-        int outputOffset = 0;
+-
+-        for (int i = 0; i < dataLength - 1; i++) {
+-            long cellValue = this.data[i];
+-
+-            for (int indexInLong = 0; indexInLong < this.valuesPerLong; indexInLong++) {
+-                output[outputOffset + indexInLong] = (int)(cellValue & this.mask);
+-                cellValue >>= this.bits;
+-            }
+-
+-            outputOffset += this.valuesPerLong;
+-        }
+-
+-        int remainder = this.size - outputOffset;
+-        if (remainder > 0) {
+-            long cellValue = this.data[dataLength - 1];
+-
+-            for (int indexInLong = 0; indexInLong < remainder; indexInLong++) {
+-                output[outputOffset + indexInLong] = (int)(cellValue & this.mask);
+-                cellValue >>= this.bits;
+-            }
+-        }
++        // mintychochip start - SIMD bulk unpack for chunk load materialization
++        dev.mintychochip.chunkload.BitStorageKernels.unpack(this.data, this.bits, this.size, output);
++        // mintychochip end - SIMD bulk unpack for chunk load materialization
+     }
+ 
+     @Override

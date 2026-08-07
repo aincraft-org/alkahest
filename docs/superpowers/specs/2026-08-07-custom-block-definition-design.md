@@ -76,7 +76,7 @@ CustomBlockDefinition
   id: NamespacedKey
   host: BlockHostType
   hostSpec: HostSpec          // sealed per host
-  itemMaterial: Material      // inventory base item
+  itemMaterial: Material      // inventory base item (prefer a placeable block for place animation)
   itemModel: Key              // resource-pack item model
   displayName: Component?     // optional
   itemLore: List<Component>?  // optional
@@ -122,7 +122,7 @@ World form: `CustomBlockLookup` (server `MemoryCustomBlockLookup` for now; not p
 /customblock list
 ```
 
-Default definition: `mintychochip:electrum_ore` (PACKET host, paper base, item model key `mintychochip:electrum_ore`).
+Default definition: `mintychochip:electrum_ore` (PACKET host, **glass** base item for place animation, item model key `mintychochip:electrum_ore`).
 
 Pack assets follow vanilla block-item shape (not a flat `item/generated` plane):
 
@@ -160,7 +160,7 @@ Resource pack: auto-served on join via embedded HTTP (`CustomBlockPackService`).
 CustomBlockDefinition ore = CustomBlockDefinition.builder(
         NamespacedKey.fromString("mintychochip:electrum_ore"))
     .host(PacketHostSpec.defaults())
-    .itemMaterial(Material.PAPER)
+    .itemMaterial(Material.GLASS) // placeable block base → client place animation
     .itemModel(Key.key("mintychochip", "electrum_ore"))
     .displayName(Component.text("Electrum Ore"))
     .build();

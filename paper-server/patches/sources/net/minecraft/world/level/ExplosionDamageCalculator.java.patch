@@ -1,0 +1,15 @@
+--- a/net/minecraft/world/level/ExplosionDamageCalculator.java
++++ b/net/minecraft/world/level/ExplosionDamageCalculator.java
+@@ -11,6 +_,12 @@
+     public Optional<Float> getBlockExplosionResistance(
+         final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState block, final FluidState fluid
+     ) {
++        // mintychochip start - custom block blast resistance (emulate vanilla feel)
++        final Float mintyResistance = dev.mintychochip.customblock.CustomBlockMining.customExplosionResistance(level, pos);
++        if (mintyResistance != null) {
++            return Optional.of(Math.max(mintyResistance, fluid.getExplosionResistance()));
++        }
++        // mintychochip end - custom block blast resistance
+         return block.isAir() && fluid.isEmpty()
+             ? Optional.empty()
+             : Optional.of(Math.max(block.getBlock().getExplosionResistance(), fluid.getExplosionResistance()));

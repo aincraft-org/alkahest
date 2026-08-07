@@ -1,8 +1,14 @@
 --- a/net/minecraft/world/level/block/StemBlock.java
 +++ b/net/minecraft/world/level/block/StemBlock.java
-@@ -83,11 +_,11 @@
+@@ -82,12 +_,17 @@
+     @Override
      protected void randomTick(BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
          if (level.getRawBrightness(pos, 0) >= 9) {
++            // mintychochip start - climate/humidity crop ecology
++            if (!dev.mintychochip.ecology.CropEcology.shouldGrow(level, pos, this, random)) {
++                return;
++            }
++            // mintychochip end - climate/humidity crop ecology
              float growthSpeed = CropBlock.getGrowthSpeed(this, level, pos);
 -            if (random.nextInt((int)(25.0F / growthSpeed) + 1) == 0) {
 +            if (random.nextFloat() < ((this == Blocks.PUMPKIN_STEM ? level.spigotConfig.pumpkinModifier : level.spigotConfig.melonModifier) / (100.0F * (Math.floor((25.0F / growthSpeed) + 1))))) { // Spigot - SPIGOT-7159: Better modifier resolution
@@ -27,8 +33,15 @@
                              level.setBlockAndUpdate(pos, stem.get().defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, direction));
                          }
                      }
-@@ -125,7 +_,7 @@
+@@ -123,9 +_,14 @@
+ 
+     @Override
      public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
++        // mintychochip start - climate/humidity crop ecology
++        if (!dev.mintychochip.ecology.CropEcology.allowsForcedGrowth(level, pos, this)) {
++            return;
++        }
++        // mintychochip end - climate/humidity crop ecology
          int age = Math.min(7, state.getValue(AGE) + Mth.nextInt(random, 2, 5));
          BlockState newState = state.setValue(AGE, age);
 -        level.setBlock(pos, newState, Block.UPDATE_CLIENTS);

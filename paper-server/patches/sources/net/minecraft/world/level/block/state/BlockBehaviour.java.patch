@@ -46,6 +46,19 @@
      }
  
      protected boolean canBeReplaced(final BlockState state, final Fluid fluid) {
+@@ -348,6 +_,12 @@
+     }
+ 
+     protected float getDestroyProgress(final BlockState state, final Player player, final BlockGetter level, final BlockPos pos) {
++        // mintychochip start - custom block mining feel (emulate hardness / preferred tool)
++        final float mintyProgress = dev.mintychochip.customblock.CustomBlockMining.customDestroyProgress(state, player, level, pos);
++        if (!Float.isNaN(mintyProgress)) {
++            return mintyProgress;
++        }
++        // mintychochip end - custom block mining feel
+         float destroySpeed = state.getDestroySpeed(level, pos);
+         if (destroySpeed == -1.0F) {
+             return 0.0F;
 @@ -486,6 +_,15 @@
              this.instrument = properties.instrument;
              this.replaceable = properties.replaceable;

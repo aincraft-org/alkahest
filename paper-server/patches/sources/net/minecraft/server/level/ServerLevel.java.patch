@@ -443,17 +443,36 @@
          if (center.getY() == this.getMinY() - 1) {
              center = center.above(2);
          }
-@@ -751,8 +_,8 @@
+@@ -751,9 +_,26 @@
                  weatherData.setThunderTime(thunderTime);
                  weatherData.setRainTime(rainTime);
                  weatherData.setClearWeatherTime(clearWeatherTime);
 -                weatherData.setThundering(thundering);
 -                weatherData.setRaining(raining);
+-            }
 +                weatherData.setThundering(thundering, org.bukkit.event.weather.ThunderChangeEvent.Cause.NATURAL); // Paper - Add cause to Weather/ThunderChangeEvents
 +                weatherData.setRaining(raining, org.bukkit.event.weather.WeatherChangeEvent.Cause.NATURAL); // Paper - Add cause to Weather/ThunderChangeEvents
-             }
++            }
++
++            // mintychochip start - winter holds rain so tickPrecipitation can place snow
++            // Respect active clear-weather windows (/weather clear, plugins) so commands work;
++            // force rain only when clearWeatherTime has elapsed.
++            if (dev.mintychochip.season.Seasons.shouldForcePrecipitation() && weatherData.getClearWeatherTime() <= 0) {
++                if (!weatherData.isRaining()) {
++                    weatherData.setRaining(true, org.bukkit.event.weather.WeatherChangeEvent.Cause.NATURAL); // Paper - Add cause to Weather/ThunderChangeEvents
++                }
++                // Keep a multi-minute buffer so rain does not toggle off mid-winter.
++                if (weatherData.getRainTime() < 20 * 60 * 5) {
++                    weatherData.setRainTime(20 * 60 * 10);
++                }
++                if (weatherData.isThundering()) {
++                    weatherData.setThundering(false, org.bukkit.event.weather.ThunderChangeEvent.Cause.NATURAL); // Paper - Add cause to Weather/ThunderChangeEvents
++                }
++            }
++            // mintychochip end - winter holds rain so tickPrecipitation can place snow
  
              this.oThunderLevel = this.thunderLevel;
+             if (weatherData.isThundering()) {
 @@ -773,6 +_,7 @@
              this.rainLevel = Mth.clamp(this.rainLevel, 0.0F, 1.0F);
          }

@@ -24,6 +24,26 @@
      }
  
      @Override
+@@ -99,6 +_,9 @@
+         super.addAdditionalSaveData(output);
+         output.putInt("InLove", this.inLove);
+         EntityReference.store(this.loveCause, output, "LoveCause");
++        // mintychochip start - genetics persistence
++        dev.mintychochip.genetics.AnimalGenetics.save(this, output);
++        // mintychochip end - genetics persistence
+     }
+ 
+     @Override
+@@ -106,6 +_,9 @@
+         super.readAdditionalSaveData(input);
+         this.inLove = input.getIntOr("InLove", 0);
+         this.loveCause = EntityReference.read(input, "LoveCause");
++        // mintychochip start - genetics persistence
++        dev.mintychochip.genetics.AnimalGenetics.load(this, input);
++        // mintychochip end - genetics persistence
+     }
+ 
+     public static boolean checkAnimalSpawnRules(
 @@ -142,8 +_,9 @@
          if (this.isFood(itemStack)) {
              int age = this.getAge();
@@ -60,17 +80,44 @@
          if (player instanceof ServerPlayer serverPlayer) {
              this.loveCause = EntityReference.of(serverPlayer);
          }
-@@ -208,23 +_,45 @@
+@@ -200,7 +_,12 @@
+     }
+ 
+     public boolean canMate(final Animal partner) {
+-        return partner != this && partner.getClass() == this.getClass() && this.isInLove() && partner.isInLove();
++        // mintychochip start - genetics opposite-sex gate
++        if (!(partner != this && partner.getClass() == this.getClass() && this.isInLove() && partner.isInLove())) {
++            return false;
++        }
++        return dev.mintychochip.genetics.AnimalGenetics.allowsMate(this, partner);
++        // mintychochip end - genetics opposite-sex gate
+     }
+ 
+     public void spawnChildFromBreeding(final ServerLevel level, final Animal partner) {
+@@ -208,23 +_,58 @@
          if (offspring != null) {
              offspring.setBaby(true);
              offspring.snapTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
 -            this.finalizeSpawnChildFromBreeding(level, partner, offspring);
 -            level.addFreshEntityWithPassengers(offspring);
++            // mintychochip start - genetics recombinant child + breed event metadata
++            final dev.mintychochip.genetics.AnimalGenetics.BreedPrep geneticsPrep =
++                dev.mintychochip.genetics.AnimalGenetics.prepareBreed(this, partner, offspring);
++            final net.minecraft.world.entity.animal.Animal eventMother =
++                geneticsPrep != null ? geneticsPrep.mother() : this;
++            final net.minecraft.world.entity.animal.Animal eventFather =
++                geneticsPrep != null ? geneticsPrep.father() : partner;
++            final dev.mintychochip.genetics.dto.BreedGenetics breedGenetics =
++                geneticsPrep != null ? geneticsPrep.genetics() : null;
++            // mintychochip end - genetics recombinant child + breed event metadata
 +            // CraftBukkit start - Call EntityBreedEvent
 +            ServerPlayer breeder = Optional.ofNullable(this.getLoveCause()).or(() -> Optional.ofNullable(partner.getLoveCause())).orElse(null);
 +            int experience = this.getRandom().nextInt(7) + 1;
-+            org.bukkit.event.entity.EntityBreedEvent entityBreedEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityBreedEvent(offspring, this, partner, breeder, this.breedItem, experience);
++            org.bukkit.event.entity.EntityBreedEvent entityBreedEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityBreedEvent(offspring, eventMother, eventFather, breeder, this.breedItem, experience, breedGenetics);
 +            if (entityBreedEvent.isCancelled()) {
++                // mintychochip start - drop orphan child genome on cancel
++                dev.mintychochip.genetics.AnimalGenetics.discardBreed(offspring);
++                // mintychochip end - drop orphan child genome on cancel
 +                this.resetLove();
 +                partner.resetLove();
 +                return;

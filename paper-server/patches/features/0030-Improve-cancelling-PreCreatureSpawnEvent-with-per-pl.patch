@@ -6,7 +6,7 @@ Subject: [PATCH] Improve cancelling PreCreatureSpawnEvent with per player mob
 
 
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index a79b74beb7a21dccf667eb0dea0506339acc797d..b42bf0ecd381c07ff7c42dea3970f598ec426e98 100644
+index e2bb9bb332df5312a98fb928af9a2f3bc583bbe3..7e9361407042ddaabe3f66ee8957ae84b6ef2317 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
 @@ -257,8 +257,25 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
@@ -37,30 +37,30 @@ index a79b74beb7a21dccf667eb0dea0506339acc797d..b42bf0ecd381c07ff7c42dea3970f598
      // Paper end - Optional per player mob spawns
  
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index a7ef3915dca196e6c5afac43dff99c870f4dee2a..c3adbe0753f6a4158f25126ed7443f8a958763d9 100644
+index 3ef3a757af0fd8dacb20c0ef3608da67483365b2..c18943290e67d09344479bb48b78c831f8c8e46b 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -540,7 +540,17 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
-         if ((this.spawnFriendlies || this.spawnEnemies) && this.level.paperConfig().entities.spawning.perPlayerMobSpawns) { // don't count mobs when animals and monsters are disabled
-             // re-set mob counts
-             for (ServerPlayer player : this.level.players()) {
--                Arrays.fill(player.mobCounts, 0);
-+                // Paper start - per player mob spawning backoff
-+                for (int j = 0; j < ServerPlayer.MOBCATEGORY_TOTAL_ENUMS; j++) {
-+                    player.mobCounts[j] = 0;
+@@ -554,7 +554,17 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+             // Paper start - Optional per player mob spawns
+             if (this.level.paperConfig().entities.spawning.perPlayerMobSpawns) {
+                 for (ServerPlayer player : this.level.players()) {
+-                    Arrays.fill(player.mobCounts, 0);
++                    // Paper start - per player mob spawning backoff
++                    for (int j = 0; j < ServerPlayer.MOBCATEGORY_TOTAL_ENUMS; j++) {
++                        player.mobCounts[j] = 0;
 +
-+                    int newBackoff = player.mobBackoffCounts[j] - 1; // TODO make configurable bleed // TODO use nonlinear algorithm?
-+                    if (newBackoff < 0) {
-+                        newBackoff = 0;
++                        int newBackoff = player.mobBackoffCounts[j] - 1; // TODO make configurable bleed // TODO use nonlinear algorithm?
++                        if (newBackoff < 0) {
++                            newBackoff = 0;
++                        }
++                        player.mobBackoffCounts[j] = newBackoff;
 +                    }
-+                    player.mobBackoffCounts[j] = newBackoff;
-+                }
-+                // Paper end - per player mob spawning backoff
-             }
-             spawnCookie = NaturalSpawner.createState(chunkCount, this.level.getAllEntities(), this::getFullChunk, null, true);
-         } else {
++                    // Paper end - per player mob spawning backoff
+                 }
+                 spawnCookie = NaturalSpawner.createState(
+                     chunkCount, this.level.getAllEntities(), this::getFullChunk, null, true
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 2e261e411bee7777008696d992c2e30cf5ca0c5e..3ee3d29340bc82b071d621e8e3afa294c20dd06f 100644
+index a653625c2bbdd40bc83bbe50e85b6784e6d3ed80..3cd4e850f223100b61ac6831a87dd38f3a3bb58f 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -421,6 +421,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -71,19 +71,3 @@ index 2e261e411bee7777008696d992c2e30cf5ca0c5e..3ee3d29340bc82b071d621e8e3afa294
      // CraftBukkit start
      public @Nullable String lastKnownName; // Better rename detection
      public String displayName;
-diff --git a/net/minecraft/world/level/NaturalSpawner.java b/net/minecraft/world/level/NaturalSpawner.java
-index c75fcec1aaa88da8f50a8b2d94fa76a058b171a7..e193cbed115663e9ca7a611837d5b8540dda03db 100644
---- a/net/minecraft/world/level/NaturalSpawner.java
-+++ b/net/minecraft/world/level/NaturalSpawner.java
-@@ -304,6 +304,11 @@ public final class NaturalSpawner {
- 
-                             // Paper start - PreCreatureSpawnEvent
-                             PreSpawnStatus doSpawning = isValidSpawnPostitionForType(level, mobCategory, structureManager, generator, currentSpawnData, pos, nearestPlayerDistanceSqr);
-+                            // Paper start - per player mob count backoff
-+                            if (doSpawning == PreSpawnStatus.ABORT || doSpawning == PreSpawnStatus.CANCELLED) {
-+                                level.getChunkSource().chunkMap.updateFailurePlayerMobTypeMap(pos.getX() >> 4, pos.getZ() >> 4, mobCategory);
-+                            }
-+                            // Paper end - per player mob count backoff
-                             if (doSpawning == PreSpawnStatus.ABORT) {
-                                 return;
-                             }

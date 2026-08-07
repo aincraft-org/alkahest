@@ -1,0 +1,14 @@
+--- a/net/minecraft/world/level/biome/Biome.java
++++ b/net/minecraft/world/level/biome/Biome.java
+@@ -174,7 +_,10 @@
+     }
+ 
+     public boolean warmEnoughToRain(final BlockPos pos, final int seaLevel) {
+-        return this.getTemperature(pos, seaLevel) >= 0.15F;
++        // mintychochip start - seasonal temperature swing for native snow/rain choice
++        return this.getTemperature(pos, seaLevel) + dev.mintychochip.season.Seasons.temperatureSwing()
++            >= dev.mintychochip.season.SeasonClimate.SNOW_THRESHOLD;
++        // mintychochip end - seasonal temperature swing for native snow/rain choice
+     }
+ 
+     public boolean shouldMeltFrozenOceanIcebergSlightly(final BlockPos pos, final int seaLevel) {
