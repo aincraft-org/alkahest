@@ -84,6 +84,15 @@ public final class ProvenanceWriter {
         LineageStore lineage = ItemProvenance.lineage();
         lineage.attachRepository(repo);
 
+        // Seed in-memory live census from durable last-seen rows before the writer
+        // thread starts (spill journal is ready; replay runs on that thread).
+        if (repo != null) {
+            for (final LiveRecord row : repo.loadAliveLive()) {
+                final StackLocation loc = ProvenanceRepository.parseLocationDisplay(row.locationDisplay());
+                ItemProvenance.live().put(new LiveEntry(row.id(), row.itemId(), loc, row.count(), row.epochMs()));
+            }
+        }
+
         this.thread = new Thread(this::drain, "mintychochip-provenance-writer");
         this.thread.setDaemon(true);
         this.thread.start();

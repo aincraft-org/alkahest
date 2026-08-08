@@ -206,7 +206,9 @@ public final class ItemProvenance {
 
         final LineageNode node = new LineageNode(id, itemId, source, parentList, now, location.display());
         LINEAGE.put(node);
-        LIVE.put(new LiveEntry(id, itemId, location, stack.getCount(), now));
+        final LiveEntry liveEntry = new LiveEntry(id, itemId, location, stack.getCount(), now);
+        LIVE.put(liveEntry);
+        persistLive(liveEntry, false);
 
         final ProvenanceEventType eventType =
             source == ProvenanceSource.CRAFT
@@ -314,6 +316,7 @@ public final class ItemProvenance {
         }
         if (entry.locations().isEmpty()) {
             entry.addLocation(location);
+            persistLive(entry, false);
             return false;
         }
         // Second concrete location for one live identity.
@@ -355,6 +358,7 @@ public final class ItemProvenance {
             entry.removeLocation(existing);
             entry.addLocation(to);
         }
+        persistLive(entry, false);
         return false;
     }
 
@@ -891,6 +895,9 @@ public final class ItemProvenance {
         final String itemId = removed != null
             ? removed.itemId()
             : existingNode.map(LineageNode::itemId).orElse(null);
+        if (removed != null) {
+            persistLive(removed, true);
+        }
         existingNode.ifPresent(node -> {
             if (!node.dead()) {
                 node.markDead(reason, now);
@@ -1082,6 +1089,7 @@ public final class ItemProvenance {
             fresh.addLocation(location);
         }
         LIVE.put(fresh);
+        persistLive(fresh, false);
         AUDIT.append(new ProvenanceEvent(
             now,
             ProvenanceEventType.REHYDRATE,
@@ -1093,6 +1101,22 @@ public final class ItemProvenance {
             location.display(),
             null
         ));
+    }
+
+    // -------------------------------------------------------------------------
+    // Durable live census
+    // -------------------------------------------------------------------------
+
+    private static void persistLive(final @NotNull LiveEntry entry, final boolean dead) {
+        final LiveRecord record = new LiveRecord(
+            entry.id(),
+            entry.itemId(),
+            entry.location().display(),
+            entry.count(),
+            System.currentTimeMillis(),
+            dead
+        );
+        ProvenanceWriter.enqueueLive(record);
     }
 
     // -------------------------------------------------------------------------

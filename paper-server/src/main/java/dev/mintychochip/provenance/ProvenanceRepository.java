@@ -175,8 +175,8 @@ public final class ProvenanceRepository implements AutoCloseable {
                     out.add(new CollisionRecord(
                         UUID.fromString(rs.getString("id")),
                         ProvenanceCollisionKind.valueOf(rs.getString("kind")),
-                        parseLocation(rs.getString("existing")),
-                        parseLocation(rs.getString("observed")),
+                        parseLocationDisplay(rs.getString("existing")),
+                        parseLocationDisplay(rs.getString("observed")),
                         rs.getLong("epoch")
                     ));
                 }
@@ -400,7 +400,8 @@ public final class ProvenanceRepository implements AutoCloseable {
         return node;
     }
 
-    private static @NotNull StackLocation parseLocation(final String raw) {
+    /** Parse a stored location display string back into a {@link StackLocation}. */
+    static @NotNull StackLocation parseLocationDisplay(final String raw) {
         if (raw == null) {
             return StackLocation.unknown();
         }

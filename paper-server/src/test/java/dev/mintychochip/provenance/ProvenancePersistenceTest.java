@@ -248,4 +248,27 @@ public class ProvenancePersistenceTest {
             );
         }
     }
+
+    @Test
+    public void durableLiveSeedsCensusAndDetectsSecondLocation() {
+        ProvenanceWriter.install(tempDir, message -> {
+        });
+        final ItemStack original = new ItemStack(Items.DIAMOND, 1);
+        final UUID id = ItemProvenance.birth(original, ProvenanceSource.LOOT, HAND).orElseThrow();
+        ProvenanceWriter.flushAndClose();
+        ItemProvenance.clearAll();
+        ProvenanceWriter.clearInstall();
+        ProvenanceWriter.install(tempDir, message -> {
+        });
+
+        assertTrue(ItemProvenance.live().contains(id), "live must be seeded from DB");
+
+        final ItemStack duplicate = original.copy();
+        assertTrue(
+            ItemProvenance.observe(duplicate, StackLocation.playerSlot(PLAYER, 1)),
+            "second concrete location after restart must COLLISION"
+        );
+        ProvenanceWriter.flushAndClose();
+        ProvenanceWriter.clearInstall();
+    }
 }
