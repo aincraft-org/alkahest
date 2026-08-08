@@ -101,7 +101,7 @@
      }
  
      private void tryToMerge(final ItemEntity other) {
-@@ -258,11 +_,32 @@
+@@ -258,11 +_,41 @@
      }
  
      private static void merge(final ItemEntity toItem, final ItemStack toStack, final ItemEntity fromItem, final ItemStack fromStack) {
@@ -110,28 +110,36 @@
 +            return;
 +        }
 +        // CraftBukkit end
-+        // mintychochip start - item provenance: absorb from-stack identity on full merge
-+        final net.minecraft.world.item.ItemStack fromBefore = fromStack.copy();
++        // mintychochip start - item provenance: capture both ids before entity merge
++        final dev.mintychochip.provenance.StackLocation sourceLocation =
++            dev.mintychochip.provenance.StackLocation.itemEntity(fromItem.getUUID());
++        final dev.mintychochip.provenance.StackLocation targetLocation =
++            dev.mintychochip.provenance.StackLocation.itemEntity(toItem.getUUID());
++        final java.util.Optional<java.util.UUID> targetIdBefore =
++            dev.mintychochip.provenance.ItemProvenance.ensure(toStack, targetLocation);
++        final java.util.Optional<java.util.UUID> sourceIdBefore =
++            dev.mintychochip.provenance.ItemProvenance.ensure(fromStack, sourceLocation);
++        final int sourceCountBefore = fromStack.getCount();
 +        // mintychochip end - item provenance
          merge(toItem, toStack, fromStack);
          toItem.pickupDelay = Math.max(toItem.pickupDelay, fromItem.pickupDelay);
          toItem.age = Math.min(toItem.age, fromItem.age);
--        if (fromStack.isEmpty()) {
--            fromItem.discard();
 +        // mintychochip start - item provenance
-+        if (fromStack.isEmpty()) {
-+            dev.mintychochip.provenance.ItemProvenance.onMerge(
++        final int moved = sourceCountBefore - fromStack.getCount();
++        if (moved > 0) {
++            dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
 +                toItem.getItem(),
-+                fromBefore,
-+                dev.mintychochip.provenance.StackLocation.itemEntity(toItem.getUUID()),
-+                dev.mintychochip.provenance.StackLocation.itemEntity(fromItem.getUUID())
++                fromStack,
++                targetIdBefore,
++                sourceIdBefore,
++                moved,
++                sourceLocation,
++                targetLocation
 +            );
-+        } else {
-+            dev.mintychochip.provenance.ItemProvenance.noteConsumed(fromStack);
-+            dev.mintychochip.provenance.ItemProvenance.noteConsumed(toItem.getItem());
 +        }
 +        // mintychochip end - item provenance
-+        if (fromStack.isEmpty()) {
+         if (fromStack.isEmpty()) {
+-            fromItem.discard();
 +            fromItem.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.MERGE); // CraftBukkit - add Bukkit remove cause
          }
      }

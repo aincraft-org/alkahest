@@ -212,28 +212,34 @@
                      } else {
                          player.drop(this.getCarried().split(1), true);
                      }
-@@ -460,7 +_,26 @@
+@@ -460,7 +_,32 @@
                          } else if (ItemStack.isSameItemSameComponents(clicked, carried)) {
                              Optional<ItemStack> newCarried = slot.tryRemove(clicked.getCount(), carried.getMaxStackSize() - carried.getCount(), player);
                              newCarried.ifPresent(itemsTaken -> {
-+                                // mintychochip start - item provenance: stamp craft before merge into cursor
++                                // mintychochip start - item provenance: capture both ids before cursor merge
 +                                if (slot instanceof ResultSlot resultSlot) {
 +                                    resultSlot.stampCraftResult(player, itemsTaken);
 +                                }
-+                                final java.util.Optional<java.util.UUID> absorbedId =
-+                                    dev.mintychochip.provenance.StackStamp.readId(itemsTaken);
++                                final dev.mintychochip.provenance.StackLocation sourceLocation =
++                                    dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index);
++                                final dev.mintychochip.provenance.StackLocation targetLocation =
++                                    dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1);
++                                final java.util.Optional<java.util.UUID> targetIdBefore =
++                                    dev.mintychochip.provenance.ItemProvenance.ensure(carried, targetLocation);
++                                final java.util.Optional<java.util.UUID> sourceIdBefore =
++                                    dev.mintychochip.provenance.ItemProvenance.ensure(itemsTaken, sourceLocation);
 +                                final int moved = itemsTaken.getCount();
 +                                // mintychochip end - item provenance
                                  carried.grow(itemsTaken.getCount());
-+                                // mintychochip start - item provenance
-+                                // itemsTaken was fully moved into carried; slot remaining is clicked after tryRemove
++                                // mintychochip start - item provenance: derive cursor identity from both parents
 +                                dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
 +                                    carried,
 +                                    itemsTaken.copyWithCount(0),
-+                                    absorbedId,
++                                    targetIdBefore,
++                                    sourceIdBefore,
 +                                    moved,
-+                                    dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index),
-+                                    dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++                                    sourceLocation,
++                                    targetLocation
 +                                );
 +                                // mintychochip end - item provenance
                                  slot.onTake(player, itemsTaken);
@@ -304,7 +310,7 @@
          boolean anythingChanged = false;
          int destSlot = startSlot;
          if (backwards) {
-@@ -646,18 +_,57 @@
+@@ -646,18 +_,75 @@
              while (!itemStack.isEmpty() && (backwards ? destSlot >= startSlot : destSlot < endSlot)) {
                  Slot slot = this.slots.get(destSlot);
                  ItemStack target = slot.getItem();
@@ -317,9 +323,17 @@
                      int totalStack = target.getCount() + itemStack.getCount();
                      int maxStackSize = slot.getMaxStackSize(target);
                      if (totalStack <= maxStackSize) {
-+                        // mintychochip start - item provenance: quick-move full merge
-+                        final java.util.Optional<java.util.UUID> absorbedId =
-+                            isCheck ? java.util.Optional.empty() : dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                        // mintychochip start - item provenance: capture both ids before quick-move merge
++                        final dev.mintychochip.provenance.StackLocation sourceLocation =
++                            dev.mintychochip.provenance.StackLocation.labeled("quick-move-src");
++                        final dev.mintychochip.provenance.StackLocation targetLocation =
++                            dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index);
++                        final java.util.Optional<java.util.UUID> targetIdBefore = isCheck
++                            ? java.util.Optional.empty()
++                            : dev.mintychochip.provenance.ItemProvenance.ensure(target, targetLocation);
++                        final java.util.Optional<java.util.UUID> sourceIdBefore = isCheck
++                            ? java.util.Optional.empty()
++                            : dev.mintychochip.provenance.ItemProvenance.ensure(itemStack, sourceLocation);
 +                        final int moved = itemStack.getCount();
 +                        // mintychochip end - item provenance
                          itemStack.setCount(0);
@@ -329,19 +343,28 @@
 +                        dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
 +                            target,
 +                            itemStack,
-+                            absorbedId,
++                            targetIdBefore,
++                            sourceIdBefore,
 +                            moved,
-+                            dev.mintychochip.provenance.StackLocation.labeled("quick-move-src"),
-+                            dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index)
++                            sourceLocation,
++                            targetLocation
 +                        );
 +                        // mintychochip end - item provenance
                          slot.setChanged();
 +                        } // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
                          anythingChanged = true;
                      } else if (target.getCount() < maxStackSize) {
-+                        // mintychochip start - item provenance: quick-move partial merge
-+                        final java.util.Optional<java.util.UUID> absorbedId =
-+                            isCheck ? java.util.Optional.empty() : dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                        // mintychochip start - item provenance: capture both ids before quick-move merge
++                        final dev.mintychochip.provenance.StackLocation sourceLocation =
++                            dev.mintychochip.provenance.StackLocation.labeled("quick-move-src");
++                        final dev.mintychochip.provenance.StackLocation targetLocation =
++                            dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index);
++                        final java.util.Optional<java.util.UUID> targetIdBefore = isCheck
++                            ? java.util.Optional.empty()
++                            : dev.mintychochip.provenance.ItemProvenance.ensure(target, targetLocation);
++                        final java.util.Optional<java.util.UUID> sourceIdBefore = isCheck
++                            ? java.util.Optional.empty()
++                            : dev.mintychochip.provenance.ItemProvenance.ensure(itemStack, sourceLocation);
 +                        final int moved = maxStackSize - target.getCount();
 +                        // mintychochip end - item provenance
                          itemStack.shrink(maxStackSize - target.getCount());
@@ -351,10 +374,11 @@
 +                        dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
 +                            target,
 +                            itemStack,
-+                            absorbedId,
++                            targetIdBefore,
++                            sourceIdBefore,
 +                            moved,
-+                            dev.mintychochip.provenance.StackLocation.labeled("quick-move-src"),
-+                            dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index)
++                            sourceLocation,
++                            targetLocation
 +                        );
 +                        // mintychochip end - item provenance
                          slot.setChanged();

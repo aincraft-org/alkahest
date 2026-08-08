@@ -92,6 +92,61 @@ public class CraftingMenuProvenanceTest {
     }
 
     @Test
+    public void shiftClickCraftMergingIntoExistingStackPreservesBothParents() {
+        final CraftingMenu menu = this.craftingMenuWithLogToPlanks();
+        final UUID ingredientId = StackStamp.readId(menu.craftSlots.getItem(0)).orElseThrow();
+        final ItemStack existing = new ItemStack(Items.OAK_PLANKS, 2);
+        final UUID existingId = ItemProvenance.ensure(
+            existing,
+            StackLocation.labeled("menu-slot:10")
+        ).orElseThrow();
+        this.inventory.setItem(0, existing);
+
+        assertFalse(menu.quickMoveStack(this.player, CraftingMenu.RESULT_SLOT).isEmpty());
+
+        this.assertCraftMerge(
+            this.findInventoryStack(Items.OAK_PLANKS),
+            existingId,
+            ingredientId
+        );
+    }
+
+    @Test
+    public void directPickupCraftMergingIntoCursorPreservesBothParents() {
+        final CraftingMenu menu = this.craftingMenuWithLogToPlanks();
+        final UUID ingredientId = StackStamp.readId(menu.craftSlots.getItem(0)).orElseThrow();
+        final ItemStack existing = new ItemStack(Items.OAK_PLANKS, 2);
+        final UUID existingId = ItemProvenance.ensure(
+            existing,
+            StackLocation.playerSlot(this.player.getUUID(), -1)
+        ).orElseThrow();
+        menu.setCarried(existing);
+
+        menu.clicked(CraftingMenu.RESULT_SLOT, 0, ContainerInput.PICKUP, this.player);
+
+        this.assertCraftMerge(menu.getCarried(), existingId, ingredientId);
+    }
+
+    private void assertCraftMerge(
+        final ItemStack mergedStack,
+        final UUID existingId,
+        final UUID ingredientId
+    ) {
+        final StackProvenance merged = StackStamp.read(mergedStack).orElseThrow();
+        assertEquals(ProvenanceSource.MERGE, merged.source());
+        assertTrue(merged.parents().contains(existingId));
+        assertEquals(2, merged.parents().size());
+        final UUID craftId = merged.parents().stream()
+            .filter(parent -> !parent.equals(existingId))
+            .findFirst()
+            .orElseThrow();
+        final LineageNode craft = ItemProvenance.lineage().get(craftId).orElseThrow();
+        assertEquals(ProvenanceSource.CRAFT, craft.source());
+        assertEquals(List.of(ingredientId), craft.parents());
+        assertFalse(ItemProvenance.live().contains(existingId));
+    }
+
+    @Test
     public void playerGridShiftClickRetainsCraftIdentityInInventory() {
         final InventoryMenu menu = new InventoryMenu(this.inventory, true, this.player);
         final ItemStack ingredient = new ItemStack(Items.OAK_LOG, 1);

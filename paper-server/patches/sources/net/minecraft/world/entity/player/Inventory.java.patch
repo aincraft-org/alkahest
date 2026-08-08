@@ -150,43 +150,48 @@
          ItemStack tmp = this.items.get(this.selected);
          this.items.set(this.selected, this.items.get(slot));
          this.items.set(slot, tmp);
-@@ -203,6 +_,11 @@
+@@ -203,6 +_,19 @@
      private int addResource(final int slot, final ItemStack itemStack) {
          int count = itemStack.getCount();
          ItemStack itemStackInSlot = this.getItem(slot);
 +        final boolean mergingIntoExisting = !itemStackInSlot.isEmpty();
-+        // mintychochip start - item provenance: capture ids before mutate
-+        final java.util.Optional<java.util.UUID> absorbedId =
-+            dev.mintychochip.provenance.StackStamp.readId(itemStack);
++        // mintychochip start - item provenance: capture both ids before inventory merge
++        final dev.mintychochip.provenance.StackLocation sourceLocation =
++            dev.mintychochip.provenance.StackLocation.labeled("player-inv-incoming");
++        final dev.mintychochip.provenance.StackLocation targetLocation =
++            dev.mintychochip.provenance.StackLocation.playerSlot(this.player.getUUID(), slot);
++        final java.util.Optional<java.util.UUID> targetIdBefore = mergingIntoExisting
++            ? dev.mintychochip.provenance.ItemProvenance.ensure(itemStackInSlot, targetLocation)
++            : java.util.Optional.empty();
++        final java.util.Optional<java.util.UUID> sourceIdBefore = mergingIntoExisting
++            ? dev.mintychochip.provenance.ItemProvenance.ensure(itemStack, sourceLocation)
++            : java.util.Optional.empty();
 +        // mintychochip end - item provenance
          if (itemStackInSlot.isEmpty()) {
              itemStackInSlot = itemStack.copyWithCount(0);
              this.setItem(slot, itemStackInSlot);
-@@ -217,6 +_,30 @@
+@@ -217,6 +_,27 @@
          count -= toAdd;
          itemStackInSlot.grow(toAdd);
          itemStackInSlot.setPopTime(POP_TIME_DURATION);
-+        // mintychochip start - item provenance: player inv merge (same rules as hoppers/slots)
++        // mintychochip start - item provenance: player inventory merge (same rules as hoppers/slots)
 +        if (mergingIntoExisting && toAdd > 0) {
-+            // itemStack still has pre-shrink identity if count>0; reconstruct remaining via setCount
-+            // absorbedId was captured before grow; remaining is itemStack after caller setCount
-+            // Here itemStack is not yet shrunk by caller — addResource returns remaining count
-+            // Simulate remaining stack for afterContainerMerge:
 +            final net.minecraft.world.item.ItemStack remainingView = itemStack.copy();
 +            remainingView.setCount(count);
 +            dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
 +                itemStackInSlot,
 +                remainingView,
-+                absorbedId,
++                targetIdBefore,
++                sourceIdBefore,
 +                toAdd,
-+                dev.mintychochip.provenance.StackLocation.labeled("player-inv-incoming"),
-+                dev.mintychochip.provenance.StackLocation.playerSlot(this.player.getUUID(), slot)
++                sourceLocation,
++                targetLocation
 +            );
 +        } else if (toAdd > 0) {
 +            // Identity moved into a previously empty slot.
 +            dev.mintychochip.provenance.ItemProvenance.transfer(
 +                itemStackInSlot,
-+                dev.mintychochip.provenance.StackLocation.playerSlot(this.player.getUUID(), slot)
++                targetLocation
 +            );
 +        }
 +        // mintychochip end - item provenance

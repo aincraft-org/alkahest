@@ -37,7 +37,7 @@
 +        }
 +        final java.util.List<java.util.UUID> parents = this.craftParentIds();
 +        final dev.mintychochip.provenance.StackLocation craftLocation =
-+            dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1);
++            dev.mintychochip.provenance.StackLocation.unknown();
 +        dev.mintychochip.provenance.ItemProvenance.onCrafted(result, parents, craftLocation);
 +    }
 +

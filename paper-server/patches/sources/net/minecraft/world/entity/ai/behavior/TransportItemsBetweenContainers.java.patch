@@ -50,13 +50,19 @@
                  container.setItem(slot, itemStack);
                  return ItemStack.EMPTY;
              }
-@@ -566,9 +_,29 @@
+@@ -566,9 +_,36 @@
              if (ItemStack.isSameItemSameComponents(containerItemStack, itemStack) && containerItemStack.getCount() < containerItemStack.getMaxStackSize()) {
                  int countThatCanBeAdded = containerItemStack.getMaxStackSize() - containerItemStack.getCount();
                  int countToAdd = Math.min(countThatCanBeAdded, itemStack.getCount());
-+                // mintychochip start - item provenance: copper golem / transport merge into chest stack
-+                final java.util.Optional<java.util.UUID> absorbedId =
-+                    dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                // mintychochip start - item provenance: capture both ids before golem merge
++                final dev.mintychochip.provenance.StackLocation sourceLocation =
++                    dev.mintychochip.provenance.StackLocation.labeled("golem_hand");
++                final dev.mintychochip.provenance.StackLocation targetLocation =
++                    dev.mintychochip.provenance.StackLocation.labeled("container:" + body.getUUID() + ":deposit:" + slot);
++                final java.util.Optional<java.util.UUID> targetIdBefore =
++                    dev.mintychochip.provenance.ItemProvenance.ensure(containerItemStack, targetLocation);
++                final java.util.Optional<java.util.UUID> sourceIdBefore =
++                    dev.mintychochip.provenance.ItemProvenance.ensure(itemStack, sourceLocation);
 +                // mintychochip end - item provenance
                  containerItemStack.setCount(containerItemStack.getCount() + countToAdd);
                  itemStack.setCount(itemStack.getCount() - countThatCanBeAdded);
@@ -70,10 +76,11 @@
 +                    dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
 +                        containerItemStack,
 +                        remaining,
-+                        absorbedId,
++                        targetIdBefore,
++                        sourceIdBefore,
 +                        countToAdd,
-+                        dev.mintychochip.provenance.StackLocation.labeled("golem_hand"),
-+                        dev.mintychochip.provenance.StackLocation.labeled("container:" + body.getUUID() + ":deposit:" + slot)
++                        sourceLocation,
++                        targetLocation
 +                    );
 +                }
 +                // mintychochip end - item provenance

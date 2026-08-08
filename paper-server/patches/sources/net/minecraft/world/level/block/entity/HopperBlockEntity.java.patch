@@ -203,7 +203,7 @@
          } else {
              entity.setItem(result);
          }
-@@ -317,15 +_,49 @@
+@@ -317,15 +_,56 @@
              boolean success = false;
              boolean wasEmpty = container.isEmpty();
              if (current.isEmpty()) {
@@ -231,9 +231,17 @@
 -                int space = itemStack.getMaxStackSize() - current.getCount();
 +                int space = Math.min(itemStack.getMaxStackSize(), container.getMaxStackSize()) - current.getCount(); // Paper - Make hoppers respect inventory max stack size
                  int count = Math.min(itemStack.getCount(), space);
-+                // mintychochip start - item provenance: hopper/container merge
-+                final java.util.Optional<java.util.UUID> absorbedId =
-+                    dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                // mintychochip start - item provenance: capture both ids before hopper merge
++                final dev.mintychochip.provenance.StackLocation sourceLocation =
++                    dev.mintychochip.provenance.StackLocation.labeled("hopper-in");
++                final dev.mintychochip.provenance.StackLocation targetLocation =
++                    dev.mintychochip.provenance.StackLocation.labeled(
++                        "container:" + System.identityHashCode(container) + ":" + slot
++                    );
++                final java.util.Optional<java.util.UUID> targetIdBefore =
++                    dev.mintychochip.provenance.ItemProvenance.ensure(current, targetLocation);
++                final java.util.Optional<java.util.UUID> sourceIdBefore =
++                    dev.mintychochip.provenance.ItemProvenance.ensure(itemStack, sourceLocation);
 +                // mintychochip end - item provenance
                  itemStack.shrink(count);
                  current.grow(count);
@@ -243,12 +251,11 @@
 +                    dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
 +                        current,
 +                        itemStack,
-+                        absorbedId,
++                        targetIdBefore,
++                        sourceIdBefore,
 +                        count,
-+                        dev.mintychochip.provenance.StackLocation.labeled("hopper-in"),
-+                        dev.mintychochip.provenance.StackLocation.labeled(
-+                            "container:" + System.identityHashCode(container) + ":" + slot
-+                        )
++                        sourceLocation,
++                        targetLocation
 +                    );
 +                }
 +                // mintychochip end - item provenance

@@ -104,7 +104,7 @@ index bb61b97a9619e76344bae5458bbdf2bc96e5494c..ae0df53c3be7ebcf48886adbedfaa2c0
          }
      }
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 1b61c787658110340da30a5be1899d67bdda0529..a1d0e9ea315db9906e9688b5955a9af07563d18a 100644
+index fb1ce33045cf2bb021487e98521b19fa141fe47d..8ae042d0e408e1f1cc75b683bea24c7ef3b7129d 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -142,6 +142,43 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -522,7 +522,7 @@ index 1b61c787658110340da30a5be1899d67bdda0529..a1d0e9ea315db9906e9688b5955a9af0
                  container.setItem(slot, itemStack);
                  ignoreBlockEntityUpdates = false; // Paper - Perf: Optimize Hoppers
                  // mintychochip start - item provenance: identity moved into empty container slot
-@@ -553,14 +699,22 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -560,14 +706,22 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static @Nullable Container getContainerAt(final Level level, final BlockPos pos) {
@@ -547,7 +547,7 @@ index 1b61c787658110340da30a5be1899d67bdda0529..a1d0e9ea315db9906e9688b5955a9af0
              result = getEntityContainer(level, x, y, z);
          }
  
-@@ -584,14 +738,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -591,14 +745,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      private static @Nullable Container getEntityContainer(final Level level, final double x, final double y, final double z) {
