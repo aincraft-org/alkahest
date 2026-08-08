@@ -27,7 +27,9 @@
 6. Merging two stacks with the same UUID records `DUPLICATE_MERGE`; it never
    launders quantity or mints a replacement identity.
 7. Provenance stamp is **ignored** for `isSameItemSameComponents` so stacks still merge.
-8. Restart **rehydrates** stamped stacks into the live census (not a new birth).
+8. Restart **rehydrates** live stamped stacks into the census (not a new birth);
+   a stale stamp for a dead UUID receives a replacement identity and never
+   resurrects the retired UUID.
 9. `birthIfAbsent` avoids double-mint when multiple hooks fire on the same stack.
 10. **Placement memory:** place stamps the block pos with the stack UUID; break
    re-emits {@code BLOCK_RECOVER} children (anti place→break wash).
