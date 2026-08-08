@@ -366,6 +366,44 @@ public class ItemProvenanceTest {
     }
 
     @Test
+    public void retiredMergeIdentitiesCannotBeRehydratedFromStaleCopies() {
+        final ItemStack target = new ItemStack(Items.COBBLESTONE, 40);
+        final ItemStack source = new ItemStack(Items.COBBLESTONE, 24);
+        final UUID targetId = ItemProvenance.birth(target, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
+        final UUID sourceId = ItemProvenance.birth(source, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        final ItemStack staleTarget = target.copy();
+        final ItemStack staleSource = source.copy();
+        final Optional<UUID> targetIdBefore = StackStamp.readId(target);
+        final Optional<UUID> sourceIdBefore = StackStamp.readId(source);
+
+        source.setCount(0);
+        target.setCount(64);
+        assertFalse(ItemProvenance.afterContainerMerge(
+            target,
+            source,
+            targetIdBefore,
+            sourceIdBefore,
+            24,
+            HAND,
+            CHEST
+        ));
+
+        final UUID replacementTarget = ItemProvenance.ensure(staleTarget, HAND).orElseThrow();
+        final UUID replacementSource = ItemProvenance.ensure(staleSource, CHEST).orElseThrow();
+        assertNotEquals(targetId, replacementTarget);
+        assertNotEquals(sourceId, replacementSource);
+        assertNotEquals(replacementTarget, replacementSource);
+        assertEquals(replacementTarget, StackStamp.readId(staleTarget).orElseThrow());
+        assertEquals(replacementSource, StackStamp.readId(staleSource).orElseThrow());
+        assertFalse(ItemProvenance.live().contains(targetId));
+        assertFalse(ItemProvenance.live().contains(sourceId));
+        assertTrue(ItemProvenance.live().contains(replacementTarget));
+        assertTrue(ItemProvenance.live().contains(replacementSource));
+        assertEquals(List.of(targetId), ItemProvenance.lineage().get(replacementTarget).orElseThrow().parents());
+        assertEquals(List.of(sourceId), ItemProvenance.lineage().get(replacementSource).orElseThrow().parents());
+    }
+
+    @Test
     public void pistonMoveKeepsPlacementMemoryAtNewPos() {
         final ItemStack cobble = new ItemStack(Items.COBBLESTONE, 1);
         final UUID minedId = ItemProvenance.birth(cobble, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();

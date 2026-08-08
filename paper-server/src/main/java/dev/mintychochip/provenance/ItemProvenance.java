@@ -247,8 +247,7 @@ public final class ItemProvenance {
         }
         final Optional<UUID> existing = StackStamp.readId(stack);
         if (existing.isPresent()) {
-            rehydrateIfNeeded(stack, existing.get(), location);
-            return existing;
+            return rehydrateIfNeeded(stack, existing.get(), location);
         }
         return birth(stack, source, location, parents);
     }
@@ -274,8 +273,7 @@ public final class ItemProvenance {
         }
         final Optional<UUID> existing = StackStamp.readId(stack);
         if (existing.isPresent()) {
-            rehydrateIfNeeded(stack, existing.get(), location);
-            return existing;
+            return rehydrateIfNeeded(stack, existing.get(), location);
         }
         return birth(stack, ProvenanceSource.LEGACY, location);
     }
@@ -950,10 +948,10 @@ public final class ItemProvenance {
         rehydrateIfNeeded(stack, stamp.get().id(), location);
     }
 
-    private static void rehydrateIfNeeded(
-        final ItemStack stack,
-        final UUID id,
-        final StackLocation location
+    private static @NotNull Optional<UUID> rehydrateIfNeeded(
+        final @NotNull ItemStack stack,
+        final @NotNull UUID id,
+        final @NotNull StackLocation location
     ) {
         final LiveEntry entry = LIVE.get(id).orElse(null);
         if (entry != null) {
@@ -967,7 +965,7 @@ public final class ItemProvenance {
                     recordCollision(id, ProvenanceCollisionKind.DUPLICATE_LOCATION, existing, location);
                 }
             }
-            return;
+            return Optional.of(id);
         }
         final long now = System.currentTimeMillis();
         final String itemId = itemId(stack);
@@ -981,17 +979,9 @@ public final class ItemProvenance {
         }
         final Optional<LineageNode> node = LINEAGE.get(id);
         if (node.isPresent() && node.get().dead()) {
-            AUDIT.append(new ProvenanceEvent(
-                now,
-                ProvenanceEventType.ZOMBIE,
-                id,
-                itemId,
-                source,
-                null,
-                List.of(),
-                location.display(),
-                "dead uuid reappeared"
-            ));
+            // A stale copy of a retired stack is a new observed instance, never a
+            // resurrection of the dead UUID. Keep the retired node as its parent.
+            return birth(stack, ProvenanceSource.LEGACY, location, List.of(id));
         }
         final LiveEntry fresh = new LiveEntry(id, itemId, StackLocation.unknown(), stack.getCount(), born);
         if (location.isConcrete()) {
@@ -1009,6 +999,7 @@ public final class ItemProvenance {
             location.display(),
             null
         ));
+        return Optional.of(id);
     }
 
     // -------------------------------------------------------------------------
