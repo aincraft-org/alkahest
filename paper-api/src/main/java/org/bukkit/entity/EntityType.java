@@ -1,270 +1,213 @@
 package org.bukkit.entity;
 
 import com.google.common.base.Preconditions;
-import io.papermc.paper.InternalAPIBridge;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.RegionAccessor;
 import org.bukkit.Translatable;
 import org.bukkit.World;
-import org.bukkit.entity.boat.AcaciaBoat;
-import org.bukkit.entity.boat.AcaciaChestBoat;
-import org.bukkit.entity.boat.BambooChestRaft;
-import org.bukkit.entity.boat.BambooRaft;
-import org.bukkit.entity.boat.BirchBoat;
-import org.bukkit.entity.boat.BirchChestBoat;
-import org.bukkit.entity.boat.CherryBoat;
-import org.bukkit.entity.boat.CherryChestBoat;
-import org.bukkit.entity.boat.DarkOakBoat;
-import org.bukkit.entity.boat.DarkOakChestBoat;
-import org.bukkit.entity.boat.JungleBoat;
-import org.bukkit.entity.boat.JungleChestBoat;
-import org.bukkit.entity.boat.MangroveBoat;
-import org.bukkit.entity.boat.MangroveChestBoat;
-import org.bukkit.entity.boat.OakBoat;
-import org.bukkit.entity.boat.OakChestBoat;
-import org.bukkit.entity.boat.PaleOakBoat;
-import org.bukkit.entity.boat.PaleOakChestBoat;
-import org.bukkit.entity.boat.SpruceBoat;
-import org.bukkit.entity.boat.SpruceChestBoat;
-import org.bukkit.entity.minecart.CommandMinecart;
-import org.bukkit.entity.minecart.ExplosiveMinecart;
-import org.bukkit.entity.minecart.HopperMinecart;
-import org.bukkit.entity.minecart.PoweredMinecart;
-import org.bukkit.entity.minecart.RideableMinecart;
-import org.bukkit.entity.minecart.SpawnerMinecart;
-import org.bukkit.entity.minecart.StorageMinecart;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public enum EntityType implements Keyed, Translatable, net.kyori.adventure.translation.Translatable, io.papermc.paper.world.flag.FeatureDependant { // Paper - translatable
+/**
+ * An entity type that can be spawned and identified by {@link NamespacedKey}.
+ *
+ * <p>Vanilla types are the constants on this interface (e.g. {@link #PIG}); they are instances of
+ * {@link VanillaEntityType}. Custom types (e.g. mintychochip custom entities) implement this
+ * interface so they can be used anywhere an {@code EntityType} is accepted — including
+ * {@link RegionAccessor#spawnEntity(Location, EntityType)}.
+ *
+ * <p>{@link Entity#getType()} returns the <strong>carrier</strong> vanilla type for custom entities;
+ * use {@link Entity#getCustomEntity()} / {@link Entity#getCustomKey()} for logical custom identity.
+ */
+public interface EntityType extends Keyed, Translatable, net.kyori.adventure.translation.Translatable, io.papermc.paper.world.flag.FeatureDependant {
 
-    // Start generate - EntityType
-    ACACIA_BOAT("acacia_boat", AcaciaBoat.class, -1),
-    ACACIA_CHEST_BOAT("acacia_chest_boat", AcaciaChestBoat.class, -1),
-    ALLAY("allay", Allay.class, -1),
-    AREA_EFFECT_CLOUD("area_effect_cloud", AreaEffectCloud.class, 3),
-    ARMADILLO("armadillo", Armadillo.class, -1),
-    ARMOR_STAND("armor_stand", ArmorStand.class, 30),
-    ARROW("arrow", Arrow.class, 10),
-    AXOLOTL("axolotl", Axolotl.class, -1),
-    BAMBOO_CHEST_RAFT("bamboo_chest_raft", BambooChestRaft.class, -1),
-    BAMBOO_RAFT("bamboo_raft", BambooRaft.class, -1),
-    BAT("bat", Bat.class, 65),
-    BEE("bee", Bee.class, -1),
-    BIRCH_BOAT("birch_boat", BirchBoat.class, -1),
-    BIRCH_CHEST_BOAT("birch_chest_boat", BirchChestBoat.class, -1),
-    BLAZE("blaze", Blaze.class, 61),
-    BLOCK_DISPLAY("block_display", BlockDisplay.class, -1),
-    BOGGED("bogged", Bogged.class, -1),
-    BREEZE("breeze", Breeze.class, -1),
-    BREEZE_WIND_CHARGE("breeze_wind_charge", BreezeWindCharge.class, -1),
-    CAMEL("camel", Camel.class, -1),
-    CAMEL_HUSK("camel_husk", CamelHusk.class, -1),
-    CAT("cat", Cat.class, -1),
-    CAVE_SPIDER("cave_spider", CaveSpider.class, 59),
-    CHERRY_BOAT("cherry_boat", CherryBoat.class, -1),
-    CHERRY_CHEST_BOAT("cherry_chest_boat", CherryChestBoat.class, -1),
-    CHEST_MINECART("chest_minecart", StorageMinecart.class, 43),
-    CHICKEN("chicken", Chicken.class, 93),
-    COD("cod", Cod.class, -1),
-    COMMAND_BLOCK_MINECART("command_block_minecart", CommandMinecart.class, 40),
-    COPPER_GOLEM("copper_golem", CopperGolem.class, -1),
-    COW("cow", Cow.class, 92),
-    CREAKING("creaking", Creaking.class, -1),
-    CREEPER("creeper", Creeper.class, 50),
-    DARK_OAK_BOAT("dark_oak_boat", DarkOakBoat.class, -1),
-    DARK_OAK_CHEST_BOAT("dark_oak_chest_boat", DarkOakChestBoat.class, -1),
-    DOLPHIN("dolphin", Dolphin.class, -1),
-    DONKEY("donkey", Donkey.class, 31),
-    DRAGON_FIREBALL("dragon_fireball", DragonFireball.class, 26),
-    DROWNED("drowned", Drowned.class, -1),
-    EGG("egg", Egg.class, 7),
-    ELDER_GUARDIAN("elder_guardian", ElderGuardian.class, 4),
-    END_CRYSTAL("end_crystal", EnderCrystal.class, 200),
-    ENDER_DRAGON("ender_dragon", EnderDragon.class, 63),
-    ENDER_PEARL("ender_pearl", EnderPearl.class, 14),
-    ENDERMAN("enderman", Enderman.class, 58),
-    ENDERMITE("endermite", Endermite.class, 67),
-    EVOKER("evoker", Evoker.class, 34),
-    EVOKER_FANGS("evoker_fangs", EvokerFangs.class, 33),
-    EXPERIENCE_BOTTLE("experience_bottle", ThrownExpBottle.class, 17),
-    EXPERIENCE_ORB("experience_orb", ExperienceOrb.class, 2),
-    EYE_OF_ENDER("eye_of_ender", EnderSignal.class, 15),
-    FALLING_BLOCK("falling_block", FallingBlock.class, 21),
-    FIREBALL("fireball", LargeFireball.class, 12),
-    FIREWORK_ROCKET("firework_rocket", Firework.class, 22),
-    FISHING_BOBBER("fishing_bobber", FishHook.class, -1, false),
-    FOX("fox", Fox.class, -1),
-    FROG("frog", Frog.class, -1),
-    FURNACE_MINECART("furnace_minecart", PoweredMinecart.class, 44),
-    GHAST("ghast", Ghast.class, 56),
-    GIANT("giant", Giant.class, 53),
-    GLOW_ITEM_FRAME("glow_item_frame", GlowItemFrame.class, -1),
-    GLOW_SQUID("glow_squid", GlowSquid.class, -1),
-    GOAT("goat", Goat.class, -1),
-    GUARDIAN("guardian", Guardian.class, 68),
-    HAPPY_GHAST("happy_ghast", HappyGhast.class, -1),
-    HOGLIN("hoglin", Hoglin.class, -1),
-    HOPPER_MINECART("hopper_minecart", HopperMinecart.class, 46),
-    HORSE("horse", Horse.class, 100),
-    HUSK("husk", Husk.class, 23),
-    ILLUSIONER("illusioner", Illusioner.class, 37),
-    INTERACTION("interaction", Interaction.class, -1),
-    IRON_GOLEM("iron_golem", IronGolem.class, 99),
-    ITEM("item", Item.class, 1),
-    ITEM_DISPLAY("item_display", ItemDisplay.class, -1),
-    ITEM_FRAME("item_frame", ItemFrame.class, 18),
-    JUNGLE_BOAT("jungle_boat", JungleBoat.class, -1),
-    JUNGLE_CHEST_BOAT("jungle_chest_boat", JungleChestBoat.class, -1),
-    LEASH_KNOT("leash_knot", LeashHitch.class, 8),
-    LIGHTNING_BOLT("lightning_bolt", LightningStrike.class, -1),
-    LINGERING_POTION("lingering_potion", LingeringPotion.class, -1),
-    LLAMA("llama", Llama.class, 103),
-    LLAMA_SPIT("llama_spit", LlamaSpit.class, 104),
-    MAGMA_CUBE("magma_cube", MagmaCube.class, 62),
-    MANGROVE_BOAT("mangrove_boat", MangroveBoat.class, -1),
-    MANGROVE_CHEST_BOAT("mangrove_chest_boat", MangroveChestBoat.class, -1),
-    MANNEQUIN("mannequin", Mannequin.class, -1),
-    MARKER("marker", Marker.class, -1),
-    MINECART("minecart", RideableMinecart.class, 42),
-    MOOSHROOM("mooshroom", MushroomCow.class, 96),
-    MULE("mule", Mule.class, 32),
-    NAUTILUS("nautilus", Nautilus.class, -1),
-    OAK_BOAT("oak_boat", OakBoat.class, -1),
-    OAK_CHEST_BOAT("oak_chest_boat", OakChestBoat.class, -1),
-    OCELOT("ocelot", Ocelot.class, 98),
-    OMINOUS_ITEM_SPAWNER("ominous_item_spawner", OminousItemSpawner.class, -1),
-    PAINTING("painting", Painting.class, 9),
-    PALE_OAK_BOAT("pale_oak_boat", PaleOakBoat.class, -1),
-    PALE_OAK_CHEST_BOAT("pale_oak_chest_boat", PaleOakChestBoat.class, -1),
-    PANDA("panda", Panda.class, -1),
-    PARCHED("parched", Parched.class, -1),
-    PARROT("parrot", Parrot.class, 105),
-    PHANTOM("phantom", Phantom.class, -1),
-    PIG("pig", Pig.class, 90),
-    PIGLIN("piglin", Piglin.class, -1),
-    PIGLIN_BRUTE("piglin_brute", PiglinBrute.class, -1),
-    PILLAGER("pillager", Pillager.class, -1),
-    PLAYER("player", Player.class, -1, false),
-    POLAR_BEAR("polar_bear", PolarBear.class, 102),
-    PUFFERFISH("pufferfish", PufferFish.class, -1),
-    RABBIT("rabbit", Rabbit.class, 101),
-    RAVAGER("ravager", Ravager.class, -1),
-    SALMON("salmon", Salmon.class, -1),
-    SHEEP("sheep", Sheep.class, 91),
-    SHULKER("shulker", Shulker.class, 69),
-    SHULKER_BULLET("shulker_bullet", ShulkerBullet.class, 25),
-    SILVERFISH("silverfish", Silverfish.class, 60),
-    SKELETON("skeleton", Skeleton.class, 51),
-    SKELETON_HORSE("skeleton_horse", SkeletonHorse.class, 28),
-    SLIME("slime", Slime.class, 55),
-    SMALL_FIREBALL("small_fireball", SmallFireball.class, 13),
-    SNIFFER("sniffer", Sniffer.class, -1),
-    SNOW_GOLEM("snow_golem", Snowman.class, 97),
-    SNOWBALL("snowball", Snowball.class, 11),
-    SPAWNER_MINECART("spawner_minecart", SpawnerMinecart.class, 47),
-    SPECTRAL_ARROW("spectral_arrow", SpectralArrow.class, 24),
-    SPIDER("spider", Spider.class, 52),
-    SPLASH_POTION("splash_potion", SplashPotion.class, 16),
-    SPRUCE_BOAT("spruce_boat", SpruceBoat.class, -1),
-    SPRUCE_CHEST_BOAT("spruce_chest_boat", SpruceChestBoat.class, -1),
-    SQUID("squid", Squid.class, 94),
-    STRAY("stray", Stray.class, 6),
-    STRIDER("strider", Strider.class, -1),
-    SULFUR_CUBE("sulfur_cube", SulfurCube.class, -1),
-    TADPOLE("tadpole", Tadpole.class, -1),
-    TEXT_DISPLAY("text_display", TextDisplay.class, -1),
-    TNT("tnt", TNTPrimed.class, 20),
-    TNT_MINECART("tnt_minecart", ExplosiveMinecart.class, 45),
-    TRADER_LLAMA("trader_llama", TraderLlama.class, -1),
-    TRIDENT("trident", Trident.class, -1),
-    TROPICAL_FISH("tropical_fish", TropicalFish.class, -1),
-    TURTLE("turtle", Turtle.class, -1),
-    VEX("vex", Vex.class, 35),
-    VILLAGER("villager", Villager.class, 120),
-    VINDICATOR("vindicator", Vindicator.class, 36),
-    WANDERING_TRADER("wandering_trader", WanderingTrader.class, -1),
-    WARDEN("warden", Warden.class, -1),
-    WIND_CHARGE("wind_charge", WindCharge.class, -1),
-    WITCH("witch", Witch.class, 66),
-    WITHER("wither", Wither.class, 64),
-    WITHER_SKELETON("wither_skeleton", WitherSkeleton.class, 5),
-    WITHER_SKULL("wither_skull", WitherSkull.class, 19),
-    WOLF("wolf", Wolf.class, 95),
-    ZOGLIN("zoglin", Zoglin.class, -1),
-    ZOMBIE("zombie", Zombie.class, 54),
-    ZOMBIE_HORSE("zombie_horse", ZombieHorse.class, 29),
-    ZOMBIE_NAUTILUS("zombie_nautilus", ZombieNautilus.class, -1),
-    ZOMBIE_VILLAGER("zombie_villager", ZombieVillager.class, 27),
-    ZOMBIFIED_PIGLIN("zombified_piglin", PigZombie.class, 57),
-    // End generate - EntityType
-    /**
-     * An unknown entity without an Entity Class
-     */
-    UNKNOWN(null, null, -1, false);
-
-    private final String name;
-    private final Class<? extends Entity> clazz;
-    private final short typeId;
-    private final boolean independent, living;
-    private final NamespacedKey key;
-
-    private static final Map<String, EntityType> NAME_MAP = new HashMap<String, EntityType>();
-    private static final Map<Short, EntityType> ID_MAP = new HashMap<Short, EntityType>();
-
-    static {
-        for (EntityType type : values()) {
-            if (type.name != null) {
-                NAME_MAP.put(type.name.toLowerCase(Locale.ROOT), type);
-            }
-            if (type.typeId > 0) {
-                ID_MAP.put(type.typeId, type);
-            }
-        }
-    }
-
-    private EntityType(/*@Nullable*/ String name, /*@Nullable*/ Class<? extends Entity> clazz, int typeId) {
-        this(name, clazz, typeId, true);
-    }
-
-    private EntityType(/*@Nullable*/ String name, /*@Nullable*/ Class<? extends Entity> clazz, int typeId, boolean independent) {
-        this.name = name;
-        this.clazz = clazz;
-        this.typeId = (short) typeId;
-        this.independent = independent;
-        this.living = clazz != null && LivingEntity.class.isAssignableFrom(clazz);
-        this.key = (name == null) ? null : NamespacedKey.minecraft(name);
-    }
+    // ---- vanilla constants (source-compatible with former enum constants) ----
+    EntityType ACACIA_BOAT = VanillaEntityType.ACACIA_BOAT;
+    EntityType ACACIA_CHEST_BOAT = VanillaEntityType.ACACIA_CHEST_BOAT;
+    EntityType ALLAY = VanillaEntityType.ALLAY;
+    EntityType AREA_EFFECT_CLOUD = VanillaEntityType.AREA_EFFECT_CLOUD;
+    EntityType ARMADILLO = VanillaEntityType.ARMADILLO;
+    EntityType ARMOR_STAND = VanillaEntityType.ARMOR_STAND;
+    EntityType ARROW = VanillaEntityType.ARROW;
+    EntityType AXOLOTL = VanillaEntityType.AXOLOTL;
+    EntityType BAMBOO_CHEST_RAFT = VanillaEntityType.BAMBOO_CHEST_RAFT;
+    EntityType BAMBOO_RAFT = VanillaEntityType.BAMBOO_RAFT;
+    EntityType BAT = VanillaEntityType.BAT;
+    EntityType BEE = VanillaEntityType.BEE;
+    EntityType BIRCH_BOAT = VanillaEntityType.BIRCH_BOAT;
+    EntityType BIRCH_CHEST_BOAT = VanillaEntityType.BIRCH_CHEST_BOAT;
+    EntityType BLAZE = VanillaEntityType.BLAZE;
+    EntityType BLOCK_DISPLAY = VanillaEntityType.BLOCK_DISPLAY;
+    EntityType BOGGED = VanillaEntityType.BOGGED;
+    EntityType BREEZE = VanillaEntityType.BREEZE;
+    EntityType BREEZE_WIND_CHARGE = VanillaEntityType.BREEZE_WIND_CHARGE;
+    EntityType CAMEL = VanillaEntityType.CAMEL;
+    EntityType CAMEL_HUSK = VanillaEntityType.CAMEL_HUSK;
+    EntityType CAT = VanillaEntityType.CAT;
+    EntityType CAVE_SPIDER = VanillaEntityType.CAVE_SPIDER;
+    EntityType CHERRY_BOAT = VanillaEntityType.CHERRY_BOAT;
+    EntityType CHERRY_CHEST_BOAT = VanillaEntityType.CHERRY_CHEST_BOAT;
+    EntityType CHEST_MINECART = VanillaEntityType.CHEST_MINECART;
+    EntityType CHICKEN = VanillaEntityType.CHICKEN;
+    EntityType COD = VanillaEntityType.COD;
+    EntityType COMMAND_BLOCK_MINECART = VanillaEntityType.COMMAND_BLOCK_MINECART;
+    EntityType COPPER_GOLEM = VanillaEntityType.COPPER_GOLEM;
+    EntityType COW = VanillaEntityType.COW;
+    EntityType CREAKING = VanillaEntityType.CREAKING;
+    EntityType CREEPER = VanillaEntityType.CREEPER;
+    EntityType DARK_OAK_BOAT = VanillaEntityType.DARK_OAK_BOAT;
+    EntityType DARK_OAK_CHEST_BOAT = VanillaEntityType.DARK_OAK_CHEST_BOAT;
+    EntityType DOLPHIN = VanillaEntityType.DOLPHIN;
+    EntityType DONKEY = VanillaEntityType.DONKEY;
+    EntityType DRAGON_FIREBALL = VanillaEntityType.DRAGON_FIREBALL;
+    EntityType DROWNED = VanillaEntityType.DROWNED;
+    EntityType EGG = VanillaEntityType.EGG;
+    EntityType ELDER_GUARDIAN = VanillaEntityType.ELDER_GUARDIAN;
+    EntityType END_CRYSTAL = VanillaEntityType.END_CRYSTAL;
+    EntityType ENDER_DRAGON = VanillaEntityType.ENDER_DRAGON;
+    EntityType ENDER_PEARL = VanillaEntityType.ENDER_PEARL;
+    EntityType ENDERMAN = VanillaEntityType.ENDERMAN;
+    EntityType ENDERMITE = VanillaEntityType.ENDERMITE;
+    EntityType EVOKER = VanillaEntityType.EVOKER;
+    EntityType EVOKER_FANGS = VanillaEntityType.EVOKER_FANGS;
+    EntityType EXPERIENCE_BOTTLE = VanillaEntityType.EXPERIENCE_BOTTLE;
+    EntityType EXPERIENCE_ORB = VanillaEntityType.EXPERIENCE_ORB;
+    EntityType EYE_OF_ENDER = VanillaEntityType.EYE_OF_ENDER;
+    EntityType FALLING_BLOCK = VanillaEntityType.FALLING_BLOCK;
+    EntityType FIREBALL = VanillaEntityType.FIREBALL;
+    EntityType FIREWORK_ROCKET = VanillaEntityType.FIREWORK_ROCKET;
+    EntityType FISHING_BOBBER = VanillaEntityType.FISHING_BOBBER;
+    EntityType FOX = VanillaEntityType.FOX;
+    EntityType FROG = VanillaEntityType.FROG;
+    EntityType FURNACE_MINECART = VanillaEntityType.FURNACE_MINECART;
+    EntityType GHAST = VanillaEntityType.GHAST;
+    EntityType GIANT = VanillaEntityType.GIANT;
+    EntityType GLOW_ITEM_FRAME = VanillaEntityType.GLOW_ITEM_FRAME;
+    EntityType GLOW_SQUID = VanillaEntityType.GLOW_SQUID;
+    EntityType GOAT = VanillaEntityType.GOAT;
+    EntityType GUARDIAN = VanillaEntityType.GUARDIAN;
+    EntityType HAPPY_GHAST = VanillaEntityType.HAPPY_GHAST;
+    EntityType HOGLIN = VanillaEntityType.HOGLIN;
+    EntityType HOPPER_MINECART = VanillaEntityType.HOPPER_MINECART;
+    EntityType HORSE = VanillaEntityType.HORSE;
+    EntityType HUSK = VanillaEntityType.HUSK;
+    EntityType ILLUSIONER = VanillaEntityType.ILLUSIONER;
+    EntityType INTERACTION = VanillaEntityType.INTERACTION;
+    EntityType IRON_GOLEM = VanillaEntityType.IRON_GOLEM;
+    EntityType ITEM = VanillaEntityType.ITEM;
+    EntityType ITEM_DISPLAY = VanillaEntityType.ITEM_DISPLAY;
+    EntityType ITEM_FRAME = VanillaEntityType.ITEM_FRAME;
+    EntityType JUNGLE_BOAT = VanillaEntityType.JUNGLE_BOAT;
+    EntityType JUNGLE_CHEST_BOAT = VanillaEntityType.JUNGLE_CHEST_BOAT;
+    EntityType LEASH_KNOT = VanillaEntityType.LEASH_KNOT;
+    EntityType LIGHTNING_BOLT = VanillaEntityType.LIGHTNING_BOLT;
+    EntityType LINGERING_POTION = VanillaEntityType.LINGERING_POTION;
+    EntityType LLAMA = VanillaEntityType.LLAMA;
+    EntityType LLAMA_SPIT = VanillaEntityType.LLAMA_SPIT;
+    EntityType MAGMA_CUBE = VanillaEntityType.MAGMA_CUBE;
+    EntityType MANGROVE_BOAT = VanillaEntityType.MANGROVE_BOAT;
+    EntityType MANGROVE_CHEST_BOAT = VanillaEntityType.MANGROVE_CHEST_BOAT;
+    EntityType MANNEQUIN = VanillaEntityType.MANNEQUIN;
+    EntityType MARKER = VanillaEntityType.MARKER;
+    EntityType MINECART = VanillaEntityType.MINECART;
+    EntityType MOOSHROOM = VanillaEntityType.MOOSHROOM;
+    EntityType MULE = VanillaEntityType.MULE;
+    EntityType NAUTILUS = VanillaEntityType.NAUTILUS;
+    EntityType OAK_BOAT = VanillaEntityType.OAK_BOAT;
+    EntityType OAK_CHEST_BOAT = VanillaEntityType.OAK_CHEST_BOAT;
+    EntityType OCELOT = VanillaEntityType.OCELOT;
+    EntityType OMINOUS_ITEM_SPAWNER = VanillaEntityType.OMINOUS_ITEM_SPAWNER;
+    EntityType PAINTING = VanillaEntityType.PAINTING;
+    EntityType PALE_OAK_BOAT = VanillaEntityType.PALE_OAK_BOAT;
+    EntityType PALE_OAK_CHEST_BOAT = VanillaEntityType.PALE_OAK_CHEST_BOAT;
+    EntityType PANDA = VanillaEntityType.PANDA;
+    EntityType PARCHED = VanillaEntityType.PARCHED;
+    EntityType PARROT = VanillaEntityType.PARROT;
+    EntityType PHANTOM = VanillaEntityType.PHANTOM;
+    EntityType PIG = VanillaEntityType.PIG;
+    EntityType PIGLIN = VanillaEntityType.PIGLIN;
+    EntityType PIGLIN_BRUTE = VanillaEntityType.PIGLIN_BRUTE;
+    EntityType PILLAGER = VanillaEntityType.PILLAGER;
+    EntityType PLAYER = VanillaEntityType.PLAYER;
+    EntityType POLAR_BEAR = VanillaEntityType.POLAR_BEAR;
+    EntityType PUFFERFISH = VanillaEntityType.PUFFERFISH;
+    EntityType RABBIT = VanillaEntityType.RABBIT;
+    EntityType RAVAGER = VanillaEntityType.RAVAGER;
+    EntityType SALMON = VanillaEntityType.SALMON;
+    EntityType SHEEP = VanillaEntityType.SHEEP;
+    EntityType SHULKER = VanillaEntityType.SHULKER;
+    EntityType SHULKER_BULLET = VanillaEntityType.SHULKER_BULLET;
+    EntityType SILVERFISH = VanillaEntityType.SILVERFISH;
+    EntityType SKELETON = VanillaEntityType.SKELETON;
+    EntityType SKELETON_HORSE = VanillaEntityType.SKELETON_HORSE;
+    EntityType SLIME = VanillaEntityType.SLIME;
+    EntityType SMALL_FIREBALL = VanillaEntityType.SMALL_FIREBALL;
+    EntityType SNIFFER = VanillaEntityType.SNIFFER;
+    EntityType SNOW_GOLEM = VanillaEntityType.SNOW_GOLEM;
+    EntityType SNOWBALL = VanillaEntityType.SNOWBALL;
+    EntityType SPAWNER_MINECART = VanillaEntityType.SPAWNER_MINECART;
+    EntityType SPECTRAL_ARROW = VanillaEntityType.SPECTRAL_ARROW;
+    EntityType SPIDER = VanillaEntityType.SPIDER;
+    EntityType SPLASH_POTION = VanillaEntityType.SPLASH_POTION;
+    EntityType SPRUCE_BOAT = VanillaEntityType.SPRUCE_BOAT;
+    EntityType SPRUCE_CHEST_BOAT = VanillaEntityType.SPRUCE_CHEST_BOAT;
+    EntityType SQUID = VanillaEntityType.SQUID;
+    EntityType STRAY = VanillaEntityType.STRAY;
+    EntityType STRIDER = VanillaEntityType.STRIDER;
+    EntityType SULFUR_CUBE = VanillaEntityType.SULFUR_CUBE;
+    EntityType TADPOLE = VanillaEntityType.TADPOLE;
+    EntityType TEXT_DISPLAY = VanillaEntityType.TEXT_DISPLAY;
+    EntityType TNT = VanillaEntityType.TNT;
+    EntityType TNT_MINECART = VanillaEntityType.TNT_MINECART;
+    EntityType TRADER_LLAMA = VanillaEntityType.TRADER_LLAMA;
+    EntityType TRIDENT = VanillaEntityType.TRIDENT;
+    EntityType TROPICAL_FISH = VanillaEntityType.TROPICAL_FISH;
+    EntityType TURTLE = VanillaEntityType.TURTLE;
+    EntityType VEX = VanillaEntityType.VEX;
+    EntityType VILLAGER = VanillaEntityType.VILLAGER;
+    EntityType VINDICATOR = VanillaEntityType.VINDICATOR;
+    EntityType WANDERING_TRADER = VanillaEntityType.WANDERING_TRADER;
+    EntityType WARDEN = VanillaEntityType.WARDEN;
+    EntityType WIND_CHARGE = VanillaEntityType.WIND_CHARGE;
+    EntityType WITCH = VanillaEntityType.WITCH;
+    EntityType WITHER = VanillaEntityType.WITHER;
+    EntityType WITHER_SKELETON = VanillaEntityType.WITHER_SKELETON;
+    EntityType WITHER_SKULL = VanillaEntityType.WITHER_SKULL;
+    EntityType WOLF = VanillaEntityType.WOLF;
+    EntityType ZOGLIN = VanillaEntityType.ZOGLIN;
+    EntityType ZOMBIE = VanillaEntityType.ZOMBIE;
+    EntityType ZOMBIE_HORSE = VanillaEntityType.ZOMBIE_HORSE;
+    EntityType ZOMBIE_NAUTILUS = VanillaEntityType.ZOMBIE_NAUTILUS;
+    EntityType ZOMBIE_VILLAGER = VanillaEntityType.ZOMBIE_VILLAGER;
+    EntityType ZOMBIFIED_PIGLIN = VanillaEntityType.ZOMBIFIED_PIGLIN;
+    EntityType UNKNOWN = VanillaEntityType.UNKNOWN;
 
     /**
-     * Gets the entity type name.
+     * Gets the entity type name (path of the key without namespace for vanilla).
      *
      * @return the entity type's name
      * @deprecated Magic value
      */
     @Deprecated(since = "1.6.2")
     @Nullable
-    public String getName() {
-        return name;
-    }
+    String getName();
 
-    @NotNull
     @Override
-    public NamespacedKey getKey() {
-        Preconditions.checkArgument(key != null, "EntityType doesn't have key! Is it UNKNOWN?");
+    @NotNull
+    NamespacedKey getKey();
 
-        return key;
-    }
-
+    /**
+     * Bukkit entity class used as the spawn carrier for this type.
+     * Custom block-model types typically return {@link BlockDisplay}.
+     */
     @Nullable
-    public Class<? extends Entity> getEntityClass() {
-        return clazz;
-    }
+    Class<? extends Entity> getEntityClass();
 
     /**
      * Gets the entity type id.
@@ -273,42 +216,7 @@ public enum EntityType implements Keyed, Translatable, net.kyori.adventure.trans
      * @deprecated Magic value
      */
     @Deprecated(since = "1.6.2", forRemoval = true)
-    public short getTypeId() {
-        return typeId;
-    }
-
-    /**
-     * Gets an entity type from its name.
-     *
-     * @param name the entity type's name
-     * @return the matching entity type or null
-     * @apiNote Internal Use Only
-     */
-    @org.jetbrains.annotations.ApiStatus.Internal // Paper
-    @Contract("null -> null")
-    @Nullable
-    public static EntityType fromName(@Nullable String name) {
-        if (name == null) {
-            return null;
-        }
-        return NAME_MAP.get(name.toLowerCase(Locale.ROOT));
-    }
-
-    /**
-     * Gets an entity from its id.
-     *
-     * @param id the raw type id
-     * @return the matching entity type or null
-     * @deprecated Magic value
-     */
-    @Deprecated(since = "1.6.2", forRemoval = true)
-    @Nullable
-    public static EntityType fromId(int id) {
-        if (id > Short.MAX_VALUE) {
-            return null;
-        }
-        return ID_MAP.get((short) id);
-    }
+    short getTypeId();
 
     /**
      * Some entities cannot be spawned using {@link
@@ -318,30 +226,20 @@ public enum EntityType implements Keyed, Translatable, net.kyori.adventure.trans
      *
      * @return False if the entity type cannot be spawned
      */
-    public boolean isSpawnable() {
-        return independent;
-    }
+    boolean isSpawnable();
 
-    public boolean isAlive() {
-        return living;
+    boolean isAlive();
+
+    @Override
+    @NotNull
+    @Deprecated(forRemoval = true)
+    default String getTranslationKey() {
+        return this.translationKey();
     }
 
     @Override
     @NotNull
-    @Deprecated(forRemoval = true) // Paper
-    public String getTranslationKey() {
-        return this.translationKey();
-    }
-
-    // Paper start
-    /**
-     * @throws IllegalArgumentException if the entity does not have a translation key
-     */
-    @Override
-    public @NotNull String translationKey() {
-        Preconditions.checkArgument(this != UNKNOWN, "UNKNOWN entities do not have translation keys");
-        return InternalAPIBridge.get().getTranslationKey(this);
-    }
+    String translationKey();
 
     /**
      * Gets the spawn category of this entity type.
@@ -349,22 +247,15 @@ public enum EntityType implements Keyed, Translatable, net.kyori.adventure.trans
      * @return the spawn category
      * @throws IllegalArgumentException if the entity does not have a spawn category
      */
-    public @NotNull SpawnCategory getSpawnCategory() {
-        Preconditions.checkArgument(this != UNKNOWN, "UNKNOWN entities do not have a spawn category");
-        return InternalAPIBridge.get().getSpawnCategory(this);
-    }
+    @NotNull
+    SpawnCategory getSpawnCategory();
 
     /**
      * Checks if the entity type has default attributes.
      *
      * @return true if it has default attributes
      */
-    public boolean hasDefaultAttributes() {
-        if (this == UNKNOWN) {
-            return false;
-        }
-        return InternalAPIBridge.get().hasDefaultEntityAttributes(this.key);
-    }
+    boolean hasDefaultAttributes();
 
     /**
      * Gets the default attributes for the entity type.
@@ -372,9 +263,126 @@ public enum EntityType implements Keyed, Translatable, net.kyori.adventure.trans
      * @return an unmodifiable instance of Attributable for reading default attributes.
      * @throws IllegalArgumentException if it doesn't have default attributes (use {@link #hasDefaultAttributes()} first)
      */
-    public @NotNull org.bukkit.attribute.Attributable getDefaultAttributes() {
-        Preconditions.checkArgument(this.hasDefaultAttributes(), this.key + " doesn't have default attributes");
-        return InternalAPIBridge.get().getDefaultEntityAttributes(this.key);
+    @NotNull
+    org.bukkit.attribute.Attributable getDefaultAttributes();
+
+    /**
+     * Enum-style constant name for vanilla types (e.g. {@code "PIG"}).
+     * Custom types return {@link #getKey()} as a string.
+     *
+     * <p>Source-compatible with former {@code Enum#name()}.
+     */
+    default @NotNull String name() {
+        if (this instanceof Enum<?> e) {
+            return e.name();
+        }
+        return getKey().toString();
     }
-    // Paper end
+
+    /**
+     * {@code true} when this is a vanilla Minecraft entity type constant.
+     */
+    default boolean isVanilla() {
+        return this instanceof VanillaEntityType;
+    }
+
+    /**
+     * {@code true} when this is a registered custom entity type (not a vanilla constant).
+     */
+    default boolean isCustom() {
+        return !isVanilla() && this != UNKNOWN;
+    }
+
+    /**
+     * Spawn this type at {@code location} using the default spawn path.
+     * Vanilla types create the entity class; custom types apply host presentation + identity.
+     */
+    default @NotNull Entity spawn(@NotNull final Location location) {
+        Objects.requireNonNull(location, "location");
+        final World world = location.getWorld();
+        Preconditions.checkArgument(world != null, "location has no world");
+        return world.spawnEntity(location, this);
+    }
+
+    // ---- static lookup (compat with former enum statics) ----
+
+    /**
+     * All <em>vanilla</em> entity type constants (not custom registrations).
+     * Prefer iterating {@link org.bukkit.Registry#ENTITY_TYPE} when available.
+     */
+    @NotNull
+    static EntityType[] values() {
+        final VanillaEntityType[] vanilla = VanillaEntityType.values();
+        final EntityType[] out = new EntityType[vanilla.length];
+        System.arraycopy(vanilla, 0, out, 0, vanilla.length);
+        return out;
+    }
+
+    /**
+     * Looks up a <em>vanilla</em> entity type by its enum constant name (e.g. {@code "PIG"}).
+     * Does not resolve custom entity keys — use {@link #getByKey(NamespacedKey)} for that.
+     */
+    @NotNull
+    static EntityType valueOf(@NotNull final String name) {
+        return VanillaEntityType.valueOf(name);
+    }
+
+    /**
+     * Gets an entity type from its legacy name path (e.g. {@code "pig"}).
+     *
+     * @param name the entity type's name
+     * @return the matching vanilla entity type or null
+     * @apiNote Internal Use Only
+     */
+    @ApiStatus.Internal
+    @Contract("null -> null")
+    @Nullable
+    static EntityType fromName(@Nullable String name) {
+        return VanillaEntityType.fromName(name);
+    }
+
+    /**
+     * Gets a vanilla entity type from its legacy numeric id.
+     *
+     * @param id the raw type id
+     * @return the matching entity type or null
+     * @deprecated Magic value
+     */
+    @Deprecated(since = "1.6.2", forRemoval = true)
+    @Nullable
+    static EntityType fromId(int id) {
+        return VanillaEntityType.fromId(id);
+    }
+
+    /**
+     * Resolve any entity type (vanilla or mintychochip custom catalog) by key.
+     *
+     * <p>Custom catalog is checked first so registered
+     * {@link dev.mintychochip.customentity.CustomEntityDefinition}s resolve without full
+     * {@link org.bukkit.Registry} bootstrap. Then {@link org.bukkit.Registry#ENTITY_TYPE}
+     * (vanilla non-{@link VanillaEntityType#UNKNOWN} + same customs). On registry
+     * miss / bootstrap failure, falls back to vanilla name lookup.
+     */
+    @NotNull
+    static Optional<EntityType> getByKey(@Nullable final NamespacedKey key) {
+        if (key == null) {
+            return Optional.empty();
+        }
+        // Custom first — works without Registry clinit (API unit tests / early bootstrap)
+        final Optional<dev.mintychochip.customentity.CustomEntityDefinition> custom =
+            dev.mintychochip.customentity.CustomEntities.get(key);
+        if (custom.isPresent()) {
+            return Optional.of(custom.get());
+        }
+        try {
+            final EntityType reg = org.bukkit.Registry.ENTITY_TYPE.get(key);
+            if (reg != null) {
+                return Optional.of(reg);
+            }
+        } catch (final Throwable ignored) {
+            // bootstrap — byName fallback below
+        }
+        final VanillaEntityType byName = VanillaEntityType.fromName(key.getKey());
+        return Optional.ofNullable(byName);
+    }
 }

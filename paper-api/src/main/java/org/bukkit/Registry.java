@@ -161,11 +161,23 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
     @Deprecated(since = "1.21")
     Registry<Enchantment> ENCHANTMENT = legacyRegistryFor(Enchantment.class);
     /**
-     * Server entity types.
+     * Server entity types: non-{@link org.bukkit.entity.VanillaEntityType#UNKNOWN}
+     * vanilla constants plus registered custom types
+     * ({@link dev.mintychochip.customentity.CustomEntityDefinition}).
+     *
+     * <p>{@link EntityType#values()} / {@link EntityType#valueOf(String)} remain vanilla-only;
+     * use this registry or {@link EntityType#getByKey(NamespacedKey)} for customs.
+     *
+     * <p>For tag queries, prefer {@link RegistryAccess#getRegistry(RegistryKey)} with
+     * {@link RegistryKey#ENTITY_TYPE} (server installs a tag-aware view).
      *
      * @see EntityType
+     * @see org.bukkit.entity.VanillaEntityType
      */
-    Registry<EntityType> ENTITY_TYPE = registryFor(RegistryKey.ENTITY_TYPE);
+    Registry<EntityType> ENTITY_TYPE = new EntityTypeRegistry(
+        new SimpleRegistry<>(org.bukkit.entity.VanillaEntityType.class,
+            (entity) -> entity != org.bukkit.entity.VanillaEntityType.UNKNOWN)
+    );
     /**
      * Server instruments.
      *
@@ -187,12 +199,18 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
      */
     Registry<LootTables> LOOT_TABLES = new SimpleRegistry<>(LootTables.class);
     /**
-     * Server materials.
+     * Server materials: non-legacy {@link VanillaMaterial} constants plus registered
+     * custom materials ({@link dev.mintychochip.customblock.CustomBlockDefinition}).
+     *
+     * <p>{@link Material#values()} / {@link Material#valueOf(String)} remain vanilla-only;
+     * use this registry or {@link Material#getByKey(NamespacedKey)} for customs.
      *
      * @see Material
+     * @see VanillaMaterial
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    Registry<Material> MATERIAL = (Registry) new SimpleRegistry<>(VanillaMaterial.class, (mat) -> !mat.isLegacy());
+    Registry<Material> MATERIAL = new MaterialRegistry(
+        new SimpleRegistry<>(VanillaMaterial.class, (mat) -> !mat.isLegacy())
+    );
     /**
      * Server menus.
      *

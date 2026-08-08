@@ -704,6 +704,36 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
     @NotNull
     public EntityType getType();
 
+    // mintychochip start - custom entity identity (additive; getType() remains vanilla carrier)
+    /**
+     * Logical custom-entity id stamped on this entity, if any.
+     *
+     * <p>Does <strong>not</strong> replace {@link #getType()}, which still returns the vanilla
+     * carrier type (e.g. {@link EntityType#BLOCK_DISPLAY}).
+     *
+     * @return custom entity key, or empty if this is a normal vanilla entity
+     */
+    default @NotNull java.util.Optional<org.bukkit.NamespacedKey> getCustomKey() {
+        return dev.mintychochip.customentity.CustomEntities.keyOf(this);
+    }
+
+    /**
+     * Registered custom-entity definition for this entity, if any.
+     *
+     * @return definition from the active catalog, or empty
+     */
+    default @NotNull java.util.Optional<dev.mintychochip.customentity.CustomEntityDefinition> getCustomEntity() {
+        return dev.mintychochip.customentity.CustomEntities.of(this);
+    }
+
+    /**
+     * @return {@code true} if a custom-entity identity is present on this entity
+     */
+    default boolean isCustomEntity() {
+        return dev.mintychochip.customentity.CustomEntities.isCustomEntity(this);
+    }
+    // mintychochip end - custom entity identity
+
     /**
      * Get the {@link SoundCategory} this entity will use when playing its sounds.
      *

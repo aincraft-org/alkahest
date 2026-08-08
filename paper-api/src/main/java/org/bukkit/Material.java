@@ -3366,13 +3366,17 @@ public interface Material extends Keyed, Translatable, net.kyori.adventure.trans
      * Resolve any material (vanilla or mintychochip custom catalog) by key.
      *
      * <p>Custom catalog is checked first so registered
-     * {@link dev.mintychochip.customblock.CustomBlockDefinition}s participate.
+     * {@link dev.mintychochip.customblock.CustomBlockDefinition}s resolve without full
+     * {@link Registry} bootstrap. Then {@link Registry#MATERIAL} (vanilla non-legacy +
+     * same customs). On registry miss / bootstrap failure, falls back to vanilla name
+     * lookup for the {@code minecraft} namespace only.
      */
     @NotNull
     static Optional<Material> getByKey(@Nullable final NamespacedKey key) {
         if (key == null) {
             return Optional.empty();
         }
+        // Custom first — works without Registry clinit (API unit tests / early bootstrap)
         final Optional<dev.mintychochip.customblock.CustomBlockDefinition> custom =
             dev.mintychochip.customblock.CustomBlocks.get(key);
         if (custom.isPresent()) {

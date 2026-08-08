@@ -1,6 +1,8 @@
 package org.bukkit.event.entity;
 
 import com.google.common.base.Preconditions;
+import dev.mintychochip.genetics.dto.BreedGenetics;
+import dev.mintychochip.genetics.model.Sex;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
@@ -11,6 +13,11 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Called when one Entity breeds with another Entity.
+ *
+ * <p>When mintychochip animal genetics ran for this breed, {@link #getGenetics()}
+ * is non-null and {@link #getMother()} / {@link #getFather()} are the genetic
+ * dam (female) and sire (male). Plugins can cancel using that metadata
+ * (e.g. reject a phenotype) without needing a separate genetics event.
  */
 public class EntityBreedEvent extends EntityEvent implements Cancellable {
 
@@ -21,11 +28,17 @@ public class EntityBreedEvent extends EntityEvent implements Cancellable {
     private final LivingEntity breeder;
     private final ItemStack bredWith;
     private int experience;
+    private final @Nullable BreedGenetics genetics;
 
     private boolean cancelled;
 
     @ApiStatus.Internal
     public EntityBreedEvent(@NotNull LivingEntity child, @NotNull LivingEntity mother, @NotNull LivingEntity father, @Nullable LivingEntity breeder, @Nullable ItemStack bredWith, int experience) {
+        this(child, mother, father, breeder, bredWith, experience, null);
+    }
+
+    @ApiStatus.Internal
+    public EntityBreedEvent(@NotNull LivingEntity child, @NotNull LivingEntity mother, @NotNull LivingEntity father, @Nullable LivingEntity breeder, @Nullable ItemStack bredWith, int experience, @Nullable BreedGenetics genetics) {
         super(child);
 
         this.mother = mother;
@@ -33,6 +46,7 @@ public class EntityBreedEvent extends EntityEvent implements Cancellable {
         this.breeder = breeder; // Breeder can be null in the case of spontaneous conception
         this.bredWith = bredWith;
         this.experience = experience;
+        this.genetics = genetics;
     }
 
     @NotNull
@@ -42,9 +56,13 @@ public class EntityBreedEvent extends EntityEvent implements Cancellable {
     }
 
     /**
-     * Gets the parent creating this entity.
+     * Gets the mother parent.
      *
-     * @return The "birth" parent
+     * <p>With genetics present, this is the chromosomal female (dam).
+     * Without genetics, this is the historical CraftBukkit "birth" parent
+     * (entity that initiated the breed call), not a real sex role.
+     *
+     * @return The mother / birth parent
      */
     @NotNull
     public LivingEntity getMother() {
@@ -52,13 +70,47 @@ public class EntityBreedEvent extends EntityEvent implements Cancellable {
     }
 
     /**
-     * Gets the other parent of the newly born entity.
+     * Gets the father parent.
      *
-     * @return the other parent
+     * <p>With genetics present, this is the chromosomal male (sire).
+     * Without genetics, this is the other parent entity from the breed call.
+     *
+     * @return the father / other parent
      */
     @NotNull
     public LivingEntity getFather() {
         return this.father;
+    }
+
+    /**
+     * mintychochip genetics snapshot for this breed, if animal genetics produced it.
+     *
+     * <p>Null for villagers, genetics-disabled animals, or other non-genetic paths.
+     * When non-null, use genotype/phenotype/sex here to decide whether to
+     * {@link #setCancelled(boolean) cancel} the birth.
+     *
+     * @return genetics metadata, or null
+     */
+    @Nullable
+    public BreedGenetics getGenetics() {
+        return this.genetics;
+    }
+
+    /**
+     * Whether {@link #getGenetics()} is present.
+     */
+    public boolean hasGenetics() {
+        return this.genetics != null;
+    }
+
+    /**
+     * Child chromosomal sex when genetics is present.
+     *
+     * @return child sex, or null if no genetics payload
+     */
+    @Nullable
+    public Sex getChildSex() {
+        return this.genetics != null ? this.genetics.childSex() : null;
     }
 
     /**

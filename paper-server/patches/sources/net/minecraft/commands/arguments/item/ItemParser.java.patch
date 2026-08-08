@@ -1,0 +1,120 @@
+--- a/net/minecraft/commands/arguments/item/ItemParser.java
++++ b/net/minecraft/commands/arguments/item/ItemParser.java
+@@ -65,6 +_,9 @@
+ 
+     public ItemInput parse(final StringReader reader) throws CommandSyntaxException {
+         final MutableObject<Holder<Item>> itemResult = new MutableObject<>();
++        // mintychochip start - custom Material / custom-block parse result
++        final MutableObject<dev.mintychochip.customblock.CustomBlockDefinition> customResult = new MutableObject<>();
++        // mintychochip end - custom Material / custom-block parse result
+         final DataComponentPatch.Builder componentsBuilder = DataComponentPatch.builder();
+         this.parse(reader, new ItemParser.Visitor() {
+             @Override
+@@ -72,6 +_,13 @@
+                 itemResult.setValue(item);
+             }
+ 
++            // mintychochip start - custom Material visit
++            @Override
++            public void visitMintyCustom(final dev.mintychochip.customblock.CustomBlockDefinition definition) {
++                customResult.setValue(definition);
++            }
++            // mintychochip end - custom Material visit
++
+             @Override
+             public <T> void visitComponent(final DataComponentType<T> type, final T value) {
+                 componentsBuilder.set(type, value);
+@@ -84,7 +_,9 @@
+         });
+         Holder<Item> item = Objects.requireNonNull(itemResult.get(), "Parser gave no item");
+         DataComponentPatch components = componentsBuilder.build();
+-        return new ItemInput(item, components);
++        // mintychochip start - custom Material / custom-block ItemInput
++        return new ItemInput(item, components, customResult.get());
++        // mintychochip end - custom Material / custom-block ItemInput
+     }
+ 
+     public void parse(final StringReader reader, final ItemParser.Visitor visitor) throws CommandSyntaxException {
+@@ -134,10 +_,34 @@
+         private void readItem() throws CommandSyntaxException {
+             int cursor = this.reader.getCursor();
+             Identifier id = Identifier.read(this.reader);
+-            this.visitor.visitItem(ItemParser.this.items.get(ResourceKey.create(Registries.ITEM, id)).orElseThrow(() -> {
+-                this.reader.setCursor(cursor);
+-                return ItemParser.ERROR_UNKNOWN_ITEM.createWithContext(this.reader, id);
+-            }));
++            final var registryItem = ItemParser.this.items.get(ResourceKey.create(Registries.ITEM, id));
++            if (registryItem.isPresent()) {
++                this.visitor.visitItem(registryItem.get());
++                return;
++            }
++            // mintychochip start - resolve registered custom Materials (custom blocks)
++            final org.bukkit.NamespacedKey bukkitKey =
++                org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(id);
++            final java.util.Optional<dev.mintychochip.customblock.CustomBlockDefinition> custom =
++                dev.mintychochip.customblock.CustomBlocks.get(bukkitKey);
++            if (custom.isPresent()) {
++                final dev.mintychochip.customblock.CustomBlockDefinition def = custom.get();
++                final org.bukkit.Material base = def.itemMaterial() != null
++                    ? def.itemMaterial()
++                    : org.bukkit.VanillaMaterial.GLASS;
++                final Item nmsItem = org.bukkit.craftbukkit.util.CraftMagicNumbers.getItem(base);
++                if (nmsItem == null) {
++                    this.reader.setCursor(cursor);
++                    throw ItemParser.ERROR_UNKNOWN_ITEM.createWithContext(this.reader, id);
++                }
++                final Holder<Item> holder = BuiltInRegistries.ITEM.wrapAsHolder(nmsItem);
++                this.visitor.visitItem(holder);
++                this.visitor.visitMintyCustom(def);
++                return;
++            }
++            // mintychochip end - resolve registered custom Materials (custom blocks)
++            this.reader.setCursor(cursor);
++            throw ItemParser.ERROR_UNKNOWN_ITEM.createWithContext(this.reader, id);
+         }
+ 
+         private void readComponents() throws CommandSyntaxException {
+@@ -242,7 +_,30 @@
+         }
+ 
+         private CompletableFuture<Suggestions> suggestItem(final SuggestionsBuilder builder) {
+-            return SharedSuggestionProvider.suggestResource(ItemParser.this.items.listElementIds().map(ResourceKey::identifier), builder);
++            // mintychochip start - custom Materials FIRST (client truncates long suggestion lists)
++            final String remaining = builder.getRemaining().toLowerCase(java.util.Locale.ROOT);
++            try {
++                for (final dev.mintychochip.customblock.CustomBlockDefinition def
++                    : dev.mintychochip.customblock.CustomBlocks.all()) {
++                    final Identifier id =
++                        org.bukkit.craftbukkit.util.CraftNamespacedKey.toMinecraft(def.namespacedKey());
++                    final String full = id.toString();
++                    if (remaining.isEmpty()
++                        || SharedSuggestionProvider.matchesSubStr(remaining, full)
++                        || SharedSuggestionProvider.matchesSubStr(remaining, id.getNamespace())
++                        || SharedSuggestionProvider.matchesSubStr(remaining, id.getPath())) {
++                        builder.suggest(full);
++                    }
++                }
++            } catch (final Throwable ignored) {
++                // catalog may not be bootstrapped yet
++            }
++            // vanilla after customs
++            return SharedSuggestionProvider.suggestResource(
++                ItemParser.this.items.listElementIds().map(ResourceKey::identifier),
++                builder
++            );
++            // mintychochip end - custom Materials FIRST
+         }
+ 
+         private CompletableFuture<Suggestions> suggestComponentAssignmentOrRemoval(final SuggestionsBuilder builder) {
+@@ -285,6 +_,11 @@
+     public interface Visitor {
+         default void visitItem(final Holder<Item> item) {
+         }
++
++        // mintychochip start - custom Material visit hook
++        default void visitMintyCustom(final dev.mintychochip.customblock.CustomBlockDefinition definition) {
++        }
++        // mintychochip end - custom Material visit hook
+ 
+         default <T> void visitComponent(final DataComponentType<T> type, final T value) {
+         }

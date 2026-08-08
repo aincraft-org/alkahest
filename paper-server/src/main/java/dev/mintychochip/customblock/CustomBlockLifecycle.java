@@ -41,9 +41,22 @@ public final class CustomBlockLifecycle {
         }
         final CustomBlockDefinition def = defOpt.get();
         final Block block = event.getBlockPlaced();
-        CustomBlockPlacement.applyCarrier(block, def);
-        registerPlacement(block, def);
-        // Packet visuals (item display + sendBlockChange) come in a later slice.
+        try {
+            CustomBlockPlacement.applyCarrier(block, def);
+            registerPlacement(block, def);
+            // mintychochip - item provenance: place memory from hand (BlockItem may also fire)
+            CustomBlockProvenance.recordPlace(block, hand, event.getPlayer());
+            if (def.isPacket()) {
+                dev.mintychochip.customblock.display.PacketDisplayService.get().spawn(block, def);
+            }
+        } catch (final Throwable t) {
+            org.bukkit.Bukkit.getLogger().log(
+                java.util.logging.Level.SEVERE,
+                "[mintychochip] custom block place failed for " + def.namespacedKey() + " at " + block.getLocation(),
+                t
+            );
+            throw t instanceof RuntimeException re ? re : new RuntimeException(t);
+        }
         return true;
     }
 
@@ -79,7 +92,13 @@ public final class CustomBlockLifecycle {
 
         CustomBlockPlacement.applyCarrier(target, def);
         registerPlacement(target, def);
+        // mintychochip - item provenance: placement before hand consume
+        CustomBlockProvenance.recordPlace(target, hand, player);
+        if (def.isPacket()) {
+            dev.mintychochip.customblock.display.PacketDisplayService.get().spawn(target, def);
+        }
         consumeOne(player, hand, handSlot);
+        CustomBlockProvenance.afterHandConsume(hand);
         // Non-block base items would otherwise show the "use" animation. Force a place feel:
         // arm swing + place sound. Prefer itemMaterial().isBlock() so vanilla place path runs.
         final EquipmentSlot swingSlot = handSlot != null ? handSlot : EquipmentSlot.HAND;
@@ -98,13 +117,14 @@ public final class CustomBlockLifecycle {
 
     private static Sound placeSoundFor(final Material carrier) {
         // Best-effort; glass is the default packet-host collision.
-        if (carrier == Material.GLASS || carrier.name().contains("GLASS")) {
+        // Compare against VanillaMaterial — Material.* interface statics may be null.
+        if (carrier == org.bukkit.VanillaMaterial.GLASS || carrier.name().contains("GLASS")) {
             return Sound.BLOCK_GLASS_PLACE;
         }
-        if (carrier == Material.TRIPWIRE) {
+        if (carrier == org.bukkit.VanillaMaterial.TRIPWIRE) {
             return Sound.BLOCK_STONE_PLACE;
         }
-        if (carrier.name().contains("MUSHROOM") || carrier == Material.CHORUS_PLANT) {
+        if (carrier.name().contains("MUSHROOM") || carrier == org.bukkit.VanillaMaterial.CHORUS_PLANT) {
             return Sound.BLOCK_WOOD_PLACE;
         }
         return Sound.BLOCK_STONE_PLACE;
@@ -152,19 +172,25 @@ public final class CustomBlockLifecycle {
         @Nullable final CustomBlockDefinition definition
     ) {
         final Block block = event.getBlock();
+        dev.mintychochip.customblock.display.PacketDisplayService.get().despawn(block);
         CustomBlocks.lookup().clearAt(block);
         if (definition == null) {
+            CustomBlockProvenance.clearPlacement(block);
             return;
         }
         if (event.getPlayer().getGameMode() == GameMode.CREATIVE) {
+            // mintychochip - item provenance: creative break clears placement, no drop
+            CustomBlockProvenance.clearPlacement(block);
             return;
         }
         // Same as vanilla: wrong tool + requiresCorrectTool → no drop.
         if (!CustomBlockMining.canHarvest(event.getPlayer(), definition.feel())) {
+            CustomBlockProvenance.clearPlacement(block);
             return;
         }
         final Location dropAt = block.getLocation().add(0.5, 0.5, 0.5);
-        final ItemStack drop = CustomBlocks.createItemStack(definition);
+        // mintychochip - item provenance: BLOCK_RECOVER drop linked to placed stack UUID
+        final ItemStack drop = CustomBlockProvenance.createRecoverDrop(block, definition);
         block.getWorld().dropItemNaturally(dropAt, drop);
     }
 
@@ -184,6 +210,9 @@ public final class CustomBlockLifecycle {
         }
         final int amount = hand.getAmount();
         if (amount <= 1) {
+            // Zero the hand stack first so provenance afterHandConsume sees empty (inventory
+            // setItem* empty replaces the slot but leaves this ItemStack instance at count 1).
+            hand.setAmount(0);
             if (slot == EquipmentSlot.OFF_HAND) {
                 player.getInventory().setItemInOffHand(ItemStack.empty());
             } else {

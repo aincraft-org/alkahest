@@ -141,17 +141,20 @@ public final class CustomBlockDefinition implements Material {
      * Vanilla world carrier material for this definition's host.
      *
      * <p>API-side (no NMS); server placement delegates here.
+     *
+     * <p>Uses {@link org.bukkit.VanillaMaterial} constants — {@code Material.*} interface
+     * statics can still be null during early bootstrap / circular {@code <clinit>}.
      */
     public @NotNull Material carrierMaterial() {
         return switch (this.host.type()) {
-            case CHORUS -> Material.CHORUS_PLANT;
+            case CHORUS -> org.bukkit.VanillaMaterial.CHORUS_PLANT;
             case MUSHROOM -> {
                 final MushroomHostSpec mush = (MushroomHostSpec) this.host;
                 yield mush.variant() == MushroomVariant.RED
-                    ? Material.RED_MUSHROOM_BLOCK
-                    : Material.BROWN_MUSHROOM_BLOCK;
+                    ? org.bukkit.VanillaMaterial.RED_MUSHROOM_BLOCK
+                    : org.bukkit.VanillaMaterial.BROWN_MUSHROOM_BLOCK;
             }
-            case TRIPWIRE -> Material.TRIPWIRE;
+            case TRIPWIRE -> org.bukkit.VanillaMaterial.TRIPWIRE;
             case PACKET -> packetCollisionMaterial();
         };
     }
@@ -161,10 +164,10 @@ public final class CustomBlockDefinition implements Material {
         final String key = packet.collisionMaterialKey();
         // Fast-path common defaults without touching Material registry bootstrap.
         if ("minecraft:glass".equals(key) || "glass".equalsIgnoreCase(key)) {
-            return Material.GLASS;
+            return org.bukkit.VanillaMaterial.GLASS;
         }
         if ("minecraft:barrier".equals(key) || "barrier".equalsIgnoreCase(key)) {
-            return Material.BARRIER;
+            return org.bukkit.VanillaMaterial.BARRIER;
         }
         // Prefer getMaterial (not matchMaterial) to avoid custom-key recursion.
         final String enumName;
@@ -175,12 +178,12 @@ public final class CustomBlockDefinition implements Material {
         }
         final Material parsed = Material.getMaterial(enumName);
         if (parsed != null && parsed.isVanilla() && parsed.isBlock()
-            && parsed != Material.AIR
-            && parsed != Material.CAVE_AIR
-            && parsed != Material.VOID_AIR) {
+            && parsed != org.bukkit.VanillaMaterial.AIR
+            && parsed != org.bukkit.VanillaMaterial.CAVE_AIR
+            && parsed != org.bukkit.VanillaMaterial.VOID_AIR) {
             return parsed;
         }
-        return Material.GLASS;
+        return org.bukkit.VanillaMaterial.GLASS;
     }
 
     private Material carrier() {
@@ -467,8 +470,12 @@ public final class CustomBlockDefinition implements Material {
     public static final class Builder {
         private final NamespacedKey key;
         private HostSpec host;
-        /** Placeable base so clients play place animation (not paper use-item). */
-        private Material itemMaterial = Material.GLASS;
+        /**
+         * Placeable base so clients play place animation (not paper use-item).
+         * Lazy default: do not touch {@code Material.GLASS} in a field initializer — interface
+         * statics can be null if this class loads during Material {@code <clinit>}.
+         */
+        private @Nullable Material itemMaterial;
         private Key itemModel;
         private @Nullable Component displayName;
         private @Nullable List<Component> itemLore;
@@ -530,10 +537,13 @@ public final class CustomBlockDefinition implements Material {
             if (this.host == null) {
                 throw new IllegalStateException("host required");
             }
+            final Material item = this.itemMaterial != null
+                ? this.itemMaterial
+                : org.bukkit.VanillaMaterial.GLASS;
             return new CustomBlockDefinition(
                 this.key,
                 this.host,
-                this.itemMaterial,
+                item,
                 this.itemModel,
                 this.displayName,
                 this.itemLore,

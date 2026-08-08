@@ -254,6 +254,11 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
 
     @Override
     public Entity spawnEntity(Location loc, EntityType type, boolean randomizeData) {
+        // mintychochip start - custom EntityType spawn
+        if (type instanceof dev.mintychochip.customentity.CustomEntityDefinition definition) {
+            return dev.mintychochip.customentity.CustomEntityLifecycle.spawn(loc, definition);
+        }
+        // mintychochip end - custom EntityType spawn
         return this.spawn(loc, type.getEntityClass(), null, CreatureSpawnEvent.SpawnReason.CUSTOM, randomizeData);
     }
 

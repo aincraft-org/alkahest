@@ -30,12 +30,13 @@ public class EntitySetTag extends BaseTag<EntityType, EntitySetTag> {
     @NotNull
     @Override
     protected Set<EntityType> getAllPossibleValues() {
-        return Stream.of(EntityType.values()).collect(Collectors.toSet());
+        return Stream.of(org.bukkit.entity.VanillaEntityType.values()).collect(Collectors.toSet()); // mintychochip - vanilla only
     }
 
     @NotNull
     @Override
     protected String getName(@NotNull EntityType value) {
-        return value.name();
+        final String name = value.getName();
+        return name != null ? name : value.getKey().toString();
     }
 }

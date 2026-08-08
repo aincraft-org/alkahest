@@ -216,7 +216,7 @@ public class FieldRename {
     @RerouteStatic("org/bukkit/entity/EntityType")
     public static EntityType valueOf_EntityType(String name) {
         // We don't have version-specific changes, so just use current, and don't inject a version
-        return EntityType.valueOf(FieldRename.convertEntityTypeName(ApiVersion.CURRENT, name));
+        return org.bukkit.entity.VanillaEntityType.valueOf(FieldRename.convertEntityTypeName(ApiVersion.CURRENT, name)); // mintychochip
     }
 
     @RerouteMethodName("fromName")

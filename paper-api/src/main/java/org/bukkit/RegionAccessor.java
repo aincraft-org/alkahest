@@ -318,11 +318,16 @@ public interface RegionAccessor extends Keyed, io.papermc.paper.world.flag.Featu
      * Creates an entity at the given {@link Location}
      *
      * @param location The location to spawn the entity
-     * @param type The entity to spawn
+     * @param type The entity to spawn (vanilla constant or custom {@link EntityType})
      * @return Resulting Entity of this method
      */
     @NotNull
     default Entity spawnEntity(@NotNull Location location, @NotNull EntityType type) {
+        // mintychochip start - custom EntityType spawn (block-model hosts etc.)
+        if (type instanceof dev.mintychochip.customentity.CustomEntityDefinition definition) {
+            return dev.mintychochip.customentity.CustomEntityLifecycle.spawn(location, definition);
+        }
+        // mintychochip end - custom EntityType spawn
         return this.spawn(location, type.getEntityClass());
     }
 

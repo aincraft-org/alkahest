@@ -184,7 +184,7 @@ public class EntityTypesTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = EntityType.class, names = "UNKNOWN", mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value = org.bukkit.entity.VanillaEntityType.class, names = "UNKNOWN", mode = EnumSource.Mode.EXCLUDE) // mintychochip
     public void testEntityType(EntityType entityType) {
         CraftEntityTypes.EntityTypeData<?, ?> entityTypeData = CraftEntityTypes.getEntityTypeData(entityType);
         assertNotNull(entityTypeData, String.format("Entity type %s does not have an entity type data, please add on to CraftEntityTypes.", entityType));

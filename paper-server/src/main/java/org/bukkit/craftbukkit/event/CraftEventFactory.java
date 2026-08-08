@@ -1565,7 +1565,10 @@ public class CraftEventFactory {
 
     public static BlockIgniteEvent callBlockIgniteEvent(Level level, BlockPos pos, Entity igniter) {
         org.bukkit.entity.Entity bukkitIgniter = igniter.getBukkitEntity();
-        IgniteCause cause = switch (bukkitIgniter.getType()) {
+        // mintychochip - EntityType is interface; switch on vanilla enum implementation
+        IgniteCause cause = switch (bukkitIgniter.getType() instanceof org.bukkit.entity.VanillaEntityType vet
+            ? vet
+            : org.bukkit.entity.VanillaEntityType.UNKNOWN) {
             case END_CRYSTAL -> IgniteCause.ENDER_CRYSTAL;
             case LIGHTNING_BOLT -> IgniteCause.LIGHTNING;
             case SMALL_FIREBALL, FIREBALL -> IgniteCause.FIREBALL;
@@ -1867,10 +1870,14 @@ public class CraftEventFactory {
     }
 
     public static EntityBreedEvent callEntityBreedEvent(net.minecraft.world.entity.LivingEntity child, net.minecraft.world.entity.LivingEntity mother, net.minecraft.world.entity.LivingEntity father, net.minecraft.world.entity.LivingEntity breeder, ItemStack bredWith, int experience) {
+        return callEntityBreedEvent(child, mother, father, breeder, bredWith, experience, null);
+    }
+
+    public static EntityBreedEvent callEntityBreedEvent(net.minecraft.world.entity.LivingEntity child, net.minecraft.world.entity.LivingEntity mother, net.minecraft.world.entity.LivingEntity father, net.minecraft.world.entity.LivingEntity breeder, ItemStack bredWith, int experience, @Nullable dev.mintychochip.genetics.dto.BreedGenetics genetics) {
         LivingEntity breederEntity = breeder == null ? null : (LivingEntity) breeder.getBukkitEntity();
         CraftItemStack bredWithStack = bredWith == null ? null : CraftItemStack.asCraftMirror(bredWith).clone();
 
-        EntityBreedEvent event = new EntityBreedEvent((LivingEntity) child.getBukkitEntity(), (LivingEntity) mother.getBukkitEntity(), (LivingEntity) father.getBukkitEntity(), breederEntity, bredWithStack, experience);
+        EntityBreedEvent event = new EntityBreedEvent((LivingEntity) child.getBukkitEntity(), (LivingEntity) mother.getBukkitEntity(), (LivingEntity) father.getBukkitEntity(), breederEntity, bredWithStack, experience, genetics);
         event.callEvent();
         return event;
     }

@@ -135,7 +135,7 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         if (bukkit instanceof Registry.SimpleRegistry<?> simple) {
             Class<?> bClass = simple.getType();
 
-            if (bClass == EntityType.class) {
+            if (bClass == EntityType.class || bClass == org.bukkit.entity.VanillaEntityType.class) { // mintychochip
                 return bukkit.get(FieldRename.ENTITY_TYPE_RENAME.apply(namespacedKey, apiVersion));
             }
 

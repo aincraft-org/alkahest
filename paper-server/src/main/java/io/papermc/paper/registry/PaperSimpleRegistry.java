@@ -18,7 +18,12 @@ import org.jspecify.annotations.NullMarked;
 public class PaperSimpleRegistry<T extends Enum<T> & Keyed, M> extends Registry.SimpleRegistry<T> {
 
     static Registry<EntityType> entityType() {
-        return new PaperSimpleRegistry<>(EntityType.class, entity -> entity != EntityType.UNKNOWN, BuiltInRegistries.ENTITY_TYPE);
+        // mintychochip - EntityType is an interface; vanilla constants live on VanillaEntityType.
+        // API EntityTypeRegistry merges vanilla + CustomEntities; this wrapper adds NMS tags.
+        final PaperSimpleRegistry<org.bukkit.entity.VanillaEntityType, net.minecraft.world.entity.EntityType<?>> vanilla =
+            new PaperSimpleRegistry<>(org.bukkit.entity.VanillaEntityType.class, entity -> entity != org.bukkit.entity.VanillaEntityType.UNKNOWN, BuiltInRegistries.ENTITY_TYPE);
+        final org.bukkit.EntityTypeRegistry merged = new org.bukkit.EntityTypeRegistry(vanilla);
+        return new EntityTypeRegistry(merged, vanilla);
     }
 
     static Registry<Particle> particleType() {

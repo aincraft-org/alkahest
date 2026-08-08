@@ -1,0 +1,32 @@
+--- a/net/minecraft/commands/arguments/item/ItemArgument.java
++++ b/net/minecraft/commands/arguments/item/ItemArgument.java
+@@ -34,7 +_,28 @@
+ 
+     @Override
+     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+-        return this.parser.fillSuggestions(builder);
++        // mintychochip start - inject custom Materials into any ItemArgument tab-complete (not only /give)
++        final String remaining = builder.getRemaining().toLowerCase(java.util.Locale.ROOT);
++        try {
++            for (final dev.mintychochip.customblock.CustomBlockDefinition def
++                : dev.mintychochip.customblock.CustomBlocks.all()) {
++                final String full = def.namespacedKey().toString();
++                final String ns = def.namespacedKey().getNamespace();
++                final String path = def.namespacedKey().getKey();
++                if (remaining.isEmpty()
++                    || net.minecraft.commands.SharedSuggestionProvider.matchesSubStr(remaining, full.toLowerCase(java.util.Locale.ROOT))
++                    || net.minecraft.commands.SharedSuggestionProvider.matchesSubStr(remaining, ns)
++                    || net.minecraft.commands.SharedSuggestionProvider.matchesSubStr(remaining, path)) {
++                    builder.suggest(full);
++                }
++            }
++        } catch (final Throwable ignored) {
++        }
++        final SuggestionsBuilder vanillaBuilder = builder.createOffset(builder.getStart());
++        return this.parser.fillSuggestions(vanillaBuilder).thenApply(
++            vanilla -> Suggestions.merge(builder.getInput(), java.util.List.of(builder.build(), vanilla))
++        );
++        // mintychochip end - inject custom Materials into any ItemArgument tab-complete
+     }
+ 
+     @Override

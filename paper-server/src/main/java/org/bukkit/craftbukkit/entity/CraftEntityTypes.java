@@ -93,6 +93,7 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Endermite;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.VanillaEntityType;
 import org.bukkit.entity.Evoker;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.ExperienceOrb;
@@ -277,114 +278,114 @@ public final class CraftEntityTypes {
 
     static {
         // Living
-        register(new EntityTypeData<>(EntityType.ELDER_GUARDIAN, ElderGuardian.class, CraftElderGuardian::new, createLiving(net.minecraft.world.entity.EntityTypes.ELDER_GUARDIAN)));
-        register(new EntityTypeData<>(EntityType.WITHER_SKELETON, WitherSkeleton.class, CraftWitherSkeleton::new, createLiving(net.minecraft.world.entity.EntityTypes.WITHER_SKELETON)));
-        register(new EntityTypeData<>(EntityType.STRAY, Stray.class, CraftStray::new, createLiving(net.minecraft.world.entity.EntityTypes.STRAY)));
-        register(new EntityTypeData<>(EntityType.BOGGED, Bogged.class, CraftBogged::new, createLiving(net.minecraft.world.entity.EntityTypes.BOGGED)));
-        register(new EntityTypeData<>(EntityType.HUSK, Husk.class, CraftHusk::new, createLiving(net.minecraft.world.entity.EntityTypes.HUSK)));
-        register(new EntityTypeData<>(EntityType.ZOMBIE_VILLAGER, ZombieVillager.class, CraftVillagerZombie::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIE_VILLAGER)));
-        register(new EntityTypeData<>(EntityType.SKELETON_HORSE, SkeletonHorse.class, CraftSkeletonHorse::new, createLiving(net.minecraft.world.entity.EntityTypes.SKELETON_HORSE)));
-        register(new EntityTypeData<>(EntityType.ZOMBIE_HORSE, ZombieHorse.class, CraftZombieHorse::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIE_HORSE)));
-        register(new EntityTypeData<>(EntityType.ARMOR_STAND, ArmorStand.class, CraftArmorStand::new, createLiving(net.minecraft.world.entity.EntityTypes.ARMOR_STAND)));
-        register(new EntityTypeData<>(EntityType.DONKEY, Donkey.class, CraftDonkey::new, createLiving(net.minecraft.world.entity.EntityTypes.DONKEY)));
-        register(new EntityTypeData<>(EntityType.MULE, Mule.class, CraftMule::new, createLiving(net.minecraft.world.entity.EntityTypes.MULE)));
-        register(new EntityTypeData<>(EntityType.EVOKER, Evoker.class, CraftEvoker::new, createLiving(net.minecraft.world.entity.EntityTypes.EVOKER)));
-        register(new EntityTypeData<>(EntityType.VEX, Vex.class, CraftVex::new, createLiving(net.minecraft.world.entity.EntityTypes.VEX)));
-        register(new EntityTypeData<>(EntityType.VINDICATOR, Vindicator.class, CraftVindicator::new, createLiving(net.minecraft.world.entity.EntityTypes.VINDICATOR)));
-        register(new EntityTypeData<>(EntityType.ILLUSIONER, Illusioner.class, CraftIllusioner::new, createLiving(net.minecraft.world.entity.EntityTypes.ILLUSIONER)));
-        register(new EntityTypeData<>(EntityType.CREEPER, Creeper.class, CraftCreeper::new, createLiving(net.minecraft.world.entity.EntityTypes.CREEPER)));
-        register(new EntityTypeData<>(EntityType.SKELETON, Skeleton.class, CraftSkeleton::new, createLiving(net.minecraft.world.entity.EntityTypes.SKELETON)));
-        register(new EntityTypeData<>(EntityType.SPIDER, Spider.class, CraftSpider::new, createLiving(net.minecraft.world.entity.EntityTypes.SPIDER)));
-        register(new EntityTypeData<>(EntityType.GIANT, Giant.class, CraftGiant::new, createLiving(net.minecraft.world.entity.EntityTypes.GIANT)));
-        register(new EntityTypeData<>(EntityType.ZOMBIE, Zombie.class, CraftZombie::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIE)));
-        register(new EntityTypeData<>(EntityType.SLIME, Slime.class, CraftSlime::new, createLiving(net.minecraft.world.entity.EntityTypes.SLIME)));
-        register(new EntityTypeData<>(EntityType.GHAST, Ghast.class, CraftGhast::new, createLiving(net.minecraft.world.entity.EntityTypes.GHAST)));
-        register(new EntityTypeData<>(EntityType.ZOMBIFIED_PIGLIN, PigZombie.class, CraftPigZombie::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIFIED_PIGLIN)));
-        register(new EntityTypeData<>(EntityType.ENDERMAN, Enderman.class, CraftEnderman::new, createLiving(net.minecraft.world.entity.EntityTypes.ENDERMAN)));
-        register(new EntityTypeData<>(EntityType.CAVE_SPIDER, CaveSpider.class, CraftCaveSpider::new, createLiving(net.minecraft.world.entity.EntityTypes.CAVE_SPIDER)));
-        register(new EntityTypeData<>(EntityType.SILVERFISH, Silverfish.class, CraftSilverfish::new, createLiving(net.minecraft.world.entity.EntityTypes.SILVERFISH)));
-        register(new EntityTypeData<>(EntityType.BLAZE, Blaze.class, CraftBlaze::new, createLiving(net.minecraft.world.entity.EntityTypes.BLAZE)));
-        register(new EntityTypeData<>(EntityType.MAGMA_CUBE, MagmaCube.class, CraftMagmaCube::new, createLiving(net.minecraft.world.entity.EntityTypes.MAGMA_CUBE)));
-        register(new EntityTypeData<>(EntityType.WITHER, Wither.class, CraftWither::new, createLiving(net.minecraft.world.entity.EntityTypes.WITHER)));
-        register(new EntityTypeData<>(EntityType.BAT, Bat.class, CraftBat::new, createLiving(net.minecraft.world.entity.EntityTypes.BAT)));
-        register(new EntityTypeData<>(EntityType.WITCH, Witch.class, CraftWitch::new, createLiving(net.minecraft.world.entity.EntityTypes.WITCH)));
-        register(new EntityTypeData<>(EntityType.ENDERMITE, Endermite.class, CraftEndermite::new, createLiving(net.minecraft.world.entity.EntityTypes.ENDERMITE)));
-        register(new EntityTypeData<>(EntityType.GUARDIAN, Guardian.class, CraftGuardian::new, createLiving(net.minecraft.world.entity.EntityTypes.GUARDIAN)));
-        register(new EntityTypeData<>(EntityType.SHULKER, Shulker.class, CraftShulker::new, createLiving(net.minecraft.world.entity.EntityTypes.SHULKER)));
-        register(new EntityTypeData<>(EntityType.PIG, Pig.class, CraftPig::new, createLiving(net.minecraft.world.entity.EntityTypes.PIG)));
-        register(new EntityTypeData<>(EntityType.SHEEP, Sheep.class, CraftSheep::new, createLiving(net.minecraft.world.entity.EntityTypes.SHEEP)));
-        register(new EntityTypeData<>(EntityType.COW, Cow.class, CraftCow::new, createLiving(net.minecraft.world.entity.EntityTypes.COW)));
-        register(new EntityTypeData<>(EntityType.CHICKEN, Chicken.class, CraftChicken::new, createLiving(net.minecraft.world.entity.EntityTypes.CHICKEN)));
-        register(new EntityTypeData<>(EntityType.SQUID, Squid.class, CraftSquid::new, createLiving(net.minecraft.world.entity.EntityTypes.SQUID)));
-        register(new EntityTypeData<>(EntityType.WOLF, Wolf.class, CraftWolf::new, createLiving(net.minecraft.world.entity.EntityTypes.WOLF)));
-        register(new EntityTypeData<>(EntityType.MOOSHROOM, MushroomCow.class, CraftMushroomCow::new, createLiving(net.minecraft.world.entity.EntityTypes.MOOSHROOM)));
-        register(new EntityTypeData<>(EntityType.SNOW_GOLEM, Snowman.class, CraftSnowman::new, createLiving(net.minecraft.world.entity.EntityTypes.SNOW_GOLEM)));
-        register(new EntityTypeData<>(EntityType.OCELOT, Ocelot.class, CraftOcelot::new, createLiving(net.minecraft.world.entity.EntityTypes.OCELOT)));
-        register(new EntityTypeData<>(EntityType.IRON_GOLEM, IronGolem.class, CraftIronGolem::new, createLiving(net.minecraft.world.entity.EntityTypes.IRON_GOLEM)));
-        register(new EntityTypeData<>(EntityType.HORSE, Horse.class, CraftHorse::new, createLiving(net.minecraft.world.entity.EntityTypes.HORSE)));
-        register(new EntityTypeData<>(EntityType.RABBIT, Rabbit.class, CraftRabbit::new, createLiving(net.minecraft.world.entity.EntityTypes.RABBIT)));
-        register(new EntityTypeData<>(EntityType.POLAR_BEAR, PolarBear.class, CraftPolarBear::new, createLiving(net.minecraft.world.entity.EntityTypes.POLAR_BEAR)));
-        register(new EntityTypeData<>(EntityType.LLAMA, Llama.class, CraftLlama::new, createLiving(net.minecraft.world.entity.EntityTypes.LLAMA)));
-        register(new EntityTypeData<>(EntityType.PARROT, Parrot.class, CraftParrot::new, createLiving(net.minecraft.world.entity.EntityTypes.PARROT)));
-        register(new EntityTypeData<>(EntityType.VILLAGER, Villager.class, CraftVillager::new, createLiving(net.minecraft.world.entity.EntityTypes.VILLAGER)));
-        register(new EntityTypeData<>(EntityType.TURTLE, Turtle.class, CraftTurtle::new, createLiving(net.minecraft.world.entity.EntityTypes.TURTLE)));
-        register(new EntityTypeData<>(EntityType.PHANTOM, Phantom.class, CraftPhantom::new, createLiving(net.minecraft.world.entity.EntityTypes.PHANTOM)));
-        register(new EntityTypeData<>(EntityType.COD, Cod.class, CraftCod::new, createLiving(net.minecraft.world.entity.EntityTypes.COD)));
-        register(new EntityTypeData<>(EntityType.SALMON, Salmon.class, CraftSalmon::new, createLiving(net.minecraft.world.entity.EntityTypes.SALMON)));
-        register(new EntityTypeData<>(EntityType.PUFFERFISH, PufferFish.class, CraftPufferFish::new, createLiving(net.minecraft.world.entity.EntityTypes.PUFFERFISH)));
-        register(new EntityTypeData<>(EntityType.TROPICAL_FISH, TropicalFish.class, CraftTropicalFish::new, createLiving(net.minecraft.world.entity.EntityTypes.TROPICAL_FISH)));
-        register(new EntityTypeData<>(EntityType.DROWNED, Drowned.class, CraftDrowned::new, createLiving(net.minecraft.world.entity.EntityTypes.DROWNED)));
-        register(new EntityTypeData<>(EntityType.DOLPHIN, Dolphin.class, CraftDolphin::new, createLiving(net.minecraft.world.entity.EntityTypes.DOLPHIN)));
-        register(new EntityTypeData<>(EntityType.CAT, Cat.class, CraftCat::new, createLiving(net.minecraft.world.entity.EntityTypes.CAT)));
-        register(new EntityTypeData<>(EntityType.PANDA, Panda.class, CraftPanda::new, createLiving(net.minecraft.world.entity.EntityTypes.PANDA)));
-        register(new EntityTypeData<>(EntityType.PILLAGER, Pillager.class, CraftPillager::new, createLiving(net.minecraft.world.entity.EntityTypes.PILLAGER)));
-        register(new EntityTypeData<>(EntityType.RAVAGER, Ravager.class, CraftRavager::new, createLiving(net.minecraft.world.entity.EntityTypes.RAVAGER)));
-        register(new EntityTypeData<>(EntityType.TRADER_LLAMA, TraderLlama.class, CraftTraderLlama::new, createLiving(net.minecraft.world.entity.EntityTypes.TRADER_LLAMA)));
-        register(new EntityTypeData<>(EntityType.WANDERING_TRADER, WanderingTrader.class, CraftWanderingTrader::new, createLiving(net.minecraft.world.entity.EntityTypes.WANDERING_TRADER)));
-        register(new EntityTypeData<>(EntityType.FOX, Fox.class, CraftFox::new, createLiving(net.minecraft.world.entity.EntityTypes.FOX)));
-        register(new EntityTypeData<>(EntityType.BEE, Bee.class, CraftBee::new, createLiving(net.minecraft.world.entity.EntityTypes.BEE)));
-        register(new EntityTypeData<>(EntityType.HOGLIN, Hoglin.class, CraftHoglin::new, createLiving(net.minecraft.world.entity.EntityTypes.HOGLIN)));
-        register(new EntityTypeData<>(EntityType.PIGLIN, Piglin.class, CraftPiglin::new, createLiving(net.minecraft.world.entity.EntityTypes.PIGLIN)));
-        register(new EntityTypeData<>(EntityType.STRIDER, Strider.class, CraftStrider::new, createLiving(net.minecraft.world.entity.EntityTypes.STRIDER)));
-        register(new EntityTypeData<>(EntityType.ZOGLIN, Zoglin.class, CraftZoglin::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOGLIN)));
-        register(new EntityTypeData<>(EntityType.PIGLIN_BRUTE, PiglinBrute.class, CraftPiglinBrute::new, createLiving(net.minecraft.world.entity.EntityTypes.PIGLIN_BRUTE)));
-        register(new EntityTypeData<>(EntityType.AXOLOTL, Axolotl.class, CraftAxolotl::new, createLiving(net.minecraft.world.entity.EntityTypes.AXOLOTL)));
-        register(new EntityTypeData<>(EntityType.GLOW_SQUID, GlowSquid.class, CraftGlowSquid::new, createLiving(net.minecraft.world.entity.EntityTypes.GLOW_SQUID)));
-        register(new EntityTypeData<>(EntityType.GOAT, Goat.class, CraftGoat::new, createLiving(net.minecraft.world.entity.EntityTypes.GOAT)));
-        register(new EntityTypeData<>(EntityType.ALLAY, Allay.class, CraftAllay::new, createLiving(net.minecraft.world.entity.EntityTypes.ALLAY)));
-        register(new EntityTypeData<>(EntityType.FROG, Frog.class, CraftFrog::new, createLiving(net.minecraft.world.entity.EntityTypes.FROG)));
-        register(new EntityTypeData<>(EntityType.TADPOLE, Tadpole.class, CraftTadpole::new, createLiving(net.minecraft.world.entity.EntityTypes.TADPOLE)));
-        register(new EntityTypeData<>(EntityType.WARDEN, Warden.class, CraftWarden::new, createLiving(net.minecraft.world.entity.EntityTypes.WARDEN)));
-        register(new EntityTypeData<>(EntityType.CAMEL, Camel.class, CraftCamel::new, createLiving(net.minecraft.world.entity.EntityTypes.CAMEL)));
-        register(new EntityTypeData<>(EntityType.SNIFFER, Sniffer.class, CraftSniffer::new, createLiving(net.minecraft.world.entity.EntityTypes.SNIFFER)));
-        register(new EntityTypeData<>(EntityType.BREEZE, Breeze.class, CraftBreeze::new, createLiving(net.minecraft.world.entity.EntityTypes.BREEZE)));
-        register(new EntityTypeData<>(EntityType.ARMADILLO, Armadillo.class, CraftArmadillo::new, createLiving(net.minecraft.world.entity.EntityTypes.ARMADILLO)));
-        register(new EntityTypeData<>(EntityType.CREAKING, Creaking.class, CraftCreaking::new, createLiving(net.minecraft.world.entity.EntityTypes.CREAKING)));
-        register(new EntityTypeData<>(EntityType.HAPPY_GHAST, HappyGhast.class, CraftHappyGhast::new, createLiving(net.minecraft.world.entity.EntityTypes.HAPPY_GHAST)));
-        register(new EntityTypeData<>(EntityType.COPPER_GOLEM, CopperGolem.class, CraftCopperGolem::new, createLiving(net.minecraft.world.entity.EntityTypes.COPPER_GOLEM)));
-        register(new EntityTypeData<>(EntityType.MANNEQUIN, Mannequin.class, CraftMannequin::new, createLiving(net.minecraft.world.entity.EntityTypes.MANNEQUIN)));
-        register(new EntityTypeData<>(EntityType.NAUTILUS, Nautilus.class, CraftNautilus::new, createLiving(net.minecraft.world.entity.EntityTypes.NAUTILUS)));
-        register(new EntityTypeData<>(EntityType.ZOMBIE_NAUTILUS, ZombieNautilus.class, CraftZombieNautilus::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIE_NAUTILUS)));
-        register(new EntityTypeData<>(EntityType.CAMEL_HUSK, CamelHusk.class, CraftCamelHusk::new, createLiving(net.minecraft.world.entity.EntityTypes.CAMEL_HUSK)));
-        register(new EntityTypeData<>(EntityType.PARCHED, Parched.class, CraftParched::new, createLiving(net.minecraft.world.entity.EntityTypes.PARCHED)));
-        register(new EntityTypeData<>(EntityType.SULFUR_CUBE, SulfurCube.class, CraftSulfurCube::new, createLiving(net.minecraft.world.entity.EntityTypes.SULFUR_CUBE)));
+        register(new EntityTypeData<>(VanillaEntityType.ELDER_GUARDIAN, ElderGuardian.class, CraftElderGuardian::new, createLiving(net.minecraft.world.entity.EntityTypes.ELDER_GUARDIAN)));
+        register(new EntityTypeData<>(VanillaEntityType.WITHER_SKELETON, WitherSkeleton.class, CraftWitherSkeleton::new, createLiving(net.minecraft.world.entity.EntityTypes.WITHER_SKELETON)));
+        register(new EntityTypeData<>(VanillaEntityType.STRAY, Stray.class, CraftStray::new, createLiving(net.minecraft.world.entity.EntityTypes.STRAY)));
+        register(new EntityTypeData<>(VanillaEntityType.BOGGED, Bogged.class, CraftBogged::new, createLiving(net.minecraft.world.entity.EntityTypes.BOGGED)));
+        register(new EntityTypeData<>(VanillaEntityType.HUSK, Husk.class, CraftHusk::new, createLiving(net.minecraft.world.entity.EntityTypes.HUSK)));
+        register(new EntityTypeData<>(VanillaEntityType.ZOMBIE_VILLAGER, ZombieVillager.class, CraftVillagerZombie::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIE_VILLAGER)));
+        register(new EntityTypeData<>(VanillaEntityType.SKELETON_HORSE, SkeletonHorse.class, CraftSkeletonHorse::new, createLiving(net.minecraft.world.entity.EntityTypes.SKELETON_HORSE)));
+        register(new EntityTypeData<>(VanillaEntityType.ZOMBIE_HORSE, ZombieHorse.class, CraftZombieHorse::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIE_HORSE)));
+        register(new EntityTypeData<>(VanillaEntityType.ARMOR_STAND, ArmorStand.class, CraftArmorStand::new, createLiving(net.minecraft.world.entity.EntityTypes.ARMOR_STAND)));
+        register(new EntityTypeData<>(VanillaEntityType.DONKEY, Donkey.class, CraftDonkey::new, createLiving(net.minecraft.world.entity.EntityTypes.DONKEY)));
+        register(new EntityTypeData<>(VanillaEntityType.MULE, Mule.class, CraftMule::new, createLiving(net.minecraft.world.entity.EntityTypes.MULE)));
+        register(new EntityTypeData<>(VanillaEntityType.EVOKER, Evoker.class, CraftEvoker::new, createLiving(net.minecraft.world.entity.EntityTypes.EVOKER)));
+        register(new EntityTypeData<>(VanillaEntityType.VEX, Vex.class, CraftVex::new, createLiving(net.minecraft.world.entity.EntityTypes.VEX)));
+        register(new EntityTypeData<>(VanillaEntityType.VINDICATOR, Vindicator.class, CraftVindicator::new, createLiving(net.minecraft.world.entity.EntityTypes.VINDICATOR)));
+        register(new EntityTypeData<>(VanillaEntityType.ILLUSIONER, Illusioner.class, CraftIllusioner::new, createLiving(net.minecraft.world.entity.EntityTypes.ILLUSIONER)));
+        register(new EntityTypeData<>(VanillaEntityType.CREEPER, Creeper.class, CraftCreeper::new, createLiving(net.minecraft.world.entity.EntityTypes.CREEPER)));
+        register(new EntityTypeData<>(VanillaEntityType.SKELETON, Skeleton.class, CraftSkeleton::new, createLiving(net.minecraft.world.entity.EntityTypes.SKELETON)));
+        register(new EntityTypeData<>(VanillaEntityType.SPIDER, Spider.class, CraftSpider::new, createLiving(net.minecraft.world.entity.EntityTypes.SPIDER)));
+        register(new EntityTypeData<>(VanillaEntityType.GIANT, Giant.class, CraftGiant::new, createLiving(net.minecraft.world.entity.EntityTypes.GIANT)));
+        register(new EntityTypeData<>(VanillaEntityType.ZOMBIE, Zombie.class, CraftZombie::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIE)));
+        register(new EntityTypeData<>(VanillaEntityType.SLIME, Slime.class, CraftSlime::new, createLiving(net.minecraft.world.entity.EntityTypes.SLIME)));
+        register(new EntityTypeData<>(VanillaEntityType.GHAST, Ghast.class, CraftGhast::new, createLiving(net.minecraft.world.entity.EntityTypes.GHAST)));
+        register(new EntityTypeData<>(VanillaEntityType.ZOMBIFIED_PIGLIN, PigZombie.class, CraftPigZombie::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIFIED_PIGLIN)));
+        register(new EntityTypeData<>(VanillaEntityType.ENDERMAN, Enderman.class, CraftEnderman::new, createLiving(net.minecraft.world.entity.EntityTypes.ENDERMAN)));
+        register(new EntityTypeData<>(VanillaEntityType.CAVE_SPIDER, CaveSpider.class, CraftCaveSpider::new, createLiving(net.minecraft.world.entity.EntityTypes.CAVE_SPIDER)));
+        register(new EntityTypeData<>(VanillaEntityType.SILVERFISH, Silverfish.class, CraftSilverfish::new, createLiving(net.minecraft.world.entity.EntityTypes.SILVERFISH)));
+        register(new EntityTypeData<>(VanillaEntityType.BLAZE, Blaze.class, CraftBlaze::new, createLiving(net.minecraft.world.entity.EntityTypes.BLAZE)));
+        register(new EntityTypeData<>(VanillaEntityType.MAGMA_CUBE, MagmaCube.class, CraftMagmaCube::new, createLiving(net.minecraft.world.entity.EntityTypes.MAGMA_CUBE)));
+        register(new EntityTypeData<>(VanillaEntityType.WITHER, Wither.class, CraftWither::new, createLiving(net.minecraft.world.entity.EntityTypes.WITHER)));
+        register(new EntityTypeData<>(VanillaEntityType.BAT, Bat.class, CraftBat::new, createLiving(net.minecraft.world.entity.EntityTypes.BAT)));
+        register(new EntityTypeData<>(VanillaEntityType.WITCH, Witch.class, CraftWitch::new, createLiving(net.minecraft.world.entity.EntityTypes.WITCH)));
+        register(new EntityTypeData<>(VanillaEntityType.ENDERMITE, Endermite.class, CraftEndermite::new, createLiving(net.minecraft.world.entity.EntityTypes.ENDERMITE)));
+        register(new EntityTypeData<>(VanillaEntityType.GUARDIAN, Guardian.class, CraftGuardian::new, createLiving(net.minecraft.world.entity.EntityTypes.GUARDIAN)));
+        register(new EntityTypeData<>(VanillaEntityType.SHULKER, Shulker.class, CraftShulker::new, createLiving(net.minecraft.world.entity.EntityTypes.SHULKER)));
+        register(new EntityTypeData<>(VanillaEntityType.PIG, Pig.class, CraftPig::new, createLiving(net.minecraft.world.entity.EntityTypes.PIG)));
+        register(new EntityTypeData<>(VanillaEntityType.SHEEP, Sheep.class, CraftSheep::new, createLiving(net.minecraft.world.entity.EntityTypes.SHEEP)));
+        register(new EntityTypeData<>(VanillaEntityType.COW, Cow.class, CraftCow::new, createLiving(net.minecraft.world.entity.EntityTypes.COW)));
+        register(new EntityTypeData<>(VanillaEntityType.CHICKEN, Chicken.class, CraftChicken::new, createLiving(net.minecraft.world.entity.EntityTypes.CHICKEN)));
+        register(new EntityTypeData<>(VanillaEntityType.SQUID, Squid.class, CraftSquid::new, createLiving(net.minecraft.world.entity.EntityTypes.SQUID)));
+        register(new EntityTypeData<>(VanillaEntityType.WOLF, Wolf.class, CraftWolf::new, createLiving(net.minecraft.world.entity.EntityTypes.WOLF)));
+        register(new EntityTypeData<>(VanillaEntityType.MOOSHROOM, MushroomCow.class, CraftMushroomCow::new, createLiving(net.minecraft.world.entity.EntityTypes.MOOSHROOM)));
+        register(new EntityTypeData<>(VanillaEntityType.SNOW_GOLEM, Snowman.class, CraftSnowman::new, createLiving(net.minecraft.world.entity.EntityTypes.SNOW_GOLEM)));
+        register(new EntityTypeData<>(VanillaEntityType.OCELOT, Ocelot.class, CraftOcelot::new, createLiving(net.minecraft.world.entity.EntityTypes.OCELOT)));
+        register(new EntityTypeData<>(VanillaEntityType.IRON_GOLEM, IronGolem.class, CraftIronGolem::new, createLiving(net.minecraft.world.entity.EntityTypes.IRON_GOLEM)));
+        register(new EntityTypeData<>(VanillaEntityType.HORSE, Horse.class, CraftHorse::new, createLiving(net.minecraft.world.entity.EntityTypes.HORSE)));
+        register(new EntityTypeData<>(VanillaEntityType.RABBIT, Rabbit.class, CraftRabbit::new, createLiving(net.minecraft.world.entity.EntityTypes.RABBIT)));
+        register(new EntityTypeData<>(VanillaEntityType.POLAR_BEAR, PolarBear.class, CraftPolarBear::new, createLiving(net.minecraft.world.entity.EntityTypes.POLAR_BEAR)));
+        register(new EntityTypeData<>(VanillaEntityType.LLAMA, Llama.class, CraftLlama::new, createLiving(net.minecraft.world.entity.EntityTypes.LLAMA)));
+        register(new EntityTypeData<>(VanillaEntityType.PARROT, Parrot.class, CraftParrot::new, createLiving(net.minecraft.world.entity.EntityTypes.PARROT)));
+        register(new EntityTypeData<>(VanillaEntityType.VILLAGER, Villager.class, CraftVillager::new, createLiving(net.minecraft.world.entity.EntityTypes.VILLAGER)));
+        register(new EntityTypeData<>(VanillaEntityType.TURTLE, Turtle.class, CraftTurtle::new, createLiving(net.minecraft.world.entity.EntityTypes.TURTLE)));
+        register(new EntityTypeData<>(VanillaEntityType.PHANTOM, Phantom.class, CraftPhantom::new, createLiving(net.minecraft.world.entity.EntityTypes.PHANTOM)));
+        register(new EntityTypeData<>(VanillaEntityType.COD, Cod.class, CraftCod::new, createLiving(net.minecraft.world.entity.EntityTypes.COD)));
+        register(new EntityTypeData<>(VanillaEntityType.SALMON, Salmon.class, CraftSalmon::new, createLiving(net.minecraft.world.entity.EntityTypes.SALMON)));
+        register(new EntityTypeData<>(VanillaEntityType.PUFFERFISH, PufferFish.class, CraftPufferFish::new, createLiving(net.minecraft.world.entity.EntityTypes.PUFFERFISH)));
+        register(new EntityTypeData<>(VanillaEntityType.TROPICAL_FISH, TropicalFish.class, CraftTropicalFish::new, createLiving(net.minecraft.world.entity.EntityTypes.TROPICAL_FISH)));
+        register(new EntityTypeData<>(VanillaEntityType.DROWNED, Drowned.class, CraftDrowned::new, createLiving(net.minecraft.world.entity.EntityTypes.DROWNED)));
+        register(new EntityTypeData<>(VanillaEntityType.DOLPHIN, Dolphin.class, CraftDolphin::new, createLiving(net.minecraft.world.entity.EntityTypes.DOLPHIN)));
+        register(new EntityTypeData<>(VanillaEntityType.CAT, Cat.class, CraftCat::new, createLiving(net.minecraft.world.entity.EntityTypes.CAT)));
+        register(new EntityTypeData<>(VanillaEntityType.PANDA, Panda.class, CraftPanda::new, createLiving(net.minecraft.world.entity.EntityTypes.PANDA)));
+        register(new EntityTypeData<>(VanillaEntityType.PILLAGER, Pillager.class, CraftPillager::new, createLiving(net.minecraft.world.entity.EntityTypes.PILLAGER)));
+        register(new EntityTypeData<>(VanillaEntityType.RAVAGER, Ravager.class, CraftRavager::new, createLiving(net.minecraft.world.entity.EntityTypes.RAVAGER)));
+        register(new EntityTypeData<>(VanillaEntityType.TRADER_LLAMA, TraderLlama.class, CraftTraderLlama::new, createLiving(net.minecraft.world.entity.EntityTypes.TRADER_LLAMA)));
+        register(new EntityTypeData<>(VanillaEntityType.WANDERING_TRADER, WanderingTrader.class, CraftWanderingTrader::new, createLiving(net.minecraft.world.entity.EntityTypes.WANDERING_TRADER)));
+        register(new EntityTypeData<>(VanillaEntityType.FOX, Fox.class, CraftFox::new, createLiving(net.minecraft.world.entity.EntityTypes.FOX)));
+        register(new EntityTypeData<>(VanillaEntityType.BEE, Bee.class, CraftBee::new, createLiving(net.minecraft.world.entity.EntityTypes.BEE)));
+        register(new EntityTypeData<>(VanillaEntityType.HOGLIN, Hoglin.class, CraftHoglin::new, createLiving(net.minecraft.world.entity.EntityTypes.HOGLIN)));
+        register(new EntityTypeData<>(VanillaEntityType.PIGLIN, Piglin.class, CraftPiglin::new, createLiving(net.minecraft.world.entity.EntityTypes.PIGLIN)));
+        register(new EntityTypeData<>(VanillaEntityType.STRIDER, Strider.class, CraftStrider::new, createLiving(net.minecraft.world.entity.EntityTypes.STRIDER)));
+        register(new EntityTypeData<>(VanillaEntityType.ZOGLIN, Zoglin.class, CraftZoglin::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOGLIN)));
+        register(new EntityTypeData<>(VanillaEntityType.PIGLIN_BRUTE, PiglinBrute.class, CraftPiglinBrute::new, createLiving(net.minecraft.world.entity.EntityTypes.PIGLIN_BRUTE)));
+        register(new EntityTypeData<>(VanillaEntityType.AXOLOTL, Axolotl.class, CraftAxolotl::new, createLiving(net.minecraft.world.entity.EntityTypes.AXOLOTL)));
+        register(new EntityTypeData<>(VanillaEntityType.GLOW_SQUID, GlowSquid.class, CraftGlowSquid::new, createLiving(net.minecraft.world.entity.EntityTypes.GLOW_SQUID)));
+        register(new EntityTypeData<>(VanillaEntityType.GOAT, Goat.class, CraftGoat::new, createLiving(net.minecraft.world.entity.EntityTypes.GOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.ALLAY, Allay.class, CraftAllay::new, createLiving(net.minecraft.world.entity.EntityTypes.ALLAY)));
+        register(new EntityTypeData<>(VanillaEntityType.FROG, Frog.class, CraftFrog::new, createLiving(net.minecraft.world.entity.EntityTypes.FROG)));
+        register(new EntityTypeData<>(VanillaEntityType.TADPOLE, Tadpole.class, CraftTadpole::new, createLiving(net.minecraft.world.entity.EntityTypes.TADPOLE)));
+        register(new EntityTypeData<>(VanillaEntityType.WARDEN, Warden.class, CraftWarden::new, createLiving(net.minecraft.world.entity.EntityTypes.WARDEN)));
+        register(new EntityTypeData<>(VanillaEntityType.CAMEL, Camel.class, CraftCamel::new, createLiving(net.minecraft.world.entity.EntityTypes.CAMEL)));
+        register(new EntityTypeData<>(VanillaEntityType.SNIFFER, Sniffer.class, CraftSniffer::new, createLiving(net.minecraft.world.entity.EntityTypes.SNIFFER)));
+        register(new EntityTypeData<>(VanillaEntityType.BREEZE, Breeze.class, CraftBreeze::new, createLiving(net.minecraft.world.entity.EntityTypes.BREEZE)));
+        register(new EntityTypeData<>(VanillaEntityType.ARMADILLO, Armadillo.class, CraftArmadillo::new, createLiving(net.minecraft.world.entity.EntityTypes.ARMADILLO)));
+        register(new EntityTypeData<>(VanillaEntityType.CREAKING, Creaking.class, CraftCreaking::new, createLiving(net.minecraft.world.entity.EntityTypes.CREAKING)));
+        register(new EntityTypeData<>(VanillaEntityType.HAPPY_GHAST, HappyGhast.class, CraftHappyGhast::new, createLiving(net.minecraft.world.entity.EntityTypes.HAPPY_GHAST)));
+        register(new EntityTypeData<>(VanillaEntityType.COPPER_GOLEM, CopperGolem.class, CraftCopperGolem::new, createLiving(net.minecraft.world.entity.EntityTypes.COPPER_GOLEM)));
+        register(new EntityTypeData<>(VanillaEntityType.MANNEQUIN, Mannequin.class, CraftMannequin::new, createLiving(net.minecraft.world.entity.EntityTypes.MANNEQUIN)));
+        register(new EntityTypeData<>(VanillaEntityType.NAUTILUS, Nautilus.class, CraftNautilus::new, createLiving(net.minecraft.world.entity.EntityTypes.NAUTILUS)));
+        register(new EntityTypeData<>(VanillaEntityType.ZOMBIE_NAUTILUS, ZombieNautilus.class, CraftZombieNautilus::new, createLiving(net.minecraft.world.entity.EntityTypes.ZOMBIE_NAUTILUS)));
+        register(new EntityTypeData<>(VanillaEntityType.CAMEL_HUSK, CamelHusk.class, CraftCamelHusk::new, createLiving(net.minecraft.world.entity.EntityTypes.CAMEL_HUSK)));
+        register(new EntityTypeData<>(VanillaEntityType.PARCHED, Parched.class, CraftParched::new, createLiving(net.minecraft.world.entity.EntityTypes.PARCHED)));
+        register(new EntityTypeData<>(VanillaEntityType.SULFUR_CUBE, SulfurCube.class, CraftSulfurCube::new, createLiving(net.minecraft.world.entity.EntityTypes.SULFUR_CUBE)));
 
         Function<SpawnData, net.minecraft.world.entity.boss.enderdragon.EnderDragon> dragonFunction = createLiving(net.minecraft.world.entity.EntityTypes.ENDER_DRAGON);
-        register(new EntityTypeData<>(EntityType.ENDER_DRAGON, EnderDragon.class, CraftEnderDragon::new, spawnData -> {
+        register(new EntityTypeData<>(VanillaEntityType.ENDER_DRAGON, EnderDragon.class, CraftEnderDragon::new, spawnData -> {
             Preconditions.checkArgument(spawnData.normalWorld(), "Cannot spawn entity %s during world generation", EnderDragon.class.getName());
             return dragonFunction.apply(spawnData);
         }));
 
         // Fireball
-        register(new EntityTypeData<>(EntityType.FIREBALL, LargeFireball.class, CraftLargeFireball::new, createFireball(net.minecraft.world.entity.EntityTypes.FIREBALL)));
-        register(new EntityTypeData<>(EntityType.SMALL_FIREBALL, SmallFireball.class, CraftSmallFireball::new, createFireball(net.minecraft.world.entity.EntityTypes.SMALL_FIREBALL)));
-        register(new EntityTypeData<>(EntityType.WITHER_SKULL, WitherSkull.class, CraftWitherSkull::new, createFireball(net.minecraft.world.entity.EntityTypes.WITHER_SKULL)));
-        register(new EntityTypeData<>(EntityType.DRAGON_FIREBALL, DragonFireball.class, CraftDragonFireball::new, createFireball(net.minecraft.world.entity.EntityTypes.DRAGON_FIREBALL)));
-        register(new EntityTypeData<>(EntityType.WIND_CHARGE, WindCharge.class, CraftWindCharge::new, createFireball(net.minecraft.world.entity.EntityTypes.WIND_CHARGE)));
-        register(new EntityTypeData<>(EntityType.BREEZE_WIND_CHARGE, BreezeWindCharge.class, CraftBreezeWindCharge::new, createFireball(net.minecraft.world.entity.EntityTypes.BREEZE_WIND_CHARGE)));
+        register(new EntityTypeData<>(VanillaEntityType.FIREBALL, LargeFireball.class, CraftLargeFireball::new, createFireball(net.minecraft.world.entity.EntityTypes.FIREBALL)));
+        register(new EntityTypeData<>(VanillaEntityType.SMALL_FIREBALL, SmallFireball.class, CraftSmallFireball::new, createFireball(net.minecraft.world.entity.EntityTypes.SMALL_FIREBALL)));
+        register(new EntityTypeData<>(VanillaEntityType.WITHER_SKULL, WitherSkull.class, CraftWitherSkull::new, createFireball(net.minecraft.world.entity.EntityTypes.WITHER_SKULL)));
+        register(new EntityTypeData<>(VanillaEntityType.DRAGON_FIREBALL, DragonFireball.class, CraftDragonFireball::new, createFireball(net.minecraft.world.entity.EntityTypes.DRAGON_FIREBALL)));
+        register(new EntityTypeData<>(VanillaEntityType.WIND_CHARGE, WindCharge.class, CraftWindCharge::new, createFireball(net.minecraft.world.entity.EntityTypes.WIND_CHARGE)));
+        register(new EntityTypeData<>(VanillaEntityType.BREEZE_WIND_CHARGE, BreezeWindCharge.class, CraftBreezeWindCharge::new, createFireball(net.minecraft.world.entity.EntityTypes.BREEZE_WIND_CHARGE)));
 
         // Hanging
-        register(new EntityTypeData<>(EntityType.PAINTING, Painting.class, CraftPainting::new, createHanging(Painting.class, (spawnData, hangingData) -> {
+        register(new EntityTypeData<>(VanillaEntityType.PAINTING, Painting.class, CraftPainting::new, createHanging(Painting.class, (spawnData, hangingData) -> {
             if (spawnData.normalWorld && hangingData.randomize()) {
                 final net.minecraft.world.entity.decoration.painting.Painting entity = net.minecraft.world.entity.decoration.painting.Painting.create(spawnData.minecraftWorld(), hangingData.position(), hangingData.direction()).orElse(null);
                 if (entity != null) {
@@ -397,53 +398,53 @@ public final class CraftEntityTypes {
             entity.setDirection(hangingData.direction());
             return entity;
         })));
-        register(new EntityTypeData<>(EntityType.ITEM_FRAME, ItemFrame.class, CraftItemFrame::new, createHanging(ItemFrame.class, (spawnData, hangingData) -> new net.minecraft.world.entity.decoration.ItemFrame(spawnData.minecraftWorld(), hangingData.position(), hangingData.direction()))));
-        register(new EntityTypeData<>(EntityType.GLOW_ITEM_FRAME, GlowItemFrame.class, CraftGlowItemFrame::new, createHanging(GlowItemFrame.class, (spawnData, hangingData) -> new net.minecraft.world.entity.decoration.GlowItemFrame(spawnData.minecraftWorld(), hangingData.position(), hangingData.direction()))));
+        register(new EntityTypeData<>(VanillaEntityType.ITEM_FRAME, ItemFrame.class, CraftItemFrame::new, createHanging(ItemFrame.class, (spawnData, hangingData) -> new net.minecraft.world.entity.decoration.ItemFrame(spawnData.minecraftWorld(), hangingData.position(), hangingData.direction()))));
+        register(new EntityTypeData<>(VanillaEntityType.GLOW_ITEM_FRAME, GlowItemFrame.class, CraftGlowItemFrame::new, createHanging(GlowItemFrame.class, (spawnData, hangingData) -> new net.minecraft.world.entity.decoration.GlowItemFrame(spawnData.minecraftWorld(), hangingData.position(), hangingData.direction()))));
 
         // Move no rotation
-        register(new EntityTypeData<>(EntityType.ARROW, Arrow.class, CraftArrow::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.ARROW)));
-        register(new EntityTypeData<>(EntityType.ENDER_PEARL, EnderPearl.class, CraftEnderPearl::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.ENDER_PEARL)));
-        register(new EntityTypeData<>(EntityType.EXPERIENCE_BOTTLE, ThrownExpBottle.class, CraftThrownExpBottle::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.EXPERIENCE_BOTTLE)));
-        register(new EntityTypeData<>(EntityType.SPECTRAL_ARROW, SpectralArrow.class, CraftSpectralArrow::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.SPECTRAL_ARROW)));
-        register(new EntityTypeData<>(EntityType.END_CRYSTAL, EnderCrystal.class, CraftEnderCrystal::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.END_CRYSTAL)));
-        register(new EntityTypeData<>(EntityType.TRIDENT, Trident.class, CraftTrident::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.TRIDENT)));
-        register(new EntityTypeData<>(EntityType.LIGHTNING_BOLT, LightningStrike.class, CraftLightningStrike::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT)));
+        register(new EntityTypeData<>(VanillaEntityType.ARROW, Arrow.class, CraftArrow::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.ARROW)));
+        register(new EntityTypeData<>(VanillaEntityType.ENDER_PEARL, EnderPearl.class, CraftEnderPearl::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.ENDER_PEARL)));
+        register(new EntityTypeData<>(VanillaEntityType.EXPERIENCE_BOTTLE, ThrownExpBottle.class, CraftThrownExpBottle::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.EXPERIENCE_BOTTLE)));
+        register(new EntityTypeData<>(VanillaEntityType.SPECTRAL_ARROW, SpectralArrow.class, CraftSpectralArrow::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.SPECTRAL_ARROW)));
+        register(new EntityTypeData<>(VanillaEntityType.END_CRYSTAL, EnderCrystal.class, CraftEnderCrystal::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.END_CRYSTAL)));
+        register(new EntityTypeData<>(VanillaEntityType.TRIDENT, Trident.class, CraftTrident::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.TRIDENT)));
+        register(new EntityTypeData<>(VanillaEntityType.LIGHTNING_BOLT, LightningStrike.class, CraftLightningStrike::new, createAndMoveEmptyRot(net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT)));
 
         // Move
-        register(new EntityTypeData<>(EntityType.SHULKER_BULLET, ShulkerBullet.class, CraftShulkerBullet::new, createAndMove(net.minecraft.world.entity.EntityTypes.SHULKER_BULLET)));
-        register(new EntityTypeData<>(EntityType.LLAMA_SPIT, LlamaSpit.class, CraftLlamaSpit::new, createAndMove(net.minecraft.world.entity.EntityTypes.LLAMA_SPIT)));
-        register(new EntityTypeData<>(EntityType.OMINOUS_ITEM_SPAWNER, OminousItemSpawner.class, CraftOminousItemSpawner::new, createAndMove(net.minecraft.world.entity.EntityTypes.OMINOUS_ITEM_SPAWNER)));
+        register(new EntityTypeData<>(VanillaEntityType.SHULKER_BULLET, ShulkerBullet.class, CraftShulkerBullet::new, createAndMove(net.minecraft.world.entity.EntityTypes.SHULKER_BULLET)));
+        register(new EntityTypeData<>(VanillaEntityType.LLAMA_SPIT, LlamaSpit.class, CraftLlamaSpit::new, createAndMove(net.minecraft.world.entity.EntityTypes.LLAMA_SPIT)));
+        register(new EntityTypeData<>(VanillaEntityType.OMINOUS_ITEM_SPAWNER, OminousItemSpawner.class, CraftOminousItemSpawner::new, createAndMove(net.minecraft.world.entity.EntityTypes.OMINOUS_ITEM_SPAWNER)));
         // Move (boats)
-        register(new EntityTypeData<>(EntityType.ACACIA_BOAT, AcaciaBoat.class, CraftAcaciaBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.ACACIA_BOAT)));
-        register(new EntityTypeData<>(EntityType.ACACIA_CHEST_BOAT, AcaciaChestBoat.class, CraftAcaciaChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.ACACIA_CHEST_BOAT)));
-        register(new EntityTypeData<>(EntityType.BAMBOO_RAFT, BambooRaft.class, CraftBambooRaft::new, createAndMove(net.minecraft.world.entity.EntityTypes.BAMBOO_RAFT)));
-        register(new EntityTypeData<>(EntityType.BAMBOO_CHEST_RAFT, BambooChestRaft.class, CraftBambooChestRaft::new, createAndMove(net.minecraft.world.entity.EntityTypes.BAMBOO_CHEST_RAFT)));
-        register(new EntityTypeData<>(EntityType.BIRCH_BOAT, BirchBoat.class, CraftBirchBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.BIRCH_BOAT)));
-        register(new EntityTypeData<>(EntityType.BIRCH_CHEST_BOAT, BirchChestBoat.class, CraftBirchChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.BIRCH_CHEST_BOAT)));
-        register(new EntityTypeData<>(EntityType.CHERRY_BOAT, CherryBoat.class, CraftCherryBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.CHERRY_BOAT)));
-        register(new EntityTypeData<>(EntityType.CHERRY_CHEST_BOAT, CherryChestBoat.class, CraftCherryChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.CHERRY_CHEST_BOAT)));
-        register(new EntityTypeData<>(EntityType.DARK_OAK_BOAT, DarkOakBoat.class, CraftDarkOakBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.DARK_OAK_BOAT)));
-        register(new EntityTypeData<>(EntityType.DARK_OAK_CHEST_BOAT, DarkOakChestBoat.class, CraftDarkOakChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.DARK_OAK_CHEST_BOAT)));
-        register(new EntityTypeData<>(EntityType.JUNGLE_BOAT, JungleBoat.class, CraftJungleBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.JUNGLE_BOAT)));
-        register(new EntityTypeData<>(EntityType.JUNGLE_CHEST_BOAT, JungleChestBoat.class, CraftJungleChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.JUNGLE_CHEST_BOAT)));
-        register(new EntityTypeData<>(EntityType.MANGROVE_BOAT, MangroveBoat.class, CraftMangroveBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.MANGROVE_BOAT)));
-        register(new EntityTypeData<>(EntityType.MANGROVE_CHEST_BOAT, MangroveChestBoat.class, CraftMangroveChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.MANGROVE_CHEST_BOAT)));
-        register(new EntityTypeData<>(EntityType.OAK_BOAT, OakBoat.class, CraftOakBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.OAK_BOAT)));
-        register(new EntityTypeData<>(EntityType.OAK_CHEST_BOAT, OakChestBoat.class, CraftOakChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.OAK_CHEST_BOAT)));
-        register(new EntityTypeData<>(EntityType.PALE_OAK_BOAT, PaleOakBoat.class, CraftPaleOakBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.PALE_OAK_BOAT)));
-        register(new EntityTypeData<>(EntityType.PALE_OAK_CHEST_BOAT, PaleOakChestBoat.class, CraftPaleOakChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.PALE_OAK_CHEST_BOAT)));
-        register(new EntityTypeData<>(EntityType.SPRUCE_BOAT, SpruceBoat.class, CraftSpruceBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.SPRUCE_BOAT)));
-        register(new EntityTypeData<>(EntityType.SPRUCE_CHEST_BOAT, SpruceChestBoat.class, CraftSpruceChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.SPRUCE_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.ACACIA_BOAT, AcaciaBoat.class, CraftAcaciaBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.ACACIA_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.ACACIA_CHEST_BOAT, AcaciaChestBoat.class, CraftAcaciaChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.ACACIA_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.BAMBOO_RAFT, BambooRaft.class, CraftBambooRaft::new, createAndMove(net.minecraft.world.entity.EntityTypes.BAMBOO_RAFT)));
+        register(new EntityTypeData<>(VanillaEntityType.BAMBOO_CHEST_RAFT, BambooChestRaft.class, CraftBambooChestRaft::new, createAndMove(net.minecraft.world.entity.EntityTypes.BAMBOO_CHEST_RAFT)));
+        register(new EntityTypeData<>(VanillaEntityType.BIRCH_BOAT, BirchBoat.class, CraftBirchBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.BIRCH_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.BIRCH_CHEST_BOAT, BirchChestBoat.class, CraftBirchChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.BIRCH_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.CHERRY_BOAT, CherryBoat.class, CraftCherryBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.CHERRY_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.CHERRY_CHEST_BOAT, CherryChestBoat.class, CraftCherryChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.CHERRY_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.DARK_OAK_BOAT, DarkOakBoat.class, CraftDarkOakBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.DARK_OAK_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.DARK_OAK_CHEST_BOAT, DarkOakChestBoat.class, CraftDarkOakChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.DARK_OAK_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.JUNGLE_BOAT, JungleBoat.class, CraftJungleBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.JUNGLE_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.JUNGLE_CHEST_BOAT, JungleChestBoat.class, CraftJungleChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.JUNGLE_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.MANGROVE_BOAT, MangroveBoat.class, CraftMangroveBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.MANGROVE_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.MANGROVE_CHEST_BOAT, MangroveChestBoat.class, CraftMangroveChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.MANGROVE_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.OAK_BOAT, OakBoat.class, CraftOakBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.OAK_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.OAK_CHEST_BOAT, OakChestBoat.class, CraftOakChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.OAK_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.PALE_OAK_BOAT, PaleOakBoat.class, CraftPaleOakBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.PALE_OAK_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.PALE_OAK_CHEST_BOAT, PaleOakChestBoat.class, CraftPaleOakChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.PALE_OAK_CHEST_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.SPRUCE_BOAT, SpruceBoat.class, CraftSpruceBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.SPRUCE_BOAT)));
+        register(new EntityTypeData<>(VanillaEntityType.SPRUCE_CHEST_BOAT, SpruceChestBoat.class, CraftSpruceChestBoat::new, createAndMove(net.minecraft.world.entity.EntityTypes.SPRUCE_CHEST_BOAT)));
 
         // Set pos
-        register(new EntityTypeData<>(EntityType.MARKER, Marker.class, CraftMarker::new, createAndSetPos(net.minecraft.world.entity.EntityTypes.MARKER)));
-        register(new EntityTypeData<>(EntityType.BLOCK_DISPLAY, BlockDisplay.class, CraftBlockDisplay::new, combine(createAndSetPos(net.minecraft.world.entity.EntityTypes.BLOCK_DISPLAY), ROT))); // Paper
-        register(new EntityTypeData<>(EntityType.INTERACTION, Interaction.class, CraftInteraction::new, createAndSetPos(net.minecraft.world.entity.EntityTypes.INTERACTION)));
-        register(new EntityTypeData<>(EntityType.ITEM_DISPLAY, ItemDisplay.class, CraftItemDisplay::new, combine(createAndSetPos(net.minecraft.world.entity.EntityTypes.ITEM_DISPLAY), ROT))); // Paper
-        register(new EntityTypeData<>(EntityType.TEXT_DISPLAY, TextDisplay.class, CraftTextDisplay::new, combine(createAndSetPos(net.minecraft.world.entity.EntityTypes.TEXT_DISPLAY), ROT))); // Paper
+        register(new EntityTypeData<>(VanillaEntityType.MARKER, Marker.class, CraftMarker::new, createAndSetPos(net.minecraft.world.entity.EntityTypes.MARKER)));
+        register(new EntityTypeData<>(VanillaEntityType.BLOCK_DISPLAY, BlockDisplay.class, CraftBlockDisplay::new, combine(createAndSetPos(net.minecraft.world.entity.EntityTypes.BLOCK_DISPLAY), ROT))); // Paper
+        register(new EntityTypeData<>(VanillaEntityType.INTERACTION, Interaction.class, CraftInteraction::new, createAndSetPos(net.minecraft.world.entity.EntityTypes.INTERACTION)));
+        register(new EntityTypeData<>(VanillaEntityType.ITEM_DISPLAY, ItemDisplay.class, CraftItemDisplay::new, combine(createAndSetPos(net.minecraft.world.entity.EntityTypes.ITEM_DISPLAY), ROT))); // Paper
+        register(new EntityTypeData<>(VanillaEntityType.TEXT_DISPLAY, TextDisplay.class, CraftTextDisplay::new, combine(createAndSetPos(net.minecraft.world.entity.EntityTypes.TEXT_DISPLAY), ROT))); // Paper
 
         // MISC
-        register(new EntityTypeData<>(EntityType.ITEM, Item.class, CraftItem::new, spawnData -> {
+        register(new EntityTypeData<>(VanillaEntityType.ITEM, Item.class, CraftItem::new, spawnData -> {
             // We use stone instead of empty, to give the plugin developer a visual clue, that the spawn method is working,
             // and that the item stack should probably be changed.
             net.minecraft.world.item.ItemStack itemStack = new net.minecraft.world.item.ItemStack(Items.STONE);
@@ -453,23 +454,23 @@ public final class CraftEntityTypes {
 
             return item;
         }));
-        register(new EntityTypeData<>(EntityType.EXPERIENCE_ORB, ExperienceOrb.class, CraftExperienceOrb::new,
+        register(new EntityTypeData<>(VanillaEntityType.EXPERIENCE_ORB, ExperienceOrb.class, CraftExperienceOrb::new,
                 combine(combine(spawnData -> new net.minecraft.world.entity.ExperienceOrb(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), 0, org.bukkit.entity.ExperienceOrb.SpawnReason.CUSTOM, null, null), CLEAR_MOVE_IF_NOT_RANDOMIZED), (spawnData, experienceOrb) -> { if (!spawnData.randomizeData()) { experienceOrb.setYRot(0); } }) // Paper - respect randomizeData
         ));
-        register(new EntityTypeData<>(EntityType.AREA_EFFECT_CLOUD, AreaEffectCloud.class, CraftAreaEffectCloud::new, createAndMove(net.minecraft.world.entity.EntityTypes.AREA_EFFECT_CLOUD))); // Paper - set area effect cloud rotation
-        register(new EntityTypeData<>(EntityType.EGG, Egg.class, CraftEgg::new, spawnData -> new ThrownEgg(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), new ItemStack(Items.EGG))));
-        register(new EntityTypeData<>(EntityType.LEASH_KNOT, LeashHitch.class, CraftLeash::new, spawnData -> new LeashFenceKnotEntity(spawnData.minecraftWorld(), BlockPos.containing(spawnData.x(), spawnData.y(), spawnData.z())))); // SPIGOT-5732: LeashHitch has no direction and is always centered at a block
-        register(new EntityTypeData<>(EntityType.SNOWBALL, Snowball.class, CraftSnowball::new, spawnData -> new net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), new ItemStack(Items.SNOWBALL))));
-        register(new EntityTypeData<>(EntityType.EYE_OF_ENDER, EnderSignal.class, CraftEnderSignal::new, spawnData -> new EyeOfEnder(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.SPLASH_POTION, SplashPotion.class, CraftThrownSplashPotion::new, spawnData -> new ThrownSplashPotion(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), new ItemStack(Items.SPLASH_POTION))));
-        register(new EntityTypeData<>(EntityType.LINGERING_POTION, LingeringPotion.class, CraftThrownLingeringPotion::new, spawnData -> new ThrownLingeringPotion(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), new ItemStack(Items.LINGERING_POTION))));
-        register(new EntityTypeData<>(EntityType.TNT, TNTPrimed.class, CraftTNTPrimed::new, combine(spawnData -> new PrimedTnt(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), null), CLEAR_MOVE_IF_NOT_RANDOMIZED))); // Paper - respect randomizeData
-        register(new EntityTypeData<>(EntityType.FALLING_BLOCK, FallingBlock.class, CraftFallingBlock::new, spawnData -> {
+        register(new EntityTypeData<>(VanillaEntityType.AREA_EFFECT_CLOUD, AreaEffectCloud.class, CraftAreaEffectCloud::new, createAndMove(net.minecraft.world.entity.EntityTypes.AREA_EFFECT_CLOUD))); // Paper - set area effect cloud rotation
+        register(new EntityTypeData<>(VanillaEntityType.EGG, Egg.class, CraftEgg::new, spawnData -> new ThrownEgg(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), new ItemStack(Items.EGG))));
+        register(new EntityTypeData<>(VanillaEntityType.LEASH_KNOT, LeashHitch.class, CraftLeash::new, spawnData -> new LeashFenceKnotEntity(spawnData.minecraftWorld(), BlockPos.containing(spawnData.x(), spawnData.y(), spawnData.z())))); // SPIGOT-5732: LeashHitch has no direction and is always centered at a block
+        register(new EntityTypeData<>(VanillaEntityType.SNOWBALL, Snowball.class, CraftSnowball::new, spawnData -> new net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), new ItemStack(Items.SNOWBALL))));
+        register(new EntityTypeData<>(VanillaEntityType.EYE_OF_ENDER, EnderSignal.class, CraftEnderSignal::new, spawnData -> new EyeOfEnder(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
+        register(new EntityTypeData<>(VanillaEntityType.SPLASH_POTION, SplashPotion.class, CraftThrownSplashPotion::new, spawnData -> new ThrownSplashPotion(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), new ItemStack(Items.SPLASH_POTION))));
+        register(new EntityTypeData<>(VanillaEntityType.LINGERING_POTION, LingeringPotion.class, CraftThrownLingeringPotion::new, spawnData -> new ThrownLingeringPotion(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), new ItemStack(Items.LINGERING_POTION))));
+        register(new EntityTypeData<>(VanillaEntityType.TNT, TNTPrimed.class, CraftTNTPrimed::new, combine(spawnData -> new PrimedTnt(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), null), CLEAR_MOVE_IF_NOT_RANDOMIZED))); // Paper - respect randomizeData
+        register(new EntityTypeData<>(VanillaEntityType.FALLING_BLOCK, FallingBlock.class, CraftFallingBlock::new, spawnData -> {
             BlockPos pos = BlockPos.containing(spawnData.x(), spawnData.y(), spawnData.z());
             return new FallingBlockEntity(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), spawnData.world().getBlockState(pos)); // Paper - create falling block entities correctly
         }));
         // Paper start - respect randomizeData
-        register(new EntityTypeData<>(EntityType.FIREWORK_ROCKET, Firework.class, CraftFirework::new, spawnData -> {
+        register(new EntityTypeData<>(VanillaEntityType.FIREWORK_ROCKET, Firework.class, CraftFirework::new, spawnData -> {
             FireworkRocketEntity entity = new FireworkRocketEntity(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), FireworkRocketEntity.getDefaultItem()); // Paper - pass correct default to rocket for data storage
             if (!spawnData.randomizeData()) {
                 // logic below was taken from FireworkRocketEntity constructor
@@ -480,18 +481,18 @@ public final class CraftEntityTypes {
             return entity;
         }));
         // Paper end - respect randomizeData
-        register(new EntityTypeData<>(EntityType.EVOKER_FANGS, EvokerFangs.class, CraftEvokerFangs::new, spawnData -> new net.minecraft.world.entity.projectile.EvokerFangs(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), (float) Math.toRadians(spawnData.yaw()), 0, null)));
-        register(new EntityTypeData<>(EntityType.COMMAND_BLOCK_MINECART, CommandMinecart.class, CraftMinecartCommand::new, createMinecart(net.minecraft.world.entity.EntityTypes.COMMAND_BLOCK_MINECART)));
-        register(new EntityTypeData<>(EntityType.MINECART, RideableMinecart.class, CraftMinecartRideable::new, createMinecart(net.minecraft.world.entity.EntityTypes.MINECART)));
-        register(new EntityTypeData<>(EntityType.CHEST_MINECART, StorageMinecart.class, CraftMinecartChest::new, createMinecart(net.minecraft.world.entity.EntityTypes.CHEST_MINECART)));
-        register(new EntityTypeData<>(EntityType.FURNACE_MINECART, PoweredMinecart.class, CraftMinecartFurnace::new, createMinecart(net.minecraft.world.entity.EntityTypes.FURNACE_MINECART)));
-        register(new EntityTypeData<>(EntityType.TNT_MINECART, ExplosiveMinecart.class, CraftMinecartTNT::new, createMinecart(net.minecraft.world.entity.EntityTypes.TNT_MINECART)));
-        register(new EntityTypeData<>(EntityType.HOPPER_MINECART, HopperMinecart.class, CraftMinecartHopper::new, createMinecart(net.minecraft.world.entity.EntityTypes.HOPPER_MINECART)));
-        register(new EntityTypeData<>(EntityType.SPAWNER_MINECART, SpawnerMinecart.class, CraftMinecartMobSpawner::new, createMinecart(net.minecraft.world.entity.EntityTypes.SPAWNER_MINECART)));
+        register(new EntityTypeData<>(VanillaEntityType.EVOKER_FANGS, EvokerFangs.class, CraftEvokerFangs::new, spawnData -> new net.minecraft.world.entity.projectile.EvokerFangs(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), (float) Math.toRadians(spawnData.yaw()), 0, null)));
+        register(new EntityTypeData<>(VanillaEntityType.COMMAND_BLOCK_MINECART, CommandMinecart.class, CraftMinecartCommand::new, createMinecart(net.minecraft.world.entity.EntityTypes.COMMAND_BLOCK_MINECART)));
+        register(new EntityTypeData<>(VanillaEntityType.MINECART, RideableMinecart.class, CraftMinecartRideable::new, createMinecart(net.minecraft.world.entity.EntityTypes.MINECART)));
+        register(new EntityTypeData<>(VanillaEntityType.CHEST_MINECART, StorageMinecart.class, CraftMinecartChest::new, createMinecart(net.minecraft.world.entity.EntityTypes.CHEST_MINECART)));
+        register(new EntityTypeData<>(VanillaEntityType.FURNACE_MINECART, PoweredMinecart.class, CraftMinecartFurnace::new, createMinecart(net.minecraft.world.entity.EntityTypes.FURNACE_MINECART)));
+        register(new EntityTypeData<>(VanillaEntityType.TNT_MINECART, ExplosiveMinecart.class, CraftMinecartTNT::new, createMinecart(net.minecraft.world.entity.EntityTypes.TNT_MINECART)));
+        register(new EntityTypeData<>(VanillaEntityType.HOPPER_MINECART, HopperMinecart.class, CraftMinecartHopper::new, createMinecart(net.minecraft.world.entity.EntityTypes.HOPPER_MINECART)));
+        register(new EntityTypeData<>(VanillaEntityType.SPAWNER_MINECART, SpawnerMinecart.class, CraftMinecartMobSpawner::new, createMinecart(net.minecraft.world.entity.EntityTypes.SPAWNER_MINECART)));
 
         // None spawn able
-        register(new EntityTypeData<>(EntityType.FISHING_BOBBER, FishHook.class, CraftFishHook::new, null)); // Cannot spawn a fish hook
-        register(new EntityTypeData<>(EntityType.PLAYER, Player.class, CraftPlayer::new, null)); // Cannot spawn a player
+        register(new EntityTypeData<>(VanillaEntityType.FISHING_BOBBER, FishHook.class, CraftFishHook::new, null)); // Cannot spawn a fish hook
+        register(new EntityTypeData<>(VanillaEntityType.PLAYER, Player.class, CraftPlayer::new, null)); // Cannot spawn a player
     }
 
     private static void register(EntityTypeData<?, ?> typeData) {
@@ -502,7 +503,10 @@ public final class CraftEntityTypes {
 
         other = CraftEntityTypes.ENTITY_TYPE_DATA.put(typeData.entityType(), typeData);
         if (other != null) {
-            Bukkit.getLogger().warning(String.format("Found multiple entity type data for entity type %s, replacing '%s' with new value '%s'", typeData.entityType().getKey(), other, typeData));
+            // mintychochip - entityType may be interface; avoid NPE if key unavailable during init
+            final String key = typeData.entityType() == null ? "null"
+                : String.valueOf(typeData.entityType().getKey());
+            Bukkit.getLogger().warning(String.format("Found multiple entity type data for entity type %s, replacing '%s' with new value '%s'", key, other, typeData));
         }
     }
 

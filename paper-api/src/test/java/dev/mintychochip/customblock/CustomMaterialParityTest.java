@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Proves custom definitions are real {@link Material}s usable like vanilla constants.
+ *
+ * <p>Registry.MATERIAL merge is covered by {@code org.bukkit.MaterialRegistryTest}
+ * (avoids full {@link org.bukkit.Registry} clinit in pure API unit tests).
  */
 public class CustomMaterialParityTest {
 
@@ -37,6 +40,11 @@ public class CustomMaterialParityTest {
             }
         }
         assertTrue(found);
+        // values() is vanilla-only — customs never appear there
+        for (final Material m : Material.values()) {
+            assertTrue(m.isVanilla());
+            assertFalse(m.isCustom());
+        }
     }
 
     @Test

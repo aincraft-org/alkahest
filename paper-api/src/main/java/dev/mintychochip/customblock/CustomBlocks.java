@@ -19,7 +19,8 @@ import org.jetbrains.annotations.Nullable;
  *
  * <p>{@link CustomBlockDefinition} implements {@link Material}: after {@link #register},
  * definitions are reachable via {@link Material#getByKey} / {@link Material#matchMaterial}
- * and can be used wherever a {@code Material} is expected for identity/lookups.
+ * and {@link org.bukkit.Registry#MATERIAL}, and can be used wherever a {@code Material}
+ * is expected for identity/lookups. {@link Material#values()} stays vanilla-only.
  * Live world and inventory still expose the vanilla carrier via
  * {@link Block#getType()} / {@link ItemStack#getType()}; logical content is resolved via
  * {@link #of(Block)}, {@link #of(ItemStack)}, and {@link #keyOf} (or the additive

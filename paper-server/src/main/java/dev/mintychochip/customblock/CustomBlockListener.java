@@ -133,8 +133,12 @@ public final class CustomBlockListener implements Listener {
 
     private static void clearExploded(final List<Block> blocks) {
         final CustomBlockLookup lookup = CustomBlocks.lookup();
+        final var displays = dev.mintychochip.customblock.display.PacketDisplayService.get();
         for (final Block block : blocks) {
+            displays.despawn(block);
             lookup.clearAt(block);
+            // mintychochip - item provenance: explode no-drop must not leave placement orphans
+            CustomBlockProvenance.clearPlacement(block);
         }
     }
 
