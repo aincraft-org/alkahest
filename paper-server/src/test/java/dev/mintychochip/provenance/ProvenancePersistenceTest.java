@@ -126,4 +126,46 @@ public class ProvenancePersistenceTest {
         ItemProvenance.birth(stack, ProvenanceSource.BLOCK_DROP, HAND);
         assertTrue(ItemProvenance.live().contains(StackStamp.readId(stack).orElseThrow()));
     }
+
+    @Test
+    public void liveUpsertAndLoadAliveSurvivesReopen() throws Exception {
+        final Path db = tempDir.resolve("mintychochip/provenance.db");
+        final UUID id = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+        try (ProvenanceRepository repo = new ProvenanceRepository(db)) {
+            repo.upsertLive(new LiveRecord(id, "minecraft:diamond", "player:" + PLAYER + ":0", 4, 1_700_000_000_000L, false));
+        }
+        try (ProvenanceRepository repo = new ProvenanceRepository(db)) {
+            final List<LiveRecord> alive = repo.loadAliveLive();
+            assertEquals(1, alive.size());
+            assertEquals(id, alive.getFirst().id());
+            assertEquals(4, alive.getFirst().count());
+            assertFalse(alive.getFirst().dead());
+        }
+    }
+
+    @Test
+    public void auditInsertAndLoadRecentSurvivesReopen() throws Exception {
+        final Path db = tempDir.resolve("mintychochip/provenance.db");
+        final UUID id = UUID.randomUUID();
+        final ProvenanceEvent event = new ProvenanceEvent(
+            1_700_000_000_000L,
+            ProvenanceEventType.BIRTH,
+            id,
+            "minecraft:cobblestone",
+            ProvenanceSource.BLOCK_DROP,
+            null,
+            List.of(),
+            HAND.display(),
+            null
+        );
+        try (ProvenanceRepository repo = new ProvenanceRepository(db)) {
+            repo.insertAudit(event);
+        }
+        try (ProvenanceRepository repo = new ProvenanceRepository(db)) {
+            final List<ProvenanceEvent> loaded = repo.loadRecentAudit(10);
+            assertEquals(1, loaded.size());
+            assertEquals(ProvenanceEventType.BIRTH, loaded.getFirst().type());
+            assertEquals(id, loaded.getFirst().id());
+        }
+    }
 }
