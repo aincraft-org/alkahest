@@ -175,6 +175,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
         if (material != null && material.isLegacy()) {
             material = CraftLegacy.fromLegacy(material);
         }
+        // mintychochip start - custom Material maps via itemMaterial
+        if (material instanceof dev.mintychochip.customblock.CustomBlockDefinition def) {
+            return getItem(def.itemMaterial());
+        }
+        // mintychochip end - custom Material maps via itemMaterial
 
         return CraftMagicNumbers.MATERIAL_ITEM.get(material);
     }
@@ -183,6 +188,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
         if (material != null && material.isLegacy()) {
             material = CraftLegacy.fromLegacy(material);
         }
+        // mintychochip start - custom Material maps via carrierMaterial
+        if (material instanceof dev.mintychochip.customblock.CustomBlockDefinition def) {
+            return getBlock(def.carrierMaterial());
+        }
+        // mintychochip end - custom Material maps via carrierMaterial
 
         return CraftMagicNumbers.MATERIAL_BLOCK.get(material);
     }
