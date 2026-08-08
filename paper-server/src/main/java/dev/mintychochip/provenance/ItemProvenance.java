@@ -206,7 +206,9 @@ public final class ItemProvenance {
 
         final LineageNode node = new LineageNode(id, itemId, source, parentList, now, location.display());
         LINEAGE.put(node);
-        LIVE.put(new LiveEntry(id, itemId, location, stack.getCount(), now));
+        final LiveEntry liveEntry = new LiveEntry(id, itemId, location, stack.getCount(), now);
+        LIVE.put(liveEntry);
+        persistLive(liveEntry, false);
 
         final ProvenanceEventType eventType = switch (source) {
             case MERGE -> ProvenanceEventType.MERGE;
@@ -303,15 +305,23 @@ public final class ItemProvenance {
             rehydrateIfNeeded(stack, id, location);
             return false;
         }
+        final int prevCount = entry.count();
         entry.setCount(stack.getCount());
         if (!location.isConcrete() || entry.locations().contains(location)) {
+            if (entry.count() != prevCount) {
+                persistLive(entry, false);
+            }
             return false;
         }
         if (entry.locations().isEmpty()) {
             entry.addLocation(location);
+            persistLive(entry, false);
             return false;
         }
         // Second concrete location for one live identity.
+        if (entry.count() != prevCount) {
+            persistLive(entry, false);
+        }
         final StackLocation existing = entry.locations().iterator().next();
         recordCollision(id, ProvenanceCollisionKind.DUPLICATE_LOCATION, existing, location);
         return true;
@@ -350,6 +360,7 @@ public final class ItemProvenance {
             entry.removeLocation(existing);
             entry.addLocation(to);
         }
+        persistLive(entry, false);
         return false;
     }
 
@@ -805,6 +816,9 @@ public final class ItemProvenance {
         final String itemId = removed != null
             ? removed.itemId()
             : existingNode.map(LineageNode::itemId).orElse(null);
+        if (removed != null) {
+            persistLive(removed, true);
+        }
         existingNode.ifPresent(node -> {
             if (!node.dead()) {
                 node.markDead(reason, now);
@@ -955,6 +969,8 @@ public final class ItemProvenance {
     ) {
         final LiveEntry entry = LIVE.get(id).orElse(null);
         if (entry != null) {
+            final int prevCount = entry.count();
+            final StackLocation prevLocation = entry.location();
             entry.setCount(stack.getCount());
             if (location.isConcrete() && !entry.locations().contains(location)) {
                 if (entry.locations().isEmpty()) {
@@ -964,6 +980,10 @@ public final class ItemProvenance {
                     final StackLocation existing = entry.locations().iterator().next();
                     recordCollision(id, ProvenanceCollisionKind.DUPLICATE_LOCATION, existing, location);
                 }
+            }
+            // Already in LIVE: persist when count or accepted location actually changes.
+            if (entry.count() != prevCount || !entry.location().equals(prevLocation)) {
+                persistLive(entry, false);
             }
             return Optional.of(id);
         }
@@ -988,6 +1008,7 @@ public final class ItemProvenance {
             fresh.addLocation(location);
         }
         LIVE.put(fresh);
+        persistLive(fresh, false);
         AUDIT.append(new ProvenanceEvent(
             now,
             ProvenanceEventType.REHYDRATE,
@@ -1000,6 +1021,22 @@ public final class ItemProvenance {
             null
         ));
         return Optional.of(id);
+    }
+
+    // -------------------------------------------------------------------------
+    // Durable live census
+    // -------------------------------------------------------------------------
+
+    private static void persistLive(final @NotNull LiveEntry entry, final boolean dead) {
+        final LiveRecord record = new LiveRecord(
+            entry.id(),
+            entry.itemId(),
+            entry.location().display(),
+            entry.count(),
+            System.currentTimeMillis(),
+            dead
+        );
+        ProvenanceWriter.enqueueLive(record);
     }
 
     // -------------------------------------------------------------------------

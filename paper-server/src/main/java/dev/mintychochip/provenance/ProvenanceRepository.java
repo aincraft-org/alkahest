@@ -17,9 +17,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Durable provenance store (SQLite).
  *
- * <p>Holds the permanent lineage graph and collision trail. The live census is
- * intentionally transient: it is rebuilt by observing loaded players, entities,
- * and containers.
+ * <p>Holds the permanent lineage graph, collision trail, live census, and audit
+ * event log. The live census is durable and seeds runtime {@link LiveIndex} on
+ * restart; audit is the permanent event ledger.
  */
 public final class ProvenanceRepository implements AutoCloseable {
 
@@ -55,6 +55,31 @@ public final class ProvenanceRepository implements AutoCloseable {
                 )
                 """);
             st.execute("CREATE INDEX IF NOT EXISTS idx_collisions_id ON collisions(id)");
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS live (
+                    id TEXT PRIMARY KEY,
+                    item TEXT NOT NULL,
+                    location TEXT NOT NULL,
+                    count INTEGER NOT NULL,
+                    epoch INTEGER NOT NULL,
+                    dead INTEGER NOT NULL DEFAULT 0
+                )
+                """);
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS audit (
+                    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+                    epoch INTEGER NOT NULL,
+                    kind TEXT NOT NULL,
+                    id TEXT NOT NULL,
+                    item TEXT,
+                    source TEXT,
+                    reason TEXT,
+                    related TEXT,
+                    holder TEXT,
+                    detail TEXT
+                )
+                """);
+            st.execute("CREATE INDEX IF NOT EXISTS idx_audit_epoch ON audit(epoch)");
         }
     }
 
@@ -150,8 +175,8 @@ public final class ProvenanceRepository implements AutoCloseable {
                     out.add(new CollisionRecord(
                         UUID.fromString(rs.getString("id")),
                         ProvenanceCollisionKind.valueOf(rs.getString("kind")),
-                        parseLocation(rs.getString("existing")),
-                        parseLocation(rs.getString("observed")),
+                        parseLocationDisplay(rs.getString("existing")),
+                        parseLocationDisplay(rs.getString("observed")),
                         rs.getLong("epoch")
                     ));
                 }
@@ -161,6 +186,191 @@ public final class ProvenanceRepository implements AutoCloseable {
             ProvenanceWriter.reportStorageError("collision load", ex);
         }
         return out;
+    }
+
+    public synchronized void upsertLive(final @NotNull LiveRecord record) {
+        if (this.failed) {
+            return;
+        }
+        final String sql = """
+            INSERT INTO live (id, item, location, count, epoch, dead)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                item = excluded.item,
+                location = excluded.location,
+                count = excluded.count,
+                epoch = excluded.epoch,
+                dead = excluded.dead
+            """;
+        try (PreparedStatement ps = this.connection.prepareStatement(sql)) {
+            ps.setString(1, record.id().toString());
+            ps.setString(2, record.itemId());
+            ps.setString(3, record.locationDisplay());
+            ps.setInt(4, record.count());
+            ps.setLong(5, record.epochMs());
+            ps.setInt(6, record.dead() ? 1 : 0);
+            ps.executeUpdate();
+        } catch (final SQLException ex) {
+            this.failed = true;
+            ProvenanceWriter.reportStorageError("live upsert", ex);
+        }
+    }
+
+    public synchronized @NotNull List<LiveRecord> loadAliveLive() {
+        if (this.failed) {
+            return List.of();
+        }
+        final List<LiveRecord> out = new ArrayList<>();
+        try (PreparedStatement ps = this.connection.prepareStatement(
+            "SELECT id, item, location, count, epoch, dead FROM live WHERE dead = 0"
+        )) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.add(new LiveRecord(
+                        UUID.fromString(rs.getString("id")),
+                        rs.getString("item"),
+                        rs.getString("location"),
+                        rs.getInt("count"),
+                        rs.getLong("epoch"),
+                        rs.getInt("dead") != 0
+                    ));
+                }
+            }
+        } catch (final SQLException | IllegalArgumentException ex) {
+            this.failed = true;
+            ProvenanceWriter.reportStorageError("live load", ex);
+        }
+        return out;
+    }
+
+    public synchronized void insertAudit(final @NotNull ProvenanceEvent event) {
+        if (this.failed) {
+            return;
+        }
+        try (PreparedStatement ps = this.connection.prepareStatement(
+            "INSERT INTO audit (epoch, kind, id, item, source, reason, related, holder, detail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        )) {
+            ps.setLong(1, event.epochMs());
+            ps.setString(2, event.type().name());
+            ps.setString(3, event.id().toString());
+            ps.setString(4, event.itemId());
+            ps.setString(5, event.source() != null ? event.source().name() : null);
+            ps.setString(6, event.reason() != null ? event.reason().name() : null);
+            ps.setString(7, event.related().isEmpty()
+                ? null
+                : event.related().stream().map(UUID::toString).collect(Collectors.joining(",")));
+            ps.setString(8, event.holder());
+            ps.setString(9, event.detail());
+            ps.executeUpdate();
+        } catch (final SQLException ex) {
+            this.failed = true;
+            ProvenanceWriter.reportStorageError("audit insert", ex);
+        }
+    }
+
+    public synchronized @NotNull List<ProvenanceEvent> loadRecentAudit(final int limit) {
+        if (this.failed) {
+            return List.of();
+        }
+        final List<ProvenanceEvent> out = new ArrayList<>();
+        try (PreparedStatement ps = this.connection.prepareStatement(
+            "SELECT epoch, kind, id, item, source, reason, related, holder, detail FROM audit ORDER BY seq DESC LIMIT ?"
+        )) {
+            ps.setInt(1, Math.max(1, Math.min(limit, 10_000)));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.add(toEvent(rs));
+                }
+            }
+        } catch (final SQLException | IllegalArgumentException ex) {
+            this.failed = true;
+            ProvenanceWriter.reportStorageError("audit load", ex);
+        }
+        return out;
+    }
+
+    /** Row count for tests / ops (`SELECT COUNT(*) FROM lineage`). */
+    public synchronized long countLineage() {
+        if (this.failed) {
+            return 0L;
+        }
+        try (PreparedStatement ps = this.connection.prepareStatement("SELECT COUNT(*) FROM lineage");
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getLong(1) : 0L;
+        } catch (final SQLException ex) {
+            this.failed = true;
+            ProvenanceWriter.reportStorageError("lineage count", ex);
+            return 0L;
+        }
+    }
+
+    /**
+     * Run work inside a single SQLite transaction (writer-thread batching).
+     * Nested calls reuse the outer transaction.
+     */
+    public synchronized void runInTransaction(final @NotNull Runnable work) {
+        Objects.requireNonNull(work, "work");
+        if (this.failed) {
+            work.run();
+            return;
+        }
+        try {
+            final boolean wasAuto = this.connection.getAutoCommit();
+            if (!wasAuto) {
+                work.run();
+                return;
+            }
+            this.connection.setAutoCommit(false);
+            try {
+                work.run();
+                this.connection.commit();
+            } catch (final RuntimeException ex) {
+                try {
+                    this.connection.rollback();
+                } catch (final SQLException ignored) {
+                    // already failing
+                }
+                throw ex;
+            } finally {
+                try {
+                    this.connection.setAutoCommit(true);
+                } catch (final SQLException ex) {
+                    this.failed = true;
+                    ProvenanceWriter.reportStorageError("transaction restore autocommit", ex);
+                }
+            }
+        } catch (final SQLException ex) {
+            this.failed = true;
+            ProvenanceWriter.reportStorageError("transaction begin", ex);
+            work.run();
+        }
+    }
+
+    private static @NotNull ProvenanceEvent toEvent(final ResultSet rs) throws SQLException {
+        final String relatedRaw = rs.getString("related");
+        final List<UUID> related = new ArrayList<>();
+        if (relatedRaw != null && !relatedRaw.isEmpty()) {
+            for (final String part : relatedRaw.split(",")) {
+                try {
+                    related.add(UUID.fromString(part));
+                } catch (final IllegalArgumentException ignored) {
+                    // skip bad related id
+                }
+            }
+        }
+        final String sourceRaw = rs.getString("source");
+        final String reasonRaw = rs.getString("reason");
+        return new ProvenanceEvent(
+            rs.getLong("epoch"),
+            ProvenanceEventType.valueOf(rs.getString("kind")),
+            UUID.fromString(rs.getString("id")),
+            rs.getString("item"),
+            sourceRaw != null ? ProvenanceSource.valueOf(sourceRaw) : null,
+            reasonRaw != null ? ProvenanceReason.valueOf(reasonRaw) : null,
+            List.copyOf(related),
+            rs.getString("holder"),
+            rs.getString("detail")
+        );
     }
 
     private static @NotNull LineageNode toNode(final UUID id, final ResultSet rs) throws SQLException {
@@ -190,7 +400,8 @@ public final class ProvenanceRepository implements AutoCloseable {
         return node;
     }
 
-    private static @NotNull StackLocation parseLocation(final String raw) {
+    /** Parse a stored location display string back into a {@link StackLocation}. */
+    static @NotNull StackLocation parseLocationDisplay(final String raw) {
         if (raw == null) {
             return StackLocation.unknown();
         }

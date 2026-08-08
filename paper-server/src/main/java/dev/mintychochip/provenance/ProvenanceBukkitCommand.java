@@ -160,7 +160,10 @@ public final class ProvenanceBukkitCommand extends Command {
     }
 
     private static void audit(final CommandSender sender, final int n) {
-        final List<ProvenanceEvent> events = ItemProvenance.audit().latest(n);
+        // Prefer durable SQLite audit (newest-first). In-memory ring is chronological.
+        final Optional<List<ProvenanceEvent>> durable = ProvenanceWriter.recentAudit(n);
+        final List<ProvenanceEvent> events = durable
+            .orElseGet(() -> ItemProvenance.audit().latest(n));
         sender.sendMessage(RULE_TOP);
         sender.sendMessage(
             text("│ ", DARK_GRAY)
@@ -172,8 +175,13 @@ public final class ProvenanceBukkitCommand extends Command {
         sender.sendMessage(text("│", DARK_GRAY));
         if (events.isEmpty()) {
             sender.sendMessage(text("│ ", DARK_GRAY).append(text("(empty)", DARK_GRAY)));
+        } else if (durable.isPresent()) {
+            // loadRecentAudit is already newest-first
+            for (final ProvenanceEvent e : events) {
+                sender.sendMessage(formatEvent(e));
+            }
         } else {
-            // newest first feels better for forensics
+            // AuditLog.latest is chronological — reverse for forensics UI
             for (int i = events.size() - 1; i >= 0; i--) {
                 sender.sendMessage(formatEvent(events.get(i)));
             }
