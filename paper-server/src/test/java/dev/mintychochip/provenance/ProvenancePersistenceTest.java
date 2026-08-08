@@ -271,4 +271,48 @@ public class ProvenancePersistenceTest {
         ProvenanceWriter.flushAndClose();
         ProvenanceWriter.clearInstall();
     }
+
+    /**
+     * Crash mid-spill: DB still has stale live row, unacked spill has newer location.
+     * Install must replay spill synchronously before seeding LiveIndex so census is not stale.
+     */
+    @Test
+    public void liveSeedUsesPostReplaySpillLocationNotStaleDb() throws Exception {
+        final Path minty = tempDir.resolve("mintychochip");
+        Files.createDirectories(minty);
+        final UUID id = UUID.fromString("cccccccc-dddd-eeee-ffff-000000000001");
+        final String staleLoc = HAND.display();
+        final StackLocation spillLocation = StackLocation.playerSlot(PLAYER, 5);
+        final String spillLoc = spillLocation.display();
+
+        try (ProvenanceRepository repo = new ProvenanceRepository(minty.resolve("provenance.db"))) {
+            repo.upsertLive(new LiveRecord(id, "minecraft:diamond", staleLoc, 1, 100L, false));
+        }
+
+        final ProvenanceSpillJournal journal = new ProvenanceSpillJournal(minty.resolve("provenance-spill.log"));
+        journal.appendLive(new LiveRecord(id, "minecraft:diamond", spillLoc, 2, 200L, false));
+
+        // Wipe runtime census, then install: must sync-replay spill then seed.
+        ItemProvenance.clearAll();
+        ProvenanceWriter.install(tempDir, message -> {
+        });
+
+        final LiveEntry seeded = ItemProvenance.live().get(id).orElseThrow(
+            () -> new AssertionError("live must be seeded after install")
+        );
+        assertEquals(spillLoc, seeded.location().display(),
+            "LiveIndex must reflect post-spill-replay location, not stale DB row");
+        assertEquals(2, seeded.count(), "LiveIndex must reflect post-spill-replay count");
+
+        ProvenanceWriter.flushAndClose();
+        ProvenanceWriter.clearInstall();
+
+        // Durable store must also hold the replayed row.
+        try (ProvenanceRepository repo = new ProvenanceRepository(minty.resolve("provenance.db"))) {
+            final List<LiveRecord> alive = repo.loadAliveLive();
+            assertEquals(1, alive.size());
+            assertEquals(spillLoc, alive.getFirst().locationDisplay());
+            assertEquals(2, alive.getFirst().count());
+        }
+    }
 }

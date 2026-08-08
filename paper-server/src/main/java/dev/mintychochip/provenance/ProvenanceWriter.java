@@ -85,8 +85,12 @@ public final class ProvenanceWriter {
         LineageStore lineage = ItemProvenance.lineage();
         lineage.attachRepository(repo);
 
-        // Seed in-memory live census from durable last-seen rows before the writer
-        // thread starts (spill journal is ready; replay runs on that thread).
+        // Recover unacked spill on the install thread so the live seed below sees
+        // post-replay DB state (async drain would only update SQLite, leaving a
+        // stale census after crash with pending live spill rows).
+        this.replaySpill();
+
+        // Seed in-memory live census from durable last-seen rows after spill recover.
         if (repo != null) {
             for (final LiveRecord row : repo.loadAliveLive()) {
                 final StackLocation loc = ProvenanceRepository.parseLocationDisplay(row.locationDisplay());

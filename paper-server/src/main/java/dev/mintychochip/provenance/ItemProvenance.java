@@ -310,8 +310,12 @@ public final class ItemProvenance {
             rehydrateIfNeeded(stack, id, location);
             return false;
         }
+        final int prevCount = entry.count();
         entry.setCount(stack.getCount());
         if (!location.isConcrete() || entry.locations().contains(location)) {
+            if (entry.count() != prevCount) {
+                persistLive(entry, false);
+            }
             return false;
         }
         if (entry.locations().isEmpty()) {
@@ -320,6 +324,9 @@ public final class ItemProvenance {
             return false;
         }
         // Second concrete location for one live identity.
+        if (entry.count() != prevCount) {
+            persistLive(entry, false);
+        }
         final StackLocation existing = entry.locations().iterator().next();
         recordCollision(id, ProvenanceCollisionKind.DUPLICATE_LOCATION, existing, location);
         return true;
@@ -1048,6 +1055,8 @@ public final class ItemProvenance {
     ) {
         final LiveEntry entry = LIVE.get(id).orElse(null);
         if (entry != null) {
+            final int prevCount = entry.count();
+            final StackLocation prevLocation = entry.location();
             entry.setCount(stack.getCount());
             if (location.isConcrete() && !entry.locations().contains(location)) {
                 if (entry.locations().isEmpty()) {
@@ -1057,6 +1066,10 @@ public final class ItemProvenance {
                     final StackLocation existing = entry.locations().iterator().next();
                     recordCollision(id, ProvenanceCollisionKind.DUPLICATE_LOCATION, existing, location);
                 }
+            }
+            // Already in LIVE: persist when count or accepted location actually changes.
+            if (entry.count() != prevCount || !entry.location().equals(prevLocation)) {
+                persistLive(entry, false);
             }
             return;
         }
