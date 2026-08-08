@@ -1,0 +1,99 @@
+name: Release Alkahest
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure date version
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "$tag" =~ ^v([0-9]{4})\.([0-9]{2})\.([0-9]{2})\.([0-9]{1,2})$ ]]; then
+            echo "::error::Release tag must match vYYYY.MM.DD.N: $tag"
+            exit 1
+          fi
+
+          year="${BASH_REMATCH[1]}"
+          month="${BASH_REMATCH[2]}"
+          day="${BASH_REMATCH[3]}"
+          sequence_text="${BASH_REMATCH[4]}"
+          sequence=$((10#$sequence_text))
+          if (( sequence > 99 )); then
+            echo "::error::Release sequence must fit the two-digit numeric build suffix: $sequence_text"
+            exit 1
+          fi
+          if [[ "$(date -u -d "$year-$month-$day" +%Y.%m.%d 2>/dev/null)" != "$year.$month.$day" ]]; then
+            echo "::error::Release tag contains an invalid calendar date: $tag"
+            exit 1
+          fi
+
+          printf -v build_number '%s%s%s%02d' "$year" "$month" "$day" "$sequence"
+          if (( 10#$build_number > 2147483647 )); then
+            echo "::error::Numeric build number exceeds the manifest integer range: $build_number"
+            exit 1
+          fi
+
+          {
+            echo "RELEASE_VERSION=${tag#v}"
+            echo "BUILD_NUMBER=$build_number"
+            echo "BUILD_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_ENV"
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: 25
+          distribution: zulu
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Apply patches
+        run: |
+          git config --global user.email "no-reply@github.com"
+          git config --global user.name "GitHub Actions"
+          ./gradlew applyPatches --stacktrace --no-daemon
+
+      - name: Compile and package Paperclip
+        run: |
+          ./gradlew :paper-api:jar :paper-server:jar --stacktrace --no-daemon -PalkahestVersion="$RELEASE_VERSION"
+          ./gradlew createPaperclipJar --stacktrace --no-daemon -PalkahestVersion="$RELEASE_VERSION"
+
+      - name: Verify release jar
+        shell: bash
+        run: |
+          set -euo pipefail
+          jar_path="$(find paper-server/build/libs -maxdepth 1 -type f -name 'alkahest-paperclip-*.jar' -print -quit)"
+          if [[ -z "$jar_path" ]]; then
+            echo "::error::No Alkahest Paperclip jar was produced"
+            exit 1
+          fi
+          manifest="$(unzip -p "$jar_path" META-INF/MANIFEST.MF)"
+          [[ "$manifest" == *$'Brand-Id: mintychochip:alkahest'* ]]
+          [[ "$manifest" == *$'Brand-Name: Alkahest'* ]]
+          [[ "$manifest" == *"Specification-Version: $RELEASE_VERSION"* ]]
+          echo "PAPERCLIP_JAR=$jar_path" >> "$GITHUB_ENV"
+
+      - name: Publish GitHub release
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$PAPERCLIP_JAR" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Alkahest $RELEASE_VERSION" \
+            --generate-notes
