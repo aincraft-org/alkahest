@@ -29301,7 +29301,7 @@ index 09b6da207530987b483444cebeadc2f1c9a15247..3666c3efd188508153b6482db425648e
 +    // Paper end - block counting
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index a9302dcc5614595bffd377eb4f77b7af3798e2ba..00d1ba3e42076f0de52455d66c4e056fdc48cd7a 100644
+index 6b7a1716b8966d08fb393638f241eb6690a78691..b83daafed52cc6d00ec3100f8be08897ee84848c 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -164,7 +164,7 @@ public abstract class Entity
@@ -29652,7 +29652,7 @@ index a9302dcc5614595bffd377eb4f77b7af3798e2ba..00d1ba3e42076f0de52455d66c4e056f
      }
  
      private static float[] collectCandidateStepUpHeights(
-@@ -2826,17 +2974,106 @@ public abstract class Entity
+@@ -2864,17 +3012,106 @@ public abstract class Entity
              return false;
          }
  
@@ -29769,7 +29769,7 @@ index a9302dcc5614595bffd377eb4f77b7af3798e2ba..00d1ba3e42076f0de52455d66c4e056f
      }
  
      public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
-@@ -4443,15 +4680,17 @@ public abstract class Entity
+@@ -4481,15 +4718,17 @@ public abstract class Entity
      }
  
      public Iterable<Entity> getIndirectPassengers() {
@@ -29795,7 +29795,7 @@ index a9302dcc5614595bffd377eb4f77b7af3798e2ba..00d1ba3e42076f0de52455d66c4e056f
      }
  
      public int countPlayerPassengers() {
-@@ -4762,6 +5001,15 @@ public abstract class Entity
+@@ -4800,6 +5039,15 @@ public abstract class Entity
      }
  
      public final void setPosRaw(double x, double y, double z, boolean forceBoundingBoxUpdate) {
@@ -29811,7 +29811,7 @@ index a9302dcc5614595bffd377eb4f77b7af3798e2ba..00d1ba3e42076f0de52455d66c4e056f
          if (!checkPosition(this, x, y, z)) {
              return;
          }
-@@ -4911,6 +5159,12 @@ public abstract class Entity
+@@ -4949,6 +5197,12 @@ public abstract class Entity
  
      @Override
      public final void setRemoved(final Entity.RemovalReason reason, org.bukkit.event.entity.EntityRemoveEvent.@Nullable Cause cause) { // CraftBukkit - add Bukkit remove cause
@@ -29824,7 +29824,7 @@ index a9302dcc5614595bffd377eb4f77b7af3798e2ba..00d1ba3e42076f0de52455d66c4e056f
          org.bukkit.craftbukkit.event.CraftEventFactory.callEntityRemoveEvent(this, cause); // CraftBukkit
          final boolean alreadyRemoved = this.removalReason != null; // Paper - Folia schedulers
          if (this.removalReason == null) {
-@@ -4921,7 +5175,7 @@ public abstract class Entity
+@@ -4959,7 +5213,7 @@ public abstract class Entity
              this.stopRiding();
          }
  
@@ -29833,7 +29833,7 @@ index a9302dcc5614595bffd377eb4f77b7af3798e2ba..00d1ba3e42076f0de52455d66c4e056f
          this.levelCallback.onRemove(reason);
          this.onRemoval(reason);
          // Paper start - Folia schedulers
-@@ -4955,7 +5209,7 @@ public abstract class Entity
+@@ -4993,7 +5247,7 @@ public abstract class Entity
      public boolean shouldBeSaved() {
          return (this.removalReason == null || this.removalReason.shouldSave())
              && !this.isPassenger()
@@ -30308,10 +30308,10 @@ index 789547baacfaed25ea99406edc77f1a5901eb9bc..c708f4517ba1274db7046810044e69da
          this(setDirty, true, ImmutableList.of());
      }
 diff --git a/net/minecraft/world/entity/decoration/ArmorStand.java b/net/minecraft/world/entity/decoration/ArmorStand.java
-index 9c496533c311a13807d9a7e5d7ed1507e5f18657..9e4293c6df1851a852423b469577388d2254e169 100644
+index 53695de2fea0126e760a318e502b3e01e4a7aa36..48d5a57bf85e0b06e5390cc719ce0cc727072738 100644
 --- a/net/minecraft/world/entity/decoration/ArmorStand.java
 +++ b/net/minecraft/world/entity/decoration/ArmorStand.java
-@@ -207,7 +207,7 @@ public class ArmorStand extends LivingEntity {
+@@ -215,7 +215,7 @@ public class ArmorStand extends LivingEntity {
      @Override
      protected void pushEntities() {
          if (!this.level().paperConfig().entities.armorStands.doCollisionEntityLookups) return; // Paper - Option to prevent armor stands from doing entity lookups
@@ -30450,7 +30450,7 @@ index 892b338a2b0a185511c352ca2bb76ee3890836fd..cc938f43c4a5e947ed87ca2001cbaca4
  
      // Paper start - Affects Spawning API
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5ec85b3420 100644
+index a9fa6a98916afdb28358235eafb98d52be317023..2a6720547a25318a27ac939369c55d308f6f8d74 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -87,6 +87,7 @@ import net.minecraft.world.level.storage.LevelData;
@@ -31142,7 +31142,7 @@ index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5e
                  this.sendBlockUpdated(pos, oldState, blockState, updateFlags);
              }
  
-@@ -850,6 +1484,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -854,6 +1488,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          // Paper - Fix MC-117075 use removeAll - remove iterator in favour of indexed for loop, ensuring compile error if something uses iter incorrectly
          boolean tickBlockEntities = this.tickRateManager().runsNormally();
  
@@ -31150,7 +31150,7 @@ index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5e
          // Paper start - Fix MC-117075 use removeAll
          final it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<@Nullable TickingBlockEntity> toRemove = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>();
          toRemove.add(null);
-@@ -860,6 +1495,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -864,6 +1499,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
                  toRemove.add(ticker); // Paper - Fix MC-117075 use removeAll
              } else if (tickBlockEntities && this.shouldTickBlocksAt(ticker.getPos())) {
                  ticker.tick();
@@ -31162,7 +31162,7 @@ index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5e
              }
          }
  
-@@ -878,6 +1518,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -882,6 +1522,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
              entity.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
              // Paper end - Prevent block entity and entity crashes
          }
@@ -31170,7 +31170,7 @@ index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5e
      }
  
      // Paper start - Option to prevent armor stands from doing entity lookups
-@@ -885,7 +1526,14 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -889,7 +1530,14 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
      public boolean noCollision(@Nullable Entity entity, AABB box) {
          if (entity instanceof net.minecraft.world.entity.decoration.ArmorStand && !entity.level().paperConfig().entities.armorStands.doCollisionEntityLookups)
              return false;
@@ -31186,7 +31186,7 @@ index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5e
      }
      // Paper end - Option to prevent armor stands from doing entity lookups
  
-@@ -1030,7 +1678,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -1034,7 +1682,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          if (!this.isInValidBounds(pos)) {
              return null;
          } else {
@@ -31195,7 +31195,7 @@ index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5e
                  ? null
                  : this.getChunkAt(pos).getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
          }
-@@ -1110,20 +1758,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -1114,20 +1762,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
      @Override
      public List<Entity> getEntities(final @Nullable Entity except, final AABB bb, final Predicate<? super Entity> selector) {
          Profiler.get().incrementCounter("getEntities");
@@ -31223,7 +31223,7 @@ index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5e
      }
  
      @Override
-@@ -1139,33 +1782,94 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -1143,33 +1786,94 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          this.getEntities(type, bb, selector, output, Integer.MAX_VALUE);
      }
  
@@ -31338,7 +31338,7 @@ index dcd18bb652c4b5996d656a5b7b07ff51207563f5..fb8f045b426efad4ad6b41ff9c86fe5e
  
      public <T extends Entity> boolean hasEntities(final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector) {
          Profiler.get().incrementCounter("hasEntities");
-@@ -1474,13 +2178,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -1478,13 +2182,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
  
      // Paper start - allow patching this logic
      public final int getEntityCount() {
@@ -31377,7 +31377,7 @@ index 254a967292938a9ed6a0291bbc9cf6e971eeaf01..416646f15ceea04fbbb5a5b0044c2a49
  
      @Nullable ChunkAccess getChunkIfLoadedImmediately(int x, int z); // Paper - ifLoaded api (we need this since current impl blocks if the chunk is loading)
 diff --git a/net/minecraft/world/level/ServerExplosion.java b/net/minecraft/world/level/ServerExplosion.java
-index def5a92046a663e53b29f9863c541ddc30ee9d3a..91bb2ac15b9e9350552f4eeb9573c2f564854ce4 100644
+index 16b7d3f7fc5e116d2de2f71ae1f38aa7089e67c7..4cb786608a17485843b66aa6decf532d810784ef 100644
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
 @@ -54,6 +54,249 @@ public class ServerExplosion implements Explosion {
@@ -31780,7 +31780,7 @@ index def5a92046a663e53b29f9863c541ddc30ee9d3a..91bb2ac15b9e9350552f4eeb9573c2f5
      }
  
      private void hurtEntities() {
-@@ -341,6 +623,14 @@ public class ServerExplosion implements Explosion {
+@@ -347,6 +629,14 @@ public class ServerExplosion implements Explosion {
      }
  
      public int explode() {
@@ -31795,7 +31795,7 @@ index def5a92046a663e53b29f9863c541ddc30ee9d3a..91bb2ac15b9e9350552f4eeb9573c2f5
          this.level.gameEvent(this.source, GameEvent.EXPLODE, this.center);
          List<BlockPos> toBlow = this.calculateExplodedPositions();
          this.hurtEntities();
-@@ -355,6 +645,13 @@ public class ServerExplosion implements Explosion {
+@@ -361,6 +651,13 @@ public class ServerExplosion implements Explosion {
              this.createFire(toBlow);
          }
  
@@ -31809,7 +31809,7 @@ index def5a92046a663e53b29f9863c541ddc30ee9d3a..91bb2ac15b9e9350552f4eeb9573c2f5
          return toBlow.size();
      }
  
-@@ -437,12 +734,12 @@ public class ServerExplosion implements Explosion {
+@@ -443,12 +740,12 @@ public class ServerExplosion implements Explosion {
      // Paper start - Optimize explosions
      private float getBlockDensity(Vec3 vec3d, Entity entity) {
          if (!this.level.paperConfig().environment.optimizeExplosions) {
@@ -32256,7 +32256,7 @@ index d9849dfbe792128390941403220110fe87eb9fe3..c139f70bf9ddd3f995c0524dad15487e
  
      public interface NoiseBiomeSource {
 diff --git a/net/minecraft/world/level/block/Block.java b/net/minecraft/world/level/block/Block.java
-index 5d09a36718bb22022348a9ce8efe8a4767c21a8c..29f5182c8528bfdced6a3c2c145e58721e723777 100644
+index d9eb2674127d6d85f3c311040313be468e34d1ed..51aa505a81f136d1aacf02a7df61125a4365b731 100644
 --- a/net/minecraft/world/level/block/Block.java
 +++ b/net/minecraft/world/level/block/Block.java
 @@ -367,7 +367,7 @@ public class Block extends BlockBehaviour implements ItemLike {

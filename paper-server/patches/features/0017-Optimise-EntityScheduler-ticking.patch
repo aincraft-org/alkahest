@@ -66,10 +66,10 @@ index 6de2929fda582cc4ceecd7bfe0b440ac6608669d..2381f8571f6e614dba1cfb62a1d396be
          io.papermc.paper.adventure.providers.ClickCallbackProviderImpl.ADVENTURE_CLICK_MANAGER.handleQueue(this.tickCount); // Paper
          io.papermc.paper.adventure.providers.ClickCallbackProviderImpl.DIALOG_CLICK_MANAGER.handleQueue(this.tickCount); // Paper
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 700b5740229b5a97b8755c7d4205e8a99f229f9e..56dc9019708d74f92d43d8a9ed37fba7d82b1877 100644
+index 69925eeb9d843def8c02da050b2912705bbabe93..e68f70fb3ce6f35d20c19d5132fb771905d401ce 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -5226,6 +5226,11 @@ public abstract class Entity
+@@ -5264,6 +5264,11 @@ public abstract class Entity
          this.getBukkitEntity().taskScheduler.retire();
      }
      // Paper end - Folia schedulers

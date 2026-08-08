@@ -2347,10 +2347,10 @@ index fb36386c7a3e2cb03907d18f41e2c4fc4a3db7bb..96b9d17eea349d83c634fe45ee281612
          return toLevel.dimension() != Level.NETHER || this.getGameRules().get(GameRules.ALLOW_ENTERING_NETHER_USING_PORTALS);
      }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index f4386116d38e02f8feb3e8ec3f98af5ed8d0b466..d42f0b85b8bee558deebe36043dc32ef80356f5a 100644
+index 2dc2f5f869f03e97d1a75bedac04dabb07390b11..e0c0e211578d3120be2c7808cf74da0cabedbd35 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
-@@ -2161,6 +2161,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -2165,6 +2165,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
          return this.palettedContainerFactory;
      }
  

@@ -60,10 +60,10 @@ index 2381f8571f6e614dba1cfb62a1d396be9a065c1c..879f53a64e3070aca5f6c58a0e200b62
              profiler.push("tick");
  
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index a8da0c5b2f9b75216d6b93addabff744c6b10431..44a7590558fa73fb570f76ba7a4e7db1415d08f7 100644
+index 07a887ccf27e058dd1acbcc06b74a87e04185c46..179aab1e3f8863ab17e7eca839c32ee2cfb266e3 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -779,11 +779,17 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+@@ -804,11 +804,17 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
      }
  
      public ItemStack copy() {
@@ -104,7 +104,7 @@ index bb61b97a9619e76344bae5458bbdf2bc96e5494c..ae0df53c3be7ebcf48886adbedfaa2c0
          }
      }
 diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
-index 79f5ff289db0bd5bcdbe79e60e8114331efa68cf..fef616d7b92454a721f7a14941b62a8963080cc5 100644
+index 1b61c787658110340da30a5be1899d67bdda0529..a1d0e9ea315db9906e9688b5955a9af07563d18a 100644
 --- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
 @@ -142,6 +142,43 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
@@ -272,7 +272,16 @@ index 79f5ff289db0bd5bcdbe79e60e8114331efa68cf..fef616d7b92454a721f7a14941b62a89
 +            if (!origItemStack.isEmpty()) {
 +                origItemStack.setCount(originalItemCount - movedItemCount + remainingItemCount);
 +            }
-+
+ 
+-                org.bukkit.event.inventory.InventoryMoveItemEvent event = new org.bukkit.event.inventory.InventoryMoveItemEvent(
+-                    self.getOwner().getInventory(),
+-                    oitemstack,
+-                    destinationInventory,
+-                    true
+-                );
+-                if (!event.callEvent()) {
+-                    self.setItem(slot, original);
+-                    self.setCooldown(level.spigotConfig.hopperTransfer); // Delay hopper checks // Spigot
 +            ignoreBlockEntityUpdates = true;
 +            container.setItem(i, origItemStack);
 +            ignoreBlockEntityUpdates = false;
@@ -356,16 +365,7 @@ index 79f5ff289db0bd5bcdbe79e60e8114331efa68cf..fef616d7b92454a721f7a14941b62a89
 +            blockEntity.setCooldown(blockEntity.getLevel().spigotConfig.hopperTransfer);
 +        }
 +    }
- 
--                org.bukkit.event.inventory.InventoryMoveItemEvent event = new org.bukkit.event.inventory.InventoryMoveItemEvent(
--                    self.getOwner().getInventory(),
--                    oitemstack,
--                    destinationInventory,
--                    true
--                );
--                if (!event.callEvent()) {
--                    self.setItem(slot, original);
--                    self.setCooldown(level.spigotConfig.hopperTransfer); // Delay hopper checks // Spigot
++
 +    private static boolean allMatch(Container container, Direction direction, java.util.function.BiPredicate<ItemStack, Integer> test) {
 +        if (container instanceof WorldlyContainer worldlyContainer) {
 +            for (int slot : worldlyContainer.getSlotsForFace(direction)) {
@@ -514,17 +514,15 @@ index 79f5ff289db0bd5bcdbe79e60e8114331efa68cf..fef616d7b92454a721f7a14941b62a89
          ItemStack copy = entity.getItem().copy();
          ItemStack result = addItem(null, container, copy, null);
          if (result.isEmpty()) {
-@@ -440,7 +585,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -440,6 +585,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
                      itemStack = itemStack.split(container.getMaxStackSize());
                  }
                  // Spigot end
 +                ignoreBlockEntityUpdates = true; // Paper - Perf: Optimize Hoppers
                  container.setItem(slot, itemStack);
-+                ignoreBlockEntityUpdates = false; // Paper - Perf: Optimize Hoppers
-                 itemStack = leftover; // Paper - Make hoppers respect inventory max stack size
-                 success = true;
-             } else if (canMergeItems(current, itemStack)) {
-@@ -526,14 +673,22 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+                 ignoreBlockEntityUpdates = false; // Paper - Perf: Optimize Hoppers
+                 // mintychochip start - item provenance: identity moved into empty container slot
+@@ -553,14 +699,22 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      public static @Nullable Container getContainerAt(final Level level, final BlockPos pos) {
@@ -549,7 +547,7 @@ index 79f5ff289db0bd5bcdbe79e60e8114331efa68cf..fef616d7b92454a721f7a14941b62a89
              result = getEntityContainer(level, x, y, z);
          }
  
-@@ -557,14 +712,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+@@ -584,14 +738,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
      }
  
      private static @Nullable Container getEntityContainer(final Level level, final double x, final double y, final double z) {
