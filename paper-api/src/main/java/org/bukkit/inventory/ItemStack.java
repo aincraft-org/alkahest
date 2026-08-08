@@ -193,6 +193,38 @@ public class ItemStack implements Cloneable, ConfigurationSerializable, Translat
         return this.craftDelegate.getType(); // Paper - delegate
     }
 
+    // mintychochip start - custom block item identity (additive; getType() remains vanilla base)
+    /**
+     * Logical custom-block id stamped on this stack, if any.
+     *
+     * <p>Does <strong>not</strong> replace {@link #getType()}, which still returns the vanilla
+     * base material (e.g. paper) used as the inventory carrier.
+     * {@link dev.mintychochip.customblock.CustomBlockDefinition} implements {@link Material}
+     * for registry/API use; that is separate from the live base material returned here.
+     *
+     * @return custom block key, or empty if this is a normal vanilla item
+     */
+    public @NotNull java.util.Optional<org.bukkit.NamespacedKey> getCustomKey() {
+        return dev.mintychochip.customblock.CustomBlocks.keyOf(this);
+    }
+
+    /**
+     * Registered custom-block definition for this stack, if stamped and registered.
+     *
+     * @return definition from the active catalog, or empty
+     */
+    public @NotNull java.util.Optional<dev.mintychochip.customblock.CustomBlockDefinition> getCustomBlock() {
+        return dev.mintychochip.customblock.CustomBlocks.of(this);
+    }
+
+    /**
+     * @return {@code true} if this stack is stamped as a custom block item
+     */
+    public boolean isCustomBlockItem() {
+        return dev.mintychochip.customblock.CustomBlocks.isCustomBlockItem(this);
+    }
+    // mintychochip end - custom block item identity
+
     /**
      * Sets the type of this item
      * <p>

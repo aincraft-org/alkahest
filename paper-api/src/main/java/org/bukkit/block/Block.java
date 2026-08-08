@@ -101,6 +101,38 @@ public interface Block extends Metadatable, Translatable, net.kyori.adventure.tr
     @NotNull
     Material getType();
 
+    // mintychochip start - custom block identity (additive; getType() remains vanilla carrier)
+    /**
+     * Logical custom-block id at this position, if any.
+     *
+     * <p>Does <strong>not</strong> replace {@link #getType()}, which still returns the vanilla
+     * carrier material (chorus plant, glass fake-collision, mushroom block, etc.).
+     * {@link dev.mintychochip.customblock.CustomBlockDefinition} implements {@link Material}
+     * for registry/API use; that is separate from the live carrier returned here.
+     *
+     * @return custom block key, or empty if this is a normal vanilla block
+     */
+    default @NotNull java.util.Optional<org.bukkit.NamespacedKey> getCustomKey() {
+        return dev.mintychochip.customblock.CustomBlocks.keyOf(this);
+    }
+
+    /**
+     * Registered custom-block definition at this position, if any.
+     *
+     * @return definition from the active catalog, or empty
+     */
+    default @NotNull java.util.Optional<dev.mintychochip.customblock.CustomBlockDefinition> getCustomBlock() {
+        return dev.mintychochip.customblock.CustomBlocks.of(this);
+    }
+
+    /**
+     * @return {@code true} if a custom-block identity is present at this position
+     */
+    default boolean isCustomBlock() {
+        return dev.mintychochip.customblock.CustomBlocks.isCustomBlock(this);
+    }
+    // mintychochip end - custom block identity
+
     /**
      * Gets the light level between 0-15
      *
