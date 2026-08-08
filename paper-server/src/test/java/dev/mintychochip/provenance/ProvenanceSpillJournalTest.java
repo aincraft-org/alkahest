@@ -2,10 +2,14 @@ package dev.mintychochip.provenance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.support.environment.Normal;
@@ -132,5 +136,74 @@ public class ProvenanceSpillJournalTest {
         final ProvenanceSpillJournal journal = new ProvenanceSpillJournal(path);
         assertTrue(journal.readAll().isEmpty());
         assertEquals(0L, journal.sizeBytes());
+    }
+
+    @Test
+    public void readAllSkipsTruncatedTrailingLine() throws Exception {
+        final Path path = tempDir.resolve("provenance-spill.log");
+        final ProvenanceSpillJournal journal = new ProvenanceSpillJournal(path);
+        final UUID id = UUID.randomUUID();
+        final LineageNode node = new LineageNode(
+            id, "minecraft:stone", ProvenanceSource.BLOCK_DROP, List.of(), 100L, null
+        );
+        journal.appendLineage(node);
+
+        // Simulate crash mid-write: incomplete JSON on the last line.
+        Files.writeString(
+            path,
+            "{\"k\":\"live\",\"id\":\"" + UUID.randomUUID() + "\",\"item\":\"minecraft:dirt",
+            StandardCharsets.UTF_8,
+            StandardOpenOption.APPEND
+        );
+
+        final List<ProvenanceSpillJournal.SpillRecord> records = journal.readAll();
+        assertEquals(1, records.size());
+        final ProvenanceSpillJournal.SpillRecord.Lineage lineage =
+            assertInstanceOf(ProvenanceSpillJournal.SpillRecord.Lineage.class, records.get(0));
+        assertEquals(id, lineage.node().id());
+    }
+
+    @Test
+    public void readAllThrowsOnCorruptMiddleLine() throws Exception {
+        final Path path = tempDir.resolve("provenance-spill.log");
+        final ProvenanceSpillJournal journal = new ProvenanceSpillJournal(path);
+        final UUID first = UUID.randomUUID();
+        final UUID last = UUID.randomUUID();
+        journal.appendLineage(new LineageNode(
+            first, "minecraft:stone", ProvenanceSource.BLOCK_DROP, List.of(), 100L, null
+        ));
+        Files.writeString(
+            path,
+            "not-json-at-all\n",
+            StandardCharsets.UTF_8,
+            StandardOpenOption.APPEND
+        );
+        journal.appendLineage(new LineageNode(
+            last, "minecraft:dirt", ProvenanceSource.BLOCK_DROP, List.of(), 200L, null
+        ));
+
+        assertThrows(IOException.class, journal::readAll);
+    }
+
+    @Test
+    public void deadLineageMissingReasonStaysDeadWithDestroyed() throws Exception {
+        final Path path = tempDir.resolve("provenance-spill.log");
+        // Hand-written dead record without death_reason must not revive as alive.
+        final UUID id = UUID.randomUUID();
+        Files.writeString(
+            path,
+            "{\"k\":\"lineage\",\"id\":\"" + id + "\",\"item\":\"minecraft:apple\","
+                + "\"source\":\"CRAFT\",\"parents\":[],\"born\":10,\"dead\":true,\"death_epoch\":20}\n",
+            StandardCharsets.UTF_8
+        );
+
+        final ProvenanceSpillJournal journal = new ProvenanceSpillJournal(path);
+        final List<ProvenanceSpillJournal.SpillRecord> records = journal.readAll();
+        assertEquals(1, records.size());
+        final LineageNode loaded =
+            ((ProvenanceSpillJournal.SpillRecord.Lineage) records.get(0)).node();
+        assertTrue(loaded.dead());
+        assertEquals(ProvenanceReason.DESTROYED, loaded.deathReason());
+        assertEquals(20L, loaded.deathEpochMs());
     }
 }

@@ -65,9 +65,11 @@ public final class ProvenanceSpillJournal {
         }
         o.addProperty("dead", node.dead());
         if (node.dead()) {
-            if (node.deathReason() != null) {
-                o.addProperty("death_reason", node.deathReason().name());
-            }
+            // Always persist a reason so replay cannot silently revive the node.
+            final ProvenanceReason reason = node.deathReason() != null
+                ? node.deathReason()
+                : ProvenanceReason.DESTROYED;
+            o.addProperty("death_reason", reason.name());
             o.addProperty("death_epoch", node.deathEpochMs());
         }
         appendLine(o);
@@ -131,12 +133,25 @@ public final class ProvenanceSpillJournal {
             return List.of();
         }
         final List<String> lines = Files.readAllLines(this.path, StandardCharsets.UTF_8);
-        final List<SpillRecord> out = new ArrayList<>(lines.size());
+        final List<String> nonBlank = new ArrayList<>(lines.size());
         for (final String line : lines) {
-            if (line == null || line.isBlank()) {
-                continue;
+            if (line != null && !line.isBlank()) {
+                nonBlank.add(line.trim());
             }
-            out.add(parseLine(line.trim()));
+        }
+        final List<SpillRecord> out = new ArrayList<>(nonBlank.size());
+        for (int i = 0; i < nonBlank.size(); i++) {
+            final String line = nonBlank.get(i);
+            final boolean last = i == nonBlank.size() - 1;
+            try {
+                out.add(parseLine(line));
+            } catch (final IOException ex) {
+                // Truncated write from crash: drop incomplete trailing line, keep prior records.
+                if (last) {
+                    break;
+                }
+                throw ex;
+            }
         }
         return List.copyOf(out);
     }
@@ -207,11 +222,9 @@ public final class ProvenanceSpillJournal {
             stringOrNull(o, "holder")
         );
         if (o.has("dead") && o.get("dead").getAsBoolean()) {
-            final String reason = stringOrNull(o, "death_reason");
             final long deathEpoch = o.has("death_epoch") ? o.get("death_epoch").getAsLong() : 0L;
-            if (reason != null) {
-                node.markDead(ProvenanceReason.valueOf(reason), deathEpoch);
-            }
+            // Missing/invalid reason must not leave the node alive after dead=true.
+            node.markDead(parseDeathReason(stringOrNull(o, "death_reason")), deathEpoch);
         }
         return node;
     }
@@ -318,6 +331,17 @@ public final class ProvenanceSpillJournal {
             return StackLocation.unknown();
         }
         return StackLocation.labeled(raw);
+    }
+
+    private static @NotNull ProvenanceReason parseDeathReason(final @Nullable String raw) {
+        if (raw == null || raw.isBlank()) {
+            return ProvenanceReason.DESTROYED;
+        }
+        try {
+            return ProvenanceReason.valueOf(raw);
+        } catch (final IllegalArgumentException ignored) {
+            return ProvenanceReason.DESTROYED;
+        }
     }
 
     private static @NotNull String requireString(final JsonObject o, final String key) {
