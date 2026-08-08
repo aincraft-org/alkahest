@@ -94,7 +94,7 @@
      }
  
      public void spawnChildFromBreeding(final ServerLevel level, final Animal partner) {
-@@ -208,23 +_,58 @@
+@@ -208,23 +_,61 @@
          if (offspring != null) {
              offspring.setBaby(true);
              offspring.snapTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
@@ -123,6 +123,9 @@
 +                return;
 +            }
 +            experience = entityBreedEvent.getExperience();
++            // mintychochip start - phenotype → registry variant on child
++            dev.mintychochip.genetics.AnimalGenetics.applyChildAppearance(offspring);
++            // mintychochip end - phenotype → registry variant on child
 +
 +            this.finalizeSpawnChildFromBreeding(level, partner, offspring, experience);
 +            level.addFreshEntityWithPassengers(offspring, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING);

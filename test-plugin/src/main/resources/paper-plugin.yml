@@ -1,7 +1,7 @@
 name: Paper-Test-Plugin
 version: ${version}
 main: io.papermc.testplugin.TestPlugin
-description: Paper Test Plugin
+description: Paper Test Plugin (includes mintychochip genetics demo)
 author: PaperMC
 api-version: ${apiversion}
 load: STARTUP
@@ -9,4 +9,8 @@ bootstrapper: io.papermc.testplugin.TestPluginBootstrap
 loader: io.papermc.testplugin.TestPluginLoader
 defaultPerm: FALSE
 permissions:
+  papertest.geneticsdemo:
+    description: Run offline genetics pure-API demo
+    default: true
+# Paper plugins register commands in code via JavaPlugin#registerCommand (not YAML).
 dependencies:
