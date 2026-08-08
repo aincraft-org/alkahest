@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -482,6 +483,19 @@ public final class ProvenanceWriter {
             + " audit-dropped=" + w.auditDropped.get()
             + " store=" + (w.repository != null && !w.repository.isFailed() ? "sqlite" : "in-memory")
             + " last-error=" + error;
+    }
+
+    /**
+     * Recent durable audit events (newest-first) when the SQLite store is healthy.
+     * Empty when the writer is not installed or the repository is unavailable/failed —
+     * callers should fall back to {@link AuditLog#latest(int)} (chronological).
+     */
+    public static Optional<List<ProvenanceEvent>> recentAudit(final int n) {
+        final ProvenanceWriter w = instance;
+        if (w == null || w.repository == null || w.repository.isFailed()) {
+            return Optional.empty();
+        }
+        return Optional.of(w.repository.loadRecentAudit(n));
     }
 
     // -------------------------------------------------------------------------
