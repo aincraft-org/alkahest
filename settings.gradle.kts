@@ -20,7 +20,7 @@ if (!file(".git").exists()) {
          zip from GitHub.
          
          Built Alkahest jars are available for download at
-         https://github.com/mintychochip/paper
+         https://github.com/mintychochip/alkahest
          
          See https://github.com/PaperMC/Paper/blob/main/CONTRIBUTING.md
          for further information on building and modifying Paper.
@@ -59,11 +59,13 @@ gradle.lifecycle.beforeProject {
     val mcVersion = providers.gradleProperty("mcVersion").get().trim()
     val alkahestVersionChannel = providers.gradleProperty("channel").get().trim()
     val alkahestBuildNumber = providers.environmentVariable("BUILD_NUMBER").orNull?.trim()?.toInt()
-    val versionString = if (alkahestBuildNumber == null) {
-        "$mcVersion.local-SNAPSHOT"
-    } else {
-        "$mcVersion.build.$alkahestBuildNumber-${alkahestVersionChannel.lowercase()}"
-    }
+    val alkahestVersionOverride = providers.gradleProperty("alkahestVersion").orNull?.trim()
+    val versionString = alkahestVersionOverride?.takeIf { it.isNotEmpty() }
+        ?: if (alkahestBuildNumber == null) {
+            "$mcVersion.local-SNAPSHOT"
+        } else {
+            "$mcVersion.build.$alkahestBuildNumber-${alkahestVersionChannel.lowercase()}"
+        }
     version = versionString
 }
 

@@ -10,7 +10,7 @@ body:
         Before submitting this issue, please ensure the following:
 
         1. You are using the latest build of Alkahest (this fork).
-        2. You have searched to confirm there isn't [an existing open issue](https://github.com/mintychochip/paper/issues?q=is%3Aissue%20state%3Aopen%20type%3ABug) on this topic.
+        2. You have searched to confirm there isn't [an existing open issue](https://github.com/mintychochip/alkahest/issues?q=is%3Aissue%20state%3Aopen%20type%3ABug) on this topic.
         3. Your version of Minecraft is supported by Alkahest.
 
         If you're unsure whether you've encountered a bug, feel free to ask in the server's issue tracker.
