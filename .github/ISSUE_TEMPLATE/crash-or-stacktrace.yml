@@ -9,12 +9,11 @@ body:
       value: |
         Before submitting this issue, please ensure the following:
 
-        1. You are running the latest version of Paper from [our downloads page](https://papermc.io/downloads/paper).
-        2. Your version of Minecraft is supported by Paper.
+        1. You are running the latest build of Alkahest (this fork).
+        2. Your version of Minecraft is supported by Alkahest.
 
-        If your server crash log contains `DO NOT REPORT THIS TO PAPER`, please ask in our
-        [Discord](https://discord.gg/papermc) before opening this issue. These messages are informing you of server
-        lag and providing debug information.
+        If your server crash log contains `DO NOT REPORT THIS TO PAPER`, please ask in the server's issue tracker
+        before opening this issue. These messages are informing you of server lag and providing debug information.
 
   - type: textarea
     attributes:

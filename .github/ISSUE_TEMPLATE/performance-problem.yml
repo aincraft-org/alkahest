@@ -10,15 +10,15 @@ body:
       value: |
         Before submitting this issue, please ensure the following:
 
-        1. You are running the latest version of Paper from [our downloads page](https://papermc.io/downloads/paper).
-        2. You searched for and ensured there isn't already [an open issue](https://github.com/PaperMC/Paper/issues?q=is%3Aissue%20state%3Aopen%20type%3ABug) regarding this.
-        3. Your version of Minecraft is supported by Paper.
+        1. You are running the latest build of Alkahest (this fork).
+        2. You searched for and ensured there isn't already [an open issue](https://github.com/mintychochip/paper/issues?q=is%3Aissue%20state%3Aopen%20type%3ABug) regarding this.
+        3. Your version of Minecraft is supported by Alkahest.
 
   - type: markdown
     attributes:
       value: |
         Before creating an issue regarding server performance, please consider reaching out for support in the
-        `#paper-help` channel of [our Discord](https://discord.gg/papermc)!
+        server's issue tracker!
 
   - type: input
     attributes:
@@ -26,7 +26,7 @@ body:
       description: |
         Please provide all profiles as links rather than screenshots. Screenshots limit our ability to investigate the root cause of the issue.
 
-        For more information, see our [profiling documentation](https://docs.papermc.io/paper/profiling).
+        For more information, see [Paper's profiling documentation](https://docs.papermc.io/paper/profiling).
       placeholder: "Example: https://spark.lucko.me/XsN0hxGfsi"
     validations:
       required: true

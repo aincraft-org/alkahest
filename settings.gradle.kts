@@ -13,14 +13,14 @@ if (!file(".git").exists()) {
     val errorText = """
         
         =====================[ ERROR ]=====================
-         The Paper project directory is not a properly cloned Git repository.
+         The Alkahest project directory is not a properly cloned Git repository.
          
-         In order to build Paper from source you must clone
-         the Paper repository using Git, not download a code
+         In order to build Alkahest from source you must clone
+         the Alkahest repository using Git, not download a code
          zip from GitHub.
          
-         Built Paper jars are available for download at
-         https://papermc.io/downloads/paper
+         Built Alkahest jars are available for download at
+         https://github.com/mintychochip/paper
          
          See https://github.com/PaperMC/Paper/blob/main/CONTRIBUTING.md
          for further information on building and modifying Paper.
@@ -29,7 +29,7 @@ if (!file(".git").exists()) {
     error(errorText)
 }
 
-rootProject.name = "paper"
+rootProject.name = "alkahest"
 
 for (name in listOf("paper-api", "paper-server")) {
     include(name)
@@ -57,12 +57,12 @@ fun optionalInclude(name: String, op: (ProjectDescriptor.() -> Unit)? = null) {
 
 gradle.lifecycle.beforeProject {
     val mcVersion = providers.gradleProperty("mcVersion").get().trim()
-    val paperVersionChannel = providers.gradleProperty("channel").get().trim()
-    val paperBuildNumber = providers.environmentVariable("BUILD_NUMBER").orNull?.trim()?.toInt()
-    val versionString = if (paperBuildNumber == null) {
+    val alkahestVersionChannel = providers.gradleProperty("channel").get().trim()
+    val alkahestBuildNumber = providers.environmentVariable("BUILD_NUMBER").orNull?.trim()?.toInt()
+    val versionString = if (alkahestBuildNumber == null) {
         "$mcVersion.local-SNAPSHOT"
     } else {
-        "$mcVersion.build.$paperBuildNumber-${paperVersionChannel.lowercase()}"
+        "$mcVersion.build.$alkahestBuildNumber-${alkahestVersionChannel.lowercase()}"
     }
     version = versionString
 }

@@ -119,15 +119,8 @@ jobs:
         if: fromJSON(steps.determine.outputs.result).action == 'paperclip'
         uses: actions/upload-artifact@v7
         with:
-          name: paper-${{ fromJSON(steps.determine.outputs.result).pr }}
-          path: paper-server/build/libs/paper-paperclip-*.jar
-
-      - name: Publish Artifacts
-        if: fromJSON(steps.determine.outputs.result).action == 'paperclip'
-        uses: PaperMC/action-pr-publishing/upload@paper
-        with:
-          # TODO fallback for failing javadoc
-          publishing-task: ":paper-api:publishAllPublicationsTo_githubPackages_PRsRepository publishDevBundlePublicationTo_githubPackages_PRsRepository -PpublishDevBundle"
+          name: alkahest-${{ fromJSON(steps.determine.outputs.result).pr }}
+          path: paper-server/build/libs/alkahest-paperclip-*.jar
   event_file:
     name: "Event File"
     # Only run on PRs if the source branch is on someone else's repo

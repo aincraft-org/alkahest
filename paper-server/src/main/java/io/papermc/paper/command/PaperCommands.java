@@ -25,6 +25,7 @@ public final class PaperCommands {
         COMMANDS.put("paper", new PaperCommand("paper"));
 
         COMMANDS.forEach((s, command) -> {
+            // mintychochip - keep upstream "Paper" owner string for plugin compatibility
             server.server.getCommandMap().register(s, "Paper", command);
         });
     }
@@ -40,7 +41,7 @@ public final class PaperCommands {
         io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.registerWithFlagsInternal(
             null,
             namespace,
-            "Paper",
+            "Paper", // mintychochip - keep upstream owner string for plugin compatibility
             node,
             description,
             aliases,

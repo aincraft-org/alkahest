@@ -43,15 +43,6 @@ subprojects {
         mavenCentral()
         maven(paperMavenPublicUrl)
     }
-
-    extensions.configure<PublishingExtension> {
-        repositories {
-            maven("https://artifactory.papermc.io/artifactory/releases/") {
-                name = "paperReleases"
-                credentials(PasswordCredentials::class)
-            }
-        }
-    }
 }
 
 tasks.register("printMinecraftVersion") {
@@ -61,9 +52,9 @@ tasks.register("printMinecraftVersion") {
     }
 }
 
-tasks.register("printPaperVersion") {
-    val paperVersion = provider { project.version }
+tasks.register("printAlkahestVersion") {
+    val alkahestVersion = provider { project.version }
     doLast {
-        println(paperVersion.get())
+        println(alkahestVersion.get())
     }
 }

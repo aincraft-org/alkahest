@@ -21,7 +21,7 @@ public final class PaperConsole extends SimpleTerminalConsole {
     @Override
     protected LineReader buildReader(LineReaderBuilder builder) {
         builder
-                .appName("Paper")
+                .appName("Alkahest") // mintychochip - brand
                 .variable(LineReader.HISTORY_FILE, PaperCacheDir.moveFromServerRootAndGet(".console_history", "console_history"))
                 .completer(new ConsoleCommandCompleter(this.server))
                 .option(LineReader.Option.COMPLETE_IN_WORD, true);
