@@ -66,5 +66,5 @@ The inherited `Build Paper` and `publish_pr.yml` workflows remain unchanged. The
 - Tag `v2026.08.08.1` exists on `origin` and points at the pushed release commit.
 - GitHub Actions completes the tagged release workflow successfully.
 - GitHub Release `Alkahest 2026.08.08.1` exists with one Alkahest Paperclip jar asset.
-- The jar manifest reports `Brand-Id: mintychochip:alkahest`, `Brand-Name: Alkahest`, and `Specification-Version: 2026.08.08.1`.
+- The packaged server manifest inside the Paperclip build reports `Brand-Id: mintychochip:alkahest`, `Brand-Name: Alkahest`, and `Specification-Version: 2026.08.08.1`; the outer Paperclip launcher is the published asset.
 - No command pushes to or creates a branch on `upstream`.

@@ -181,16 +181,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          jar_path="$(find paper-server/build/libs -maxdepth 1 -type f -name 'alkahest-paperclip-*.jar' -print -quit)"
-          if [[ -z "$jar_path" ]]; then
+          paperclip_jar="$(find paper-server/build/libs -maxdepth 1 -type f -name 'alkahest-paperclip-*.jar' -print -quit)"
+          if [[ -z "$paperclip_jar" ]]; then
             echo "::error::No Alkahest Paperclip jar was produced"
             exit 1
           fi
-          manifest="$(unzip -p "$jar_path" META-INF/MANIFEST.MF)"
+          server_jar="paper-server/build/libs/paper-server-${RELEASE_VERSION}.jar"
+          if [[ ! -f "$server_jar" ]]; then
+            echo "::error::No packaged Alkahest server jar was produced for $RELEASE_VERSION"
+            exit 1
+          fi
+          manifest="$(unzip -p "$server_jar" META-INF/MANIFEST.MF)"
           [[ "$manifest" == *$'Brand-Id: mintychochip:alkahest'* ]]
           [[ "$manifest" == *$'Brand-Name: Alkahest'* ]]
           [[ "$manifest" == *"Specification-Version: $RELEASE_VERSION"* ]]
-          echo "PAPERCLIP_JAR=$jar_path" >> "$GITHUB_ENV"
+          echo "PAPERCLIP_JAR=$paperclip_jar" >> "$GITHUB_ENV"
 
       - name: Publish GitHub release
         run: |
@@ -281,13 +286,13 @@ BUILD_STARTED_AT=2026-08-08T00:00:00Z \
 ./gradlew createPaperclipJar --no-daemon --stacktrace -PalkahestVersion=2026.08.08.1
 ```
 
-Resolve the single `paper-server/build/libs/alkahest-paperclip-*.jar`, then inspect its manifest:
+Resolve the single `paper-server/build/libs/alkahest-paperclip-2026.08.08.1.jar` and the matching packaged server jar, then inspect the server jar manifest:
 
 ```bash
-unzip -p paper-server/build/libs/alkahest-paperclip-*.jar META-INF/MANIFEST.MF
+unzip -p paper-server/build/libs/paper-server-2026.08.08.1.jar META-INF/MANIFEST.MF
 ```
 
-The manifest must contain `Brand-Id: mintychochip:alkahest`, `Brand-Name: Alkahest`, `Specification-Version: 2026.08.08.1`, and `Build-Number: 2026080801`. The pre-existing `./gradlew :paper-api:test --no-daemon` annotation-audit failure remains recorded and is not relabeled as a release failure.
+The packaged server manifest must contain `Brand-Id: mintychochip:alkahest`, `Brand-Name: Alkahest`, `Specification-Version: 2026.08.08.1`, and `Build-Number: 2026080801`. The Paperclip jar is the release asset; its outer launcher manifest does not carry the server implementation metadata. The pre-existing `./gradlew :paper-api:test --no-daemon` annotation-audit failure remains recorded and is not relabeled as a release failure.
 
 - [ ] **Step 2: Confirm the implementation worktree is clean and remotes are known**
 
