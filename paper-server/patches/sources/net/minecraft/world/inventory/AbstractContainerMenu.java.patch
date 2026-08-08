@@ -212,11 +212,14 @@
                      } else {
                          player.drop(this.getCarried().split(1), true);
                      }
-@@ -460,7 +_,23 @@
+@@ -460,7 +_,26 @@
                          } else if (ItemStack.isSameItemSameComponents(clicked, carried)) {
                              Optional<ItemStack> newCarried = slot.tryRemove(clicked.getCount(), carried.getMaxStackSize() - carried.getCount(), player);
                              newCarried.ifPresent(itemsTaken -> {
-+                                // mintychochip start - item provenance: menu merge into cursor
++                                // mintychochip start - item provenance: stamp craft before merge into cursor
++                                if (slot instanceof ResultSlot resultSlot) {
++                                    resultSlot.stampCraftResult(player, itemsTaken);
++                                }
 +                                final java.util.Optional<java.util.UUID> absorbedId =
 +                                    dev.mintychochip.provenance.StackStamp.readId(itemsTaken);
 +                                final int moved = itemsTaken.getCount();
@@ -301,7 +304,7 @@
          boolean anythingChanged = false;
          int destSlot = startSlot;
          if (backwards) {
-@@ -646,18 +_,27 @@
+@@ -646,18 +_,57 @@
              while (!itemStack.isEmpty() && (backwards ? destSlot >= startSlot : destSlot < endSlot)) {
                  Slot slot = this.slots.get(destSlot);
                  ItemStack target = slot.getItem();
@@ -314,16 +317,46 @@
                      int totalStack = target.getCount() + itemStack.getCount();
                      int maxStackSize = slot.getMaxStackSize(target);
                      if (totalStack <= maxStackSize) {
++                        // mintychochip start - item provenance: quick-move full merge
++                        final java.util.Optional<java.util.UUID> absorbedId =
++                            isCheck ? java.util.Optional.empty() : dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                        final int moved = itemStack.getCount();
++                        // mintychochip end - item provenance
                          itemStack.setCount(0);
                          target.setCount(totalStack);
 +                        if (!isCheck) { // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
++                        // mintychochip start - item provenance
++                        dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
++                            target,
++                            itemStack,
++                            absorbedId,
++                            moved,
++                            dev.mintychochip.provenance.StackLocation.labeled("quick-move-src"),
++                            dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index)
++                        );
++                        // mintychochip end - item provenance
                          slot.setChanged();
 +                        } // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
                          anythingChanged = true;
                      } else if (target.getCount() < maxStackSize) {
++                        // mintychochip start - item provenance: quick-move partial merge
++                        final java.util.Optional<java.util.UUID> absorbedId =
++                            isCheck ? java.util.Optional.empty() : dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                        final int moved = maxStackSize - target.getCount();
++                        // mintychochip end - item provenance
                          itemStack.shrink(maxStackSize - target.getCount());
                          target.setCount(maxStackSize);
 +                        if (!isCheck) { // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
++                        // mintychochip start - item provenance
++                        dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
++                            target,
++                            itemStack,
++                            absorbedId,
++                            moved,
++                            dev.mintychochip.provenance.StackLocation.labeled("quick-move-src"),
++                            dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index)
++                        );
++                        // mintychochip end - item provenance
                          slot.setChanged();
 +                        } // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
                          anythingChanged = true;

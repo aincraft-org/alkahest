@@ -86,6 +86,57 @@ public class ItemProvenanceTest {
     }
 
     @Test
+    public void onCraftedIsIdempotentWhenAlreadyCraftStamped() {
+        // Shift-click stamps before moveItemStackTo; onTake must not mint a second CRAFT id.
+        final ItemStack sticks = new ItemStack(Items.STICK, 4);
+        final UUID stickId = ItemProvenance.birth(sticks, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        final ItemStack planks = new ItemStack(Items.OAK_PLANKS, 4);
+        ItemProvenance.onCrafted(planks, List.of(stickId), HAND);
+        final UUID firstId = StackStamp.readId(planks).orElseThrow();
+        assertEquals(ProvenanceSource.CRAFT, StackStamp.read(planks).orElseThrow().source());
+
+        ItemProvenance.onCrafted(planks, List.of(stickId), HAND);
+        assertEquals(firstId, StackStamp.readId(planks).orElseThrow());
+        assertEquals(ProvenanceSource.CRAFT, StackStamp.read(planks).orElseThrow().source());
+        assertEquals(List.of(stickId), StackStamp.read(planks).orElseThrow().parents());
+    }
+
+    @Test
+    public void unstampedResultBecomesCraftNotLegacy() {
+        // Simulates the craft path for a fresh recipe result (no prior LEGACY stamp).
+        final ItemStack log = new ItemStack(Items.OAK_LOG, 1);
+        final UUID logId = ItemProvenance.birth(log, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        final ItemStack planks = new ItemStack(Items.OAK_PLANKS, 4); // unstamped recipe output
+        assertTrue(StackStamp.read(planks).isEmpty());
+
+        ItemProvenance.onCrafted(planks, List.of(logId), HAND);
+        assertEquals(ProvenanceSource.CRAFT, StackStamp.read(planks).orElseThrow().source());
+        assertNotEquals(ProvenanceSource.LEGACY, StackStamp.read(planks).orElseThrow().source());
+        assertEquals(List.of(logId), StackStamp.read(planks).orElseThrow().parents());
+    }
+
+    @Test
+    public void repeatedCraftHookDoesNotReviveMergedIdentity() {
+        final ItemStack ingredient = new ItemStack(Items.OAK_LOG, 1);
+        final UUID ingredientId = ItemProvenance.birth(
+            ingredient,
+            ProvenanceSource.BLOCK_DROP,
+            HAND
+        ).orElseThrow();
+        final ItemStack result = new ItemStack(Items.OAK_PLANKS, 4);
+        ItemProvenance.onCrafted(result, List.of(ingredientId), HAND);
+        final UUID craftId = StackStamp.readId(result).orElseThrow();
+        ItemProvenance.death(craftId, ProvenanceReason.MERGED, UUID.randomUUID());
+
+        ItemProvenance.onCrafted(result, List.of(ingredientId), HAND);
+
+        assertFalse(ItemProvenance.live().contains(craftId));
+        assertTrue(ItemProvenance.lineage().get(craftId).orElseThrow().dead());
+        assertTrue(ItemProvenance.audit().snapshot().stream()
+            .noneMatch(event -> event.type() == ProvenanceEventType.ZOMBIE && event.id().equals(craftId)));
+    }
+
+    @Test
     public void cobbleCraftedIntoPickaxeKeepsLineageThenDupeIsDetected() {
         final ItemStack cobble = new ItemStack(Items.COBBLESTONE, 3);
         final UUID cobbleId = ItemProvenance.birth(cobble, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();

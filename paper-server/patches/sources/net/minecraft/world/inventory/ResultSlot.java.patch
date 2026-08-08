@@ -12,7 +12,7 @@
      }
  
      @Override
-@@ -79,14 +_,19 @@
+@@ -79,14 +_,52 @@
      private NonNullList<ItemStack> getRemainingItems(final CraftingInput input, final Level level) {
          return level instanceof ServerLevel serverLevel
              ? serverLevel.recipeAccess()
@@ -24,6 +24,39 @@
              : CraftingRecipe.defaultCraftingReminder(input);
      }
  
++    /**
++     * Stamp the craft result with {@code CRAFT} + ingredient parents.
++     * Must run on the live result stack <em>before</em> shift-click moves it into
++     * the inventory; after a successful quick-move the stack is often empty and
++     * {@link #onTake} would otherwise never see the items that landed in the bag.
++     */
++    // mintychochip start - item provenance: craft stamp helper (shift-click + onTake)
++    public void stampCraftResult(final Player player, final ItemStack result) {
++        if (result.isEmpty()) {
++            return;
++        }
++        final java.util.List<java.util.UUID> parents = this.craftParentIds();
++        final dev.mintychochip.provenance.StackLocation craftLocation =
++            dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1);
++        dev.mintychochip.provenance.ItemProvenance.onCrafted(result, parents, craftLocation);
++    }
++
++    private java.util.List<java.util.UUID> craftParentIds() {
++        final CraftingInput.Positioned positionedRecipe = this.craftSlots.asPositionedCraftInput();
++        final CraftingInput input = positionedRecipe.input();
++        final int recipeLeft = positionedRecipe.left();
++        final int recipeTop = positionedRecipe.top();
++        final java.util.List<ItemStack> ingredientSnapshot = new java.util.ArrayList<>();
++        for (int y = 0; y < input.height(); y++) {
++            for (int x = 0; x < input.width(); x++) {
++                final int slot = x + recipeLeft + (y + recipeTop) * this.craftSlots.getWidth();
++                ingredientSnapshot.add(this.craftSlots.getItem(slot));
++            }
++        }
++        return dev.mintychochip.provenance.ItemProvenance.collectParents(ingredientSnapshot);
++    }
++    // mintychochip end - item provenance
++
      @Override
      public void onTake(final Player player, final ItemStack carried) {
 +        // Paper start - add ItemCraftedEvent
@@ -34,20 +67,13 @@
          this.checkTakeAchievements(carried);
          CraftingInput.Positioned positionedRecipe = this.craftSlots.asPositionedCraftInput();
          CraftingInput input = positionedRecipe.input();
-@@ -94,17 +_,71 @@
+@@ -94,17 +_,64 @@
          int recipeTop = positionedRecipe.top();
          NonNullList<ItemStack> remaining = this.getRemainingItems(input, player.level());
  
 +        // mintychochip start - item provenance: craft transform + ingredient consume
-+        final java.util.List<net.minecraft.world.item.ItemStack> ingredientSnapshot = new java.util.ArrayList<>();
-+        for (int y = 0; y < input.height(); y++) {
-+            for (int x = 0; x < input.width(); x++) {
-+                int slot = x + recipeLeft + (y + recipeTop) * this.craftSlots.getWidth();
-+                ingredientSnapshot.add(this.craftSlots.getItem(slot));
-+            }
-+        }
-+        final java.util.List<java.util.UUID> parents =
-+            dev.mintychochip.provenance.ItemProvenance.collectParents(ingredientSnapshot);
++        // Stamp may already have been applied before shift-click moveItemStackTo.
++        final java.util.List<java.util.UUID> parents = this.craftParentIds();
 +        final dev.mintychochip.provenance.StackLocation craftLocation =
 +            dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1);
 +        if (!carried.isEmpty()) {

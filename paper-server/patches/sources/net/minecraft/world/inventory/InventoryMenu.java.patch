@@ -15,6 +15,24 @@
          this.active = active;
          this.owner = owner;
          this.addResultSlot(owner, 154, 28);
+@@ -107,8 +_,16 @@
+             clicked = stack.copy();
+             EquipmentSlot eqSlot = player.getEquipmentSlotForItem(clicked);
+             if (slotIndex == 0) {
++                // mintychochip start - item provenance: preflight, then stamp before real move
++                if (!this.moveItemStackTo(stack, 9, 45, true, true)) {
++                    return ItemStack.EMPTY;
++                }
++                if (slot instanceof ResultSlot resultSlot) {
++                    resultSlot.stampCraftResult(player, stack);
++                }
++                // mintychochip end - item provenance
+                 if (!this.moveItemStackTo(stack, 9, 45, true)) {
+-                    return ItemStack.EMPTY;
++                    throw new IllegalStateException("inventory craft preflight succeeded but transfer failed");
+                 }
+ 
+                 slot.onQuickCraft(stack, clicked);
 @@ -188,4 +_,54 @@
      protected Player owner() {
          return this.owner;

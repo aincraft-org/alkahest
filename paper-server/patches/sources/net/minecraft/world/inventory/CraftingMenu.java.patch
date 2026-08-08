@@ -71,6 +71,25 @@
          return stillValid(this.access, player, Blocks.CRAFTING_TABLE);
      }
  
+@@ -114,9 +_,17 @@
+             clicked = stack.copy();
+             if (slotIndex == 0) {
+                 stack.getItem().onCraftedBy(stack, player);
+-                if (!this.moveItemStackTo(stack, 10, 46, true)) {
++                // mintychochip start - item provenance: preflight, then stamp before real move
++                if (!this.moveItemStackTo(stack, 10, 46, true, true)) {
+                     return ItemStack.EMPTY;
+                 }
++                if (slot instanceof ResultSlot resultSlot) {
++                    resultSlot.stampCraftResult(player, stack);
++                }
++                // mintychochip end - item provenance
++                if (!this.moveItemStackTo(stack, 10, 46, true)) {
++                    throw new IllegalStateException("craft quick-move preflight succeeded but transfer failed");
++                }
+ 
+                 slot.onQuickCraft(stack, clicked);
+             } else if (slotIndex >= 10 && slotIndex < 46) {
 @@ -176,4 +_,17 @@
      protected Player owner() {
          return this.player;

@@ -952,6 +952,12 @@ public final class ItemProvenance {
         if (!enabled || result.isEmpty()) {
             return;
         }
+        // Shift-click stamps before moveItemStackTo; onTake may re-enter with the
+        // same stack after its identity has already been absorbed by a merge.
+        final Optional<StackProvenance> existing = StackStamp.read(result);
+        if (existing.isPresent() && existing.get().source() == ProvenanceSource.CRAFT) {
+            return;
+        }
         birth(result, ProvenanceSource.CRAFT, location, ingredientIds);
     }
 
