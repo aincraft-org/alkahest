@@ -23,7 +23,8 @@ import org.jetbrains.annotations.Nullable;
  * discriminator so records can be rebuilt without the DB.
  *
  * <p>Safe to call from the game thread: each append is a short file append only
- * (no JDBC). After successful apply into SQLite, callers should {@link #truncate()}.
+ * (no JDBC). Recovery is two-phase: {@link #seizePending()} moves spill aside for
+ * apply, and {@link #ackSeized()} deletes it only after a successful DB commit.
  */
 public final class ProvenanceSpillJournal {
 
@@ -42,13 +43,19 @@ public final class ProvenanceSpillJournal {
     }
 
     private final @NotNull Path path;
+    private final @NotNull Path replayPath;
 
     public ProvenanceSpillJournal(final @NotNull Path path) {
         this.path = Objects.requireNonNull(path, "path");
+        this.replayPath = path.resolveSibling(path.getFileName().toString() + ".replay");
     }
 
     public @NotNull Path path() {
         return this.path;
+    }
+
+    public @NotNull Path replayPath() {
+        return this.replayPath;
     }
 
     public synchronized void appendLineage(final @NotNull LineageNode node) throws IOException {
@@ -136,28 +143,40 @@ public final class ProvenanceSpillJournal {
     }
 
     /**
-     * Atomically seize spill contents for replay: moves the file aside so concurrent
-     * {@link #appendLineage append*} calls create a new spill file, then parses and
-     * deletes the aside copy.
+     * Seize spill contents for replay without acknowledging.
+     *
+     * <p>If a prior {@code .replay} file exists (e.g. crash mid-apply), that file is
+     * returned first and left intact — never deleted before successful apply.
+     * Otherwise the active spill is moved to {@code .replay} so concurrent
+     * {@link #appendLineage append*} calls can open a new spill file.
+     *
+     * <p>Callers must {@link #ackSeized()} only after the returned records are
+     * successfully applied to the durable store.
      */
-    public synchronized @NotNull List<SpillRecord> takeAll() throws IOException {
+    public synchronized @NotNull List<SpillRecord> seizePending() throws IOException {
+        if (Files.isRegularFile(this.replayPath)) {
+            return parseFile(this.replayPath);
+        }
         if (!Files.isRegularFile(this.path)) {
             return List.of();
         }
-        final Path aside = this.path.resolveSibling(this.path.getFileName().toString() + ".replay");
-        Files.deleteIfExists(aside);
-        Files.move(this.path, aside);
-        try {
-            return parseFile(aside);
-        } finally {
-            Files.deleteIfExists(aside);
-        }
+        Files.move(this.path, this.replayPath);
+        return parseFile(this.replayPath);
+    }
+
+    /**
+     * Acknowledge successful apply of the seized {@code .replay} batch by deleting it.
+     * Safe no-op if nothing is seized.
+     */
+    public synchronized void ackSeized() throws IOException {
+        Files.deleteIfExists(this.replayPath);
     }
 
     public synchronized void truncate() throws IOException {
         if (Files.exists(this.path)) {
             Files.delete(this.path);
         }
+        Files.deleteIfExists(this.replayPath);
     }
 
     private static @NotNull List<SpillRecord> parseFile(final @NotNull Path file) throws IOException {
@@ -186,8 +205,12 @@ public final class ProvenanceSpillJournal {
     }
 
     public long sizeBytes() {
+        return sizeOf(this.path) + sizeOf(this.replayPath);
+    }
+
+    private static long sizeOf(final @NotNull Path file) {
         try {
-            return Files.isRegularFile(this.path) ? Files.size(this.path) : 0L;
+            return Files.isRegularFile(file) ? Files.size(file) : 0L;
         } catch (final IOException ignored) {
             return 0L;
         }

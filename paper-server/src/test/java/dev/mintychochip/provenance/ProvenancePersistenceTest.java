@@ -186,14 +186,48 @@ public class ProvenancePersistenceTest {
             ItemProvenance.birth(s, ProvenanceSource.BLOCK_DROP, HAND);
         }
         ProvenanceWriter.flushAndClose();
-        ProvenanceWriter.clearInstall();
-
+        // Assert status before clearInstall so counters are still readable.
         final String status = ProvenanceWriter.status();
-        assertTrue(status.equals("not installed") || !status.contains("queue-dropped="),
+        assertFalse(status.contains("queue-dropped="),
             "status must not report critical queue drops: " + status);
+        // audit-dropped is acceptable under pressure; critical must still land.
+        ProvenanceWriter.clearInstall();
 
         try (ProvenanceRepository repo = new ProvenanceRepository(tempDir.resolve("mintychochip/provenance.db"))) {
             assertTrue(repo.countLineage() >= n, "all births must land in lineage, got " + repo.countLineage());
+        }
+    }
+
+    @Test
+    public void spillReplayRecoversAfterSimulatedCrash() throws Exception {
+        final Path minty = tempDir.resolve("mintychochip");
+        Files.createDirectories(minty);
+        final Path spill = minty.resolve("provenance-spill.log");
+        final Path replay = minty.resolve("provenance-spill.log.replay");
+        final UUID id = UUID.fromString("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");
+
+        // Write a lineage record into the active spill, then simulate a crash
+        // mid-replay: content seized to .replay but never acked.
+        final ProvenanceSpillJournal journal = new ProvenanceSpillJournal(spill);
+        journal.appendLineage(new LineageNode(
+            id, "minecraft:stone", ProvenanceSource.BLOCK_DROP, List.of(), 100L, "hand"
+        ));
+        Files.move(spill, replay);
+        assertTrue(Files.isRegularFile(replay), "simulated crash must leave unacked .replay");
+        assertTrue(Files.notExists(spill) || !Files.isRegularFile(spill));
+
+        ProvenanceWriter.install(tempDir, message -> {
+        });
+        ProvenanceWriter.flushAndClose();
+        ProvenanceWriter.clearInstall();
+
+        assertTrue(Files.notExists(replay), ".replay must be acked after successful apply");
+        try (ProvenanceRepository repo = new ProvenanceRepository(minty.resolve("provenance.db"))) {
+            final Optional<LineageNode> loaded = repo.loadLineage(id);
+            assertTrue(loaded.isPresent(), "seized spill must land in lineage after writer recovery");
+            assertEquals(id, loaded.get().id());
+            assertEquals("minecraft:stone", loaded.get().itemId());
+            assertEquals(ProvenanceSource.BLOCK_DROP, loaded.get().source());
         }
     }
 

@@ -304,27 +304,43 @@ public final class ProvenanceWriter {
 
     private void replaySpill() {
         final ProvenanceRepository repo = this.repository;
+        // Do not seize while the store is unavailable — leave spill / .replay intact.
         if (repo == null || repo.isFailed()) {
             return;
         }
         final List<ProvenanceSpillJournal.SpillRecord> records;
         try {
-            records = this.spillJournal.takeAll();
+            records = this.spillJournal.seizePending();
         } catch (final IOException ex) {
             this.recordError("spill read failed: " + ex.getMessage());
             return;
         }
         if (records.isEmpty()) {
+            // Empty seized file (e.g. blank lines) must still be acked so recovery can advance.
+            try {
+                this.spillJournal.ackSeized();
+            } catch (final IOException ignored) {
+                // nothing outstanding
+            }
             return;
         }
-        if (records.size() > 1) {
+        try {
             repo.runInTransaction(() -> {
                 for (final ProvenanceSpillJournal.SpillRecord record : records) {
                     this.applySpill(record);
+                    // Mutators swallow SQLException and set failed — abort before ack.
+                    if (repo.isFailed()) {
+                        throw new IllegalStateException("spill apply failed after SQL error");
+                    }
                 }
             });
-        } else {
-            this.applySpill(records.getFirst());
+            if (repo.isFailed()) {
+                throw new IllegalStateException("spill apply left repository failed");
+            }
+            this.spillJournal.ackSeized();
+        } catch (final Exception ex) {
+            this.recordError("spill replay failed: " + ex.getMessage());
+            // Leave .replay for the next attempt; never ack on failure.
         }
     }
 

@@ -206,4 +206,66 @@ public class ProvenanceSpillJournalTest {
         assertEquals(ProvenanceReason.DESTROYED, loaded.deathReason());
         assertEquals(20L, loaded.deathEpochMs());
     }
+
+    @Test
+    public void seizePendingLeavesReplayUntilAck() throws Exception {
+        final Path path = tempDir.resolve("provenance-spill.log");
+        final Path replay = path.resolveSibling(path.getFileName().toString() + ".replay");
+        final ProvenanceSpillJournal journal = new ProvenanceSpillJournal(path);
+        final UUID id = UUID.randomUUID();
+        journal.appendLineage(new LineageNode(
+            id, "minecraft:stone", ProvenanceSource.BLOCK_DROP, List.of(), 100L, null
+        ));
+
+        final List<ProvenanceSpillJournal.SpillRecord> seized = journal.seizePending();
+        assertEquals(1, seized.size());
+        assertTrue(Files.isRegularFile(replay), "seize must leave .replay until ack");
+        assertTrue(Files.notExists(path) || !Files.isRegularFile(path));
+
+        // Concurrent appends open a new active spill while .replay is outstanding.
+        final UUID later = UUID.randomUUID();
+        journal.appendLineage(new LineageNode(
+            later, "minecraft:dirt", ProvenanceSource.BLOCK_DROP, List.of(), 200L, null
+        ));
+        assertTrue(Files.isRegularFile(path));
+
+        // Existing .replay is preferred; must not delete it or steal the new spill yet.
+        final List<ProvenanceSpillJournal.SpillRecord> again = journal.seizePending();
+        assertEquals(1, again.size());
+        assertEquals(id, ((ProvenanceSpillJournal.SpillRecord.Lineage) again.get(0)).node().id());
+        assertTrue(Files.isRegularFile(replay));
+
+        journal.ackSeized();
+        assertTrue(Files.notExists(replay));
+
+        // After ack, the spill written during replay is available.
+        final List<ProvenanceSpillJournal.SpillRecord> next = journal.seizePending();
+        assertEquals(1, next.size());
+        assertEquals(later, ((ProvenanceSpillJournal.SpillRecord.Lineage) next.get(0)).node().id());
+        journal.ackSeized();
+        assertTrue(Files.notExists(replay));
+    }
+
+    @Test
+    public void seizePendingPrefersExistingReplayWithoutDeleting() throws Exception {
+        final Path path = tempDir.resolve("provenance-spill.log");
+        final Path replay = path.resolveSibling(path.getFileName().toString() + ".replay");
+        final UUID replayId = UUID.randomUUID();
+        final UUID spillId = UUID.randomUUID();
+
+        final ProvenanceSpillJournal journal = new ProvenanceSpillJournal(path);
+        journal.appendLineage(new LineageNode(
+            replayId, "minecraft:stone", ProvenanceSource.BLOCK_DROP, List.of(), 1L, null
+        ));
+        Files.move(path, replay);
+        journal.appendLineage(new LineageNode(
+            spillId, "minecraft:dirt", ProvenanceSource.BLOCK_DROP, List.of(), 2L, null
+        ));
+
+        final List<ProvenanceSpillJournal.SpillRecord> seized = journal.seizePending();
+        assertEquals(1, seized.size());
+        assertEquals(replayId, ((ProvenanceSpillJournal.SpillRecord.Lineage) seized.get(0)).node().id());
+        assertTrue(Files.isRegularFile(replay), "must not wipe pre-existing .replay");
+        assertTrue(Files.isRegularFile(path), "active spill must wait until .replay is acked");
+    }
 }
