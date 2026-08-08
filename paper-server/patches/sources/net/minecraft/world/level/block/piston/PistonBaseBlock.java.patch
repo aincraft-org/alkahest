@@ -130,7 +130,7 @@
              if (!state.is(BlockTags.FIRE) && level.isClientSide()) {
                  level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, getId(state));
              }
-@@ -313,13 +_,28 @@
+@@ -313,13 +_,31 @@
          }
  
          for (int i = toPush.size() - 1; i >= 0; i--) {
@@ -143,6 +143,9 @@
 +            BlockState blockState = allowDesync ? level.getBlockState(oldPos) : null;
 +            // Paper end - fix a variety of piston desync dupes
              pos = pos.relative(pushDirection);
++            // mintychochip start - item provenance: placement memory follows piston push
++            dev.mintychochip.provenance.ItemProvenance.movePlacement(level, oldPos, pos);
++            // mintychochip end - item provenance
              deleteAfterMove.remove(pos);
              BlockState actualState = Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, direction);
              level.setBlock(pos, actualState, Block.UPDATE_NONE | Block.UPDATE_MOVE_BY_PISTON);

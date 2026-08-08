@@ -123,7 +123,7 @@
                              this.hitPlayers.put(player, knockback);
                          }
  
-@@ -215,7 +_,56 @@
+@@ -215,10 +_,65 @@
          List<ServerExplosion.StackCollector> stacks = new ArrayList<>();
          Util.shuffle(targetBlocks, this.level.random);
  
@@ -180,6 +180,15 @@
              this.level.getBlockState(pos).onExplosionHit(this.level, pos, this, (stackx, position) -> addOrAppendStack(stacks, stackx, position));
          }
  
++        // mintychochip start - item provenance: explosion destroys placement memory at every position
++        for (BlockPos pos : targetBlocks) {
++            dev.mintychochip.provenance.ItemProvenance.clearPlacement(this.level, pos);
++        }
++        // mintychochip end - item provenance
++
+         for (ServerExplosion.StackCollector stack : stacks) {
+             Block.popResource(this.level, stack.pos, stack.stack);
+         }
 @@ -227,7 +_,11 @@
      private void createFire(final List<BlockPos> targetBlocks) {
          for (BlockPos pos : targetBlocks) {

@@ -28,6 +28,16 @@
                      ItemStack.CODEC.encodeStart(ops, itemStack).getOrThrow(DecoderException::new);
                  }
  
+@@ -334,6 +_,9 @@
+         int realAmount = Math.min(amount, this.getCount());
+         ItemStack result = this.copyWithCount(realAmount);
+         this.shrink(realAmount);
++        // mintychochip start - item provenance: partial split mints child UUID
++        dev.mintychochip.provenance.ItemProvenance.onSplit(this, result);
++        // mintychochip end - item provenance
+         return result;
+     }
+ 
 @@ -368,10 +_,138 @@
          }
  
@@ -169,7 +179,23 @@
  
          return result;
      }
-@@ -447,31 +_,67 @@
+@@ -406,6 +_,15 @@
+         ItemStack result = this;
+         if (useRemainder != null) {
+             result = useRemainder.convertIntoRemainder(result, stackCountBeforeUsing, user.hasInfiniteMaterials(), user::handleExtraItemsCreatedOnUse);
++            // mintychochip start - item provenance: stew→bowl / use remainder handoff
++            if (result != this && !result.isEmpty()) {
++                dev.mintychochip.provenance.ItemProvenance.onIdentityHandoff(
++                    stackBeforeUsing,
++                    result,
++                    dev.mintychochip.provenance.StackLocation.labeled("use:" + user.getUUID())
++                );
++            }
++            // mintychochip end - item provenance
+         }
+ 
+         if (useCooldown != null) {
+@@ -447,32 +_,81 @@
          return this.isDamageableItem() && this.getDamageValue() >= this.getMaxDamage() - 1;
      }
  
@@ -242,9 +268,23 @@
 +                org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerItemBreakEvent(serverPlayer, this); // Paper - Add EntityDamageItemEvent
 +            }
 +            // CraftBukkit end
++            // mintychochip start - item provenance: tool/armor break
++            final java.util.Optional<java.util.UUID> brokenId =
++                dev.mintychochip.provenance.StackStamp.readId(this);
++            // mintychochip end - item provenance
              this.shrink(1);
++            // mintychochip start - item provenance
++            brokenId.ifPresent(id ->
++                dev.mintychochip.provenance.ItemProvenance.death(
++                    id,
++                    dev.mintychochip.provenance.ProvenanceReason.DESTROYED,
++                    null
++                )
++            );
++            // mintychochip end - item provenance
              onBreak.accept(item);
          }
+     }
 @@ -484,7 +_,26 @@
                  return;
              }
@@ -289,6 +329,17 @@
              );
          }
      }
+@@ -638,7 +_,9 @@
+     }
+ 
+     public static boolean isSameItemSameComponents(final ItemStack a, final ItemStack b) {
+-        return a.is(b.getItem()) && (a.isEmpty() && b.isEmpty() || Objects.equals(a.components, b.components));
++        // mintychochip start - item provenance must not block vanilla stacking
++        return dev.mintychochip.provenance.StackStamp.sameItemSameComponentsIgnoringProvenance(a, b);
++        // mintychochip end - item provenance
+     }
+ 
+     public static boolean matchesIgnoringComponents(final ItemStack a, final ItemStack b, final Predicate<DataComponentType<?>> ignoredPredicate) {
 @@ -755,6 +_,12 @@
          return this.getItem().useOnRelease(this);
      }
@@ -351,12 +402,35 @@
      public Component getDisplayName() {
          MutableComponent hoverName = Component.empty().append(this.getHoverName());
          if (this.has(DataComponents.CUSTOM_NAME)) {
-@@ -1078,7 +_,7 @@
+@@ -1078,14 +_,29 @@
      }
  
      public void consume(final int amount, final @Nullable LivingEntity owner) {
 -        if (owner == null || !owner.hasInfiniteMaterials()) {
 +        if ((owner == null || !owner.hasInfiniteMaterials())) {
              this.shrink(amount);
++            // mintychochip start - item provenance: food/throw/bucket consume death
++            dev.mintychochip.provenance.ItemProvenance.afterConsume(this);
++            // mintychochip end - item provenance
          }
      }
+ 
+     public ItemStack consumeAndReturn(final int amount, final @Nullable LivingEntity owner) {
+         ItemStack split = this.copyWithCount(amount);
+-        this.consume(amount, owner);
++        if (owner == null || !owner.hasInfiniteMaterials()) {
++            this.shrink(amount);
++            // mintychochip start - item provenance: extraction semantics like split
++            // (partial extraction mints a child UUID; full extraction moves the identity)
++            dev.mintychochip.provenance.ItemProvenance.onSplit(this, split);
++            // mintychochip end - item provenance
++        } else {
++            // mintychochip start - item provenance: creative copies are distinct instances
++            dev.mintychochip.provenance.StackStamp.readId(this).ifPresent(parent ->
++                dev.mintychochip.provenance.ItemProvenance.mintChild(split, parent, this.getCount())
++            );
++            // mintychochip end - item provenance
++        }
+         return split;
+     }
+ 

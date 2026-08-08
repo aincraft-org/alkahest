@@ -39,11 +39,10 @@
      public int getNumberOfItemsToShow() {
          int numberOfItemStacks = this.size();
          int availableItemsToShow = numberOfItemStacks > 12 ? 11 : 12;
-@@ -179,6 +_,14 @@
-             Fraction remainingWeight = Fraction.ONE.subtract(this.weight);
+@@ -180,6 +_,14 @@
              return Math.max(remainingWeight.divideBy(itemWeight).intValue(), 0);
          }
-+
+ 
 +        // Paper start - correct bundle inventory action
 +        // Static overload to easily compute this value without the need for an instance of mutable.
 +        static int getMaxAmountToAdd(final ItemStack stack, final Fraction weight) {
@@ -51,6 +50,43 @@
 +            return Math.max(remainingWeight.divideBy(BundleContents.getWeight(stack).getOrThrow()).intValue(), 0);
 +        }
 +        // Paper end - correct bundle inventory action
- 
++
          public int tryInsert(final ItemStack itemsToAdd) {
              if (!BundleContents.canItemBeInBundle(itemsToAdd)) {
+                 return 0;
+@@ -196,15 +_,34 @@
+                 return 0;
+             }
+ 
++            // mintychochip start - item provenance: ensure stack before bundle pack
++            dev.mintychochip.provenance.ItemProvenance.ensure(itemsToAdd, dev.mintychochip.provenance.StackLocation.labeled("bundle"));
++            // mintychochip end - item provenance
+             this.weight = this.weight.add(itemWeight.multiplyBy(Fraction.getFraction(amountToAdd, 1)));
+             int stackIndex = this.findStackIndex(itemsToAdd);
+             if (stackIndex != BundleContents.NO_STACK_INDEX) {
+                 ItemStack removedStack = this.items.remove(stackIndex);
+                 ItemStack mergedStack = removedStack.copyWithCount(removedStack.getCount() + amountToAdd);
++                // mintychochip start - item provenance: bundle merge
++                final java.util.Optional<java.util.UUID> absorbed =
++                    dev.mintychochip.provenance.StackStamp.readId(itemsToAdd);
+                 itemsToAdd.shrink(amountToAdd);
++                dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
++                    mergedStack,
++                    itemsToAdd,
++                    absorbed,
++                    amountToAdd,
++                    dev.mintychochip.provenance.StackLocation.labeled("bundle-input"),
++                    dev.mintychochip.provenance.StackLocation.labeled("bundle")
++                );
++                // mintychochip end - item provenance
+                 this.items.add(0, mergedStack);
+             } else {
+-                this.items.add(0, itemsToAdd.split(amountToAdd));
++                final ItemStack taken = itemsToAdd.split(amountToAdd);
++                // mintychochip start - item provenance
++                dev.mintychochip.provenance.ItemProvenance.ensure(taken, dev.mintychochip.provenance.StackLocation.labeled("bundle"));
++                // mintychochip end - item provenance
++                this.items.add(0, taken);
+             }
+ 
+             return amountToAdd;

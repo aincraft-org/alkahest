@@ -31,13 +31,21 @@
      @Override
      public void refreshDimensions() {
          double oldX = this.getX();
-@@ -138,6 +_,14 @@
+@@ -138,6 +_,22 @@
          return slot != EquipmentSlot.BODY && slot != EquipmentSlot.SADDLE && !this.isDisabled(slot);
      }
  
 +    // Paper start - Allow ArmorStands not to tick; Still update equipment
 +    @Override
 +    public void setItemSlot(EquipmentSlot slot, ItemStack stack, boolean silent) {
++        // mintychochip start - item provenance: armor stand park
++        if (!stack.isEmpty()) {
++            dev.mintychochip.provenance.ItemProvenance.onParked(
++                stack,
++                dev.mintychochip.provenance.StackLocation.labeled("armor_stand:" + this.getUUID() + ":" + slot.getName())
++            );
++        }
++        // mintychochip end - item provenance
 +        super.setItemSlot(slot, stack, silent);
 +        this.noTickEquipmentDirty = true;
 +    }

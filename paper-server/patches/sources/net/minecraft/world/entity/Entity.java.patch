@@ -936,7 +936,7 @@
      protected abstract void addAdditionalSaveData(ValueOutput output);
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemLike resource) {
-@@ -2228,12 +_,57 @@
+@@ -2228,12 +_,95 @@
      }
  
      public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final Vec3 offset) {
@@ -970,6 +970,24 @@
 +            livingEntity.deathDropItems.add(new DefaultDrop(itemStack, dropStack -> {
 +                ItemEntity dropEntity = new ItemEntity(this.level, this.getX() + offset.x, this.getY() + offset.y, this.getZ() + offset.z, dropStack); // stack is copied before consumer
 +                dropEntity.setDefaultPickUpDelay();
++                // mintychochip start - item provenance: birth/transfer at the actual item entity
++                final net.minecraft.world.item.ItemStack carried = dropEntity.getItem();
++                if (!carried.isEmpty()) {
++                    final java.util.Optional<java.util.UUID> existing = dev.mintychochip.provenance.StackStamp.readId(carried);
++                    if (existing.isPresent()) {
++                        dev.mintychochip.provenance.ItemProvenance.transfer(
++                            carried,
++                            dev.mintychochip.provenance.StackLocation.itemEntity(dropEntity.getUUID())
++                        );
++                    } else {
++                        dev.mintychochip.provenance.ItemProvenance.birth(
++                            carried,
++                            dev.mintychochip.provenance.ProvenanceSource.ENTITY_DROP,
++                            dev.mintychochip.provenance.StackLocation.itemEntity(dropEntity.getUUID())
++                        );
++                    }
++                }
++                // mintychochip end - item provenance
 +                this.level.addFreshEntity(dropEntity);
 +                if (delayedAddConsumer != null) delayedAddConsumer.accept(dropEntity);
 +            }));
@@ -993,6 +1011,26 @@
 +            return null;
 +        }
 +        // CraftBukkit end
++        // mintychochip start - item provenance: birth/transfer only after the drop event is accepted
++        final net.minecraft.world.item.ItemStack carried = entity.getItem();
++        if (!carried.isEmpty()) {
++            final java.util.Optional<java.util.UUID> existing = dev.mintychochip.provenance.StackStamp.readId(carried);
++            if (existing.isPresent()) {
++                dev.mintychochip.provenance.ItemProvenance.transfer(
++                    carried,
++                    dev.mintychochip.provenance.StackLocation.itemEntity(entity.getUUID())
++                );
++            } else {
++                dev.mintychochip.provenance.ItemProvenance.birth(
++                    carried,
++                    this instanceof net.minecraft.world.entity.player.Player
++                        ? dev.mintychochip.provenance.ProvenanceSource.LEGACY // player throw of held items should already be stamped
++                        : dev.mintychochip.provenance.ProvenanceSource.ENTITY_DROP,
++                    dev.mintychochip.provenance.StackLocation.itemEntity(entity.getUUID())
++                );
++            }
++        }
++        // mintychochip end - item provenance
          level.addFreshEntity(entity);
          return entity;
      }

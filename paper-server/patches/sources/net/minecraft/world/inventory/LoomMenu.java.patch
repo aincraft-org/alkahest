@@ -75,6 +75,46 @@
          this.bannerSlot = this.addSlot(new Slot(this.inputContainer, 0, 13, 26) {
              @Override
              public boolean mayPlace(final ItemStack itemStack) {
+@@ -87,8 +_,39 @@
+ 
+             @Override
+             public void onTake(final Player player, final ItemStack carried) {
++                // mintychochip start - item provenance: loom transform
++                final java.util.List<net.minecraft.world.item.ItemStack> loomInputs = new java.util.ArrayList<>();
++                loomInputs.add(LoomMenu.this.bannerSlot.getItem());
++                loomInputs.add(LoomMenu.this.dyeSlot.getItem());
++                if (LoomMenu.this.patternSlot.hasItem()) {
++                    loomInputs.add(LoomMenu.this.patternSlot.getItem());
++                }
++                final java.util.List<java.util.UUID> loomParents =
++                    dev.mintychochip.provenance.ItemProvenance.collectParents(loomInputs);
++                if (!carried.isEmpty()) {
++                    dev.mintychochip.provenance.ItemProvenance.onSpecialRecipe(
++                        carried,
++                        loomParents,
++                        dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++                    );
++                }
++                final java.util.Optional<java.util.UUID> bannerId =
++                    dev.mintychochip.provenance.StackStamp.readId(LoomMenu.this.bannerSlot.getItem());
++                final java.util.Optional<java.util.UUID> dyeId =
++                    dev.mintychochip.provenance.StackStamp.readId(LoomMenu.this.dyeSlot.getItem());
++                // mintychochip end - item provenance
+                 LoomMenu.this.bannerSlot.remove(1);
+                 LoomMenu.this.dyeSlot.remove(1);
++                // mintychochip start - item provenance
++                dev.mintychochip.provenance.ItemProvenance.afterInputShrink(
++                    bannerId,
++                    LoomMenu.this.bannerSlot.getItem()
++                );
++                dev.mintychochip.provenance.ItemProvenance.afterInputShrink(
++                    dyeId,
++                    LoomMenu.this.dyeSlot.getItem()
++                );
++                // mintychochip end - item provenance
+                 if (!LoomMenu.this.bannerSlot.hasItem() || !LoomMenu.this.dyeSlot.hasItem()) {
+                     LoomMenu.this.selectedBannerPatternIndex.set(-1);
+                 }
 @@ -106,6 +_,7 @@
          this.addStandardInventorySlots(inventory, 8, 84);
          this.addDataSlot(this.selectedBannerPatternIndex);

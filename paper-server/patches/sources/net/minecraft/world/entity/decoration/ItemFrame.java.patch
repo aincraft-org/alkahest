@@ -65,7 +65,7 @@
      public @Nullable MapId getFramedMapId(final ItemStack itemStack) {
          return itemStack.get(DataComponents.MAP_ID);
      }
-@@ -272,13 +_,19 @@
+@@ -272,13 +_,25 @@
      }
  
      public void setItem(ItemStack itemStack, final boolean updateNeighbours) {
@@ -77,6 +77,12 @@
 +        // CraftBukkit end
          if (!itemStack.isEmpty()) {
              itemStack = itemStack.copyWithCount(1);
++            // mintychochip start - item provenance: item frame park
++            dev.mintychochip.provenance.ItemProvenance.onParked(
++                itemStack,
++                dev.mintychochip.provenance.StackLocation.labeled("item_frame:" + this.getUUID())
++            );
++            // mintychochip end - item provenance
          }
  
          this.onItemChanged(itemStack);

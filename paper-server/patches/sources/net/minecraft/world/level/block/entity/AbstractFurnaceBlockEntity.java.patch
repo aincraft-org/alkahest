@@ -121,7 +121,50 @@
                                  changed = true;
                              }
                          } else {
-@@ -230,28 +_,63 @@
+@@ -208,10 +_,41 @@
+ 
+     private static void consumeFuel(final NonNullList<ItemStack> items, final ItemStack fuel) {
+         Item fuelItem = fuel.getItem();
++        // mintychochip start - item provenance: fuel burn
++        final java.util.Optional<java.util.UUID> fuelId =
++            dev.mintychochip.provenance.StackStamp.readId(fuel);
++        // mintychochip end - item provenance
+         fuel.shrink(1);
+         if (fuel.isEmpty()) {
++            // mintychochip start - item provenance
++            fuelId.ifPresent(id ->
++                dev.mintychochip.provenance.ItemProvenance.death(
++                    id,
++                    dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                    null
++                )
++            );
++            // mintychochip end - item provenance
+             ItemStackTemplate remainder = fuelItem.getCraftingRemainder();
+-            items.set(1, remainder != null ? remainder.create() : ItemStack.EMPTY);
++            if (remainder != null) {
++                final ItemStack remainderStack = remainder.create();
++                // mintychochip start - item provenance
++                fuelId.ifPresent(id ->
++                    dev.mintychochip.provenance.ItemProvenance.onIdentityHandoff(
++                        remainderStack,
++                        java.util.List.of(id),
++                        dev.mintychochip.provenance.StackLocation.labeled("furnace_fuel")
++                    )
++                );
++                // mintychochip end - item provenance
++                items.set(1, remainderStack);
++            } else {
++                items.set(1, ItemStack.EMPTY);
++            }
++        } else {
++            // mintychochip start - item provenance
++            dev.mintychochip.provenance.ItemProvenance.noteConsumed(fuel);
++            // mintychochip end - item provenance
+         }
+     }
+ 
+@@ -230,28 +_,116 @@
          return resultCount <= maxResultCount;
      }
  
@@ -143,11 +186,31 @@
 +        apiResult = furnaceSmeltEvent.getResult();
 +        result = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(apiResult);
 +
++        // mintychochip start - item provenance: smelt transform
++        final java.util.Optional<java.util.UUID> inputId =
++            dev.mintychochip.provenance.StackStamp.readId(inputItemStack);
++        final dev.mintychochip.provenance.StackLocation furnaceHolder = dev.mintychochip.provenance.StackLocation.labeled("furnace:" + blockPos.getX() + "," + blockPos.getY() + "," + blockPos.getZ());
++        // mintychochip end - item provenance
 +        if (!result.isEmpty()) {
 +            if (resultItemStack.isEmpty()) {
-+                items.set(SLOT_RESULT, result.copy());
++                final ItemStack born = result.copy();
++                // mintychochip start - item provenance
++                dev.mintychochip.provenance.ItemProvenance.onSmelted(
++                    born,
++                    inputId.orElse(null),
++                    furnaceHolder
++                );
++                // mintychochip end - item provenance
++                items.set(SLOT_RESULT, born);
 +            } else if (org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(resultItemStack).isSimilar(apiResult)) {
 +                resultItemStack.grow(result.getCount());
++                // mintychochip start - item provenance: accumulated output keeps every input parent
++                dev.mintychochip.provenance.ItemProvenance.onSmeltedAccumulate(
++                    resultItemStack,
++                    inputId.orElse(null),
++                    furnaceHolder
++                );
++                // mintychochip end - item provenance
 +            } else {
 +                return false;
 +            }
@@ -162,10 +225,44 @@
 +        // CraftBukkit end
  
          if (inputItemStack.is(Items.WET_SPONGE) && !items.get(1).isEmpty() && items.get(1).is(Items.BUCKET)) {
-             items.set(1, new ItemStack(Items.WATER_BUCKET));
+-            items.set(1, new ItemStack(Items.WATER_BUCKET));
++            // mintychochip start - item provenance: wet sponge → water bucket
++            final java.util.Optional<java.util.UUID> bucketId =
++                dev.mintychochip.provenance.StackStamp.readId(items.get(1));
++            final ItemStack waterBucket = new ItemStack(Items.WATER_BUCKET);
++            final java.util.List<java.util.UUID> waterParents = new java.util.ArrayList<>();
++            bucketId.ifPresent(waterParents::add);
++            inputId.ifPresent(waterParents::add);
++            dev.mintychochip.provenance.ItemProvenance.onIdentityHandoff(
++                waterBucket,
++                waterParents,
++                furnaceHolder
++            );
++            bucketId.ifPresent(id ->
++                dev.mintychochip.provenance.ItemProvenance.death(
++                    id,
++                    dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                    null
++                )
++            );
++            items.set(1, waterBucket);
++            // mintychochip end - item provenance
          }
  
++        // mintychochip start - item provenance: consume furnace input
          inputItemStack.shrink(1);
++        if (inputItemStack.isEmpty()) {
++            inputId.ifPresent(id ->
++                dev.mintychochip.provenance.ItemProvenance.death(
++                    id,
++                    dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                    null
++                )
++            );
++        } else {
++            dev.mintychochip.provenance.ItemProvenance.noteConsumed(inputItemStack);
++        }
++        // mintychochip end - item provenance
 +        return true; // Paper - make burn return a boolean again
      }
  

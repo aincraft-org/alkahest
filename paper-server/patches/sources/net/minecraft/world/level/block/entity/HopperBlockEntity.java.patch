@@ -203,7 +203,7 @@
          } else {
              entity.setItem(result);
          }
-@@ -317,11 +_,18 @@
+@@ -317,15 +_,49 @@
              boolean success = false;
              boolean wasEmpty = container.isEmpty();
              if (current.isEmpty()) {
@@ -216,14 +216,45 @@
 +                // Spigot end
                  container.setItem(slot, itemStack);
 -                itemStack = ItemStack.EMPTY;
++                ignoreBlockEntityUpdates = false; // Paper - Perf: Optimize Hoppers
++                // mintychochip start - item provenance: identity moved into empty container slot
++                dev.mintychochip.provenance.ItemProvenance.transfer(
++                    itemStack,
++                    dev.mintychochip.provenance.StackLocation.labeled(
++                        "container:" + System.identityHashCode(container) + ":" + slot
++                    )
++                );
++                // mintychochip end - item provenance
 +                itemStack = leftover; // Paper - Make hoppers respect inventory max stack size
                  success = true;
              } else if (canMergeItems(current, itemStack)) {
 -                int space = itemStack.getMaxStackSize() - current.getCount();
 +                int space = Math.min(itemStack.getMaxStackSize(), container.getMaxStackSize()) - current.getCount(); // Paper - Make hoppers respect inventory max stack size
                  int count = Math.min(itemStack.getCount(), space);
++                // mintychochip start - item provenance: hopper/container merge
++                final java.util.Optional<java.util.UUID> absorbedId =
++                    dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                // mintychochip end - item provenance
                  itemStack.shrink(count);
                  current.grow(count);
+                 success = count > 0;
++                // mintychochip start - item provenance
++                if (count > 0) {
++                    dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
++                        current,
++                        itemStack,
++                        absorbedId,
++                        count,
++                        dev.mintychochip.provenance.StackLocation.labeled("hopper-in"),
++                        dev.mintychochip.provenance.StackLocation.labeled(
++                            "container:" + System.identityHashCode(container) + ":" + slot
++                        )
++                    );
++                }
++                // mintychochip end - item provenance
+             }
+ 
+             if (success) {
 @@ -335,7 +_,7 @@
                          skipTickCount = 1;
                      }

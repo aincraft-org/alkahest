@@ -186,7 +186,7 @@
              } else if (this.nibble > 0) {
                  LootParams params = new LootParams.Builder((ServerLevel)this.level())
                      .withParameter(LootContextParams.ORIGIN, this.position())
-@@ -467,14 +_,27 @@
+@@ -467,14 +_,34 @@
  
                  for (ItemStack itemStack : items) {
                      ItemEntity entity = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), itemStack);
@@ -197,6 +197,13 @@
 +                        return 0;
 +                    }
 +                    // CraftBukkit end
++                    // mintychochip start - item provenance: fishing loot birth only after the event is accepted
++                    dev.mintychochip.provenance.ItemProvenance.birthIfAbsent(
++                        entity.getItem(),
++                        dev.mintychochip.provenance.ProvenanceSource.LOOT,
++                        dev.mintychochip.provenance.StackLocation.itemEntity(entity.getUUID())
++                    );
++                    // mintychochip end - item provenance
                      double xa = owner.getX() - this.getX();
                      double ya = owner.getY() - this.getY();
                      double za = owner.getZ() - this.getZ();

@@ -1,0 +1,26 @@
+--- a/net/minecraft/world/inventory/Slot.java
++++ b/net/minecraft/world/inventory/Slot.java
+@@ -142,9 +_,23 @@
+             if (slotStack.isEmpty()) {
+                 this.setByPlayer(inputStack.split(transferableItemCount));
+             } else if (ItemStack.isSameItemSameComponents(slotStack, inputStack)) {
++                // mintychochip start - item provenance: slot/menu merge (all inventories)
++                final java.util.Optional<java.util.UUID> absorbedId =
++                    dev.mintychochip.provenance.StackStamp.readId(inputStack);
++                // mintychochip end - item provenance
+                 inputStack.shrink(transferableItemCount);
+                 slotStack.grow(transferableItemCount);
+                 this.setByPlayer(slotStack);
++                // mintychochip start - item provenance
++                dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
++                    slotStack,
++                    inputStack,
++                    absorbedId,
++                    transferableItemCount,
++                    dev.mintychochip.provenance.StackLocation.labeled("cursor"),
++                    dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + this.index)
++                );
++                // mintychochip end - item provenance
+             }
+ 
+             return inputStack;

@@ -65,6 +65,45 @@
          this.inputSlot = this.addSlot(new Slot(this.container, 0, 20, 33));
          this.resultSlot = this.addSlot(new Slot(this.resultContainer, 1, 143, 33) {
              @Override
+@@ -60,9 +_,38 @@
+ 
+             @Override
+             public void onTake(final Player player, final ItemStack carried) {
++                // mintychochip start - item provenance: stonecutter transform
++                final ItemStack inputBefore = StonecutterMenu.this.inputSlot.getItem();
++                final java.util.List<java.util.UUID> parents =
++                    dev.mintychochip.provenance.ItemProvenance.collectParents(java.util.List.of(inputBefore));
++                if (!carried.isEmpty()) {
++                    dev.mintychochip.provenance.ItemProvenance.onSpecialRecipe(
++                        carried,
++                        parents,
++                        dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++                    );
++                }
++                final java.util.Optional<java.util.UUID> inputId =
++                    dev.mintychochip.provenance.StackStamp.readId(inputBefore);
++                // mintychochip end - item provenance
+                 carried.onCraftedBy(player, carried.getCount());
+                 StonecutterMenu.this.resultContainer.awardUsedRecipes(player, this.getRelevantItems());
+                 ItemStack remaining = StonecutterMenu.this.inputSlot.remove(1);
++                // mintychochip start - item provenance
++                if (remaining.isEmpty()) {
++                    inputId.ifPresent(id ->
++                        dev.mintychochip.provenance.ItemProvenance.death(
++                            id,
++                            dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                            null
++                        )
++                    );
++                } else {
++                    dev.mintychochip.provenance.ItemProvenance.noteConsumed(
++                        StonecutterMenu.this.inputSlot.getItem()
++                    );
++                }
++                // mintychochip end - item provenance
+                 if (!remaining.isEmpty()) {
+                     StonecutterMenu.this.setupResultSlot(StonecutterMenu.this.selectedRecipeIndex.get());
+                 }
 @@ -83,6 +_,7 @@
          });
          this.addStandardInventorySlots(inventory, 8, 84);

@@ -12,3 +12,71 @@
          return isValidTarget ? transportItemTarget : null;
      }
  
+@@ -544,7 +_,22 @@
+         for (ItemStack itemStack : container) {
+             if (!itemStack.isEmpty()) {
+                 int itemCount = Math.min(itemStack.getCount(), 16);
+-                return container.removeItem(slot, itemCount);
++                // mintychochip start - item provenance: ensure stamped before split/remove
++                dev.mintychochip.provenance.ItemProvenance.ensure(
++                    itemStack,
++                    dev.mintychochip.provenance.StackLocation.labeled("chest_pickup")
++                );
++                // mintychochip end - item provenance
++                final ItemStack taken = container.removeItem(slot, itemCount);
++                // mintychochip start - item provenance: identity moves to golem hand (split already minted if partial)
++                if (!taken.isEmpty()) {
++                    dev.mintychochip.provenance.ItemProvenance.transfer(
++                        taken,
++                        dev.mintychochip.provenance.StackLocation.labeled("golem_hand")
++                    );
++                }
++                // mintychochip end - item provenance
++                return taken;
+             }
+ 
+             slot++;
+@@ -559,6 +_,13 @@
+ 
+         for (ItemStack containerItemStack : container) {
+             if (containerItemStack.isEmpty()) {
++                // mintychochip start - item provenance: copper golem / transport place into empty slot
++                // same stack identity moves into the chest (no new birth)
++                dev.mintychochip.provenance.ItemProvenance.transfer(
++                    itemStack,
++                    dev.mintychochip.provenance.StackLocation.labeled("container:" + body.getUUID() + ":deposit:" + slot)
++                );
++                // mintychochip end - item provenance
+                 container.setItem(slot, itemStack);
+                 return ItemStack.EMPTY;
+             }
+@@ -566,9 +_,29 @@
+             if (ItemStack.isSameItemSameComponents(containerItemStack, itemStack) && containerItemStack.getCount() < containerItemStack.getMaxStackSize()) {
+                 int countThatCanBeAdded = containerItemStack.getMaxStackSize() - containerItemStack.getCount();
+                 int countToAdd = Math.min(countThatCanBeAdded, itemStack.getCount());
++                // mintychochip start - item provenance: copper golem / transport merge into chest stack
++                final java.util.Optional<java.util.UUID> absorbedId =
++                    dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                // mintychochip end - item provenance
+                 containerItemStack.setCount(containerItemStack.getCount() + countToAdd);
+                 itemStack.setCount(itemStack.getCount() - countThatCanBeAdded);
+                 container.setItem(slot, containerItemStack);
++                // mintychochip start - item provenance
++                if (countToAdd > 0) {
++                    // Use actual remaining count (vanilla may overshoot with countThatCanBeAdded)
++                    final ItemStack remaining = itemStack.isEmpty()
++                        ? ItemStack.EMPTY
++                        : itemStack;
++                    dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
++                        containerItemStack,
++                        remaining,
++                        absorbedId,
++                        countToAdd,
++                        dev.mintychochip.provenance.StackLocation.labeled("golem_hand"),
++                        dev.mintychochip.provenance.StackLocation.labeled("container:" + body.getUUID() + ":deposit:" + slot)
++                    );
++                }
++                // mintychochip end - item provenance
+                 if (itemStack.isEmpty()) {
+                     return ItemStack.EMPTY;
+                 }

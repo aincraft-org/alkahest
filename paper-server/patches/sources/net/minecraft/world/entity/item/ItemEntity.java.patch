@@ -101,7 +101,7 @@
      }
  
      private void tryToMerge(final ItemEntity other) {
-@@ -258,11 +_,16 @@
+@@ -258,11 +_,32 @@
      }
  
      private static void merge(final ItemEntity toItem, final ItemStack toStack, final ItemEntity fromItem, final ItemStack fromStack) {
@@ -110,11 +110,28 @@
 +            return;
 +        }
 +        // CraftBukkit end
++        // mintychochip start - item provenance: absorb from-stack identity on full merge
++        final net.minecraft.world.item.ItemStack fromBefore = fromStack.copy();
++        // mintychochip end - item provenance
          merge(toItem, toStack, fromStack);
          toItem.pickupDelay = Math.max(toItem.pickupDelay, fromItem.pickupDelay);
          toItem.age = Math.min(toItem.age, fromItem.age);
-         if (fromStack.isEmpty()) {
+-        if (fromStack.isEmpty()) {
 -            fromItem.discard();
++        // mintychochip start - item provenance
++        if (fromStack.isEmpty()) {
++            dev.mintychochip.provenance.ItemProvenance.onMerge(
++                toItem.getItem(),
++                fromBefore,
++                dev.mintychochip.provenance.StackLocation.itemEntity(toItem.getUUID()),
++                dev.mintychochip.provenance.StackLocation.itemEntity(fromItem.getUUID())
++            );
++        } else {
++            dev.mintychochip.provenance.ItemProvenance.noteConsumed(fromStack);
++            dev.mintychochip.provenance.ItemProvenance.noteConsumed(toItem.getItem());
++        }
++        // mintychochip end - item provenance
++        if (fromStack.isEmpty()) {
 +            fromItem.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.MERGE); // CraftBukkit - add Bukkit remove cause
          }
      }
@@ -150,10 +167,18 @@
      }
  
      @Override
-@@ -331,8 +_,17 @@
+@@ -331,8 +_,25 @@
          this.target = input.read("Owner", UUIDUtil.CODEC).orElse(null);
          this.thrower = EntityReference.read(input, "Thrower");
          this.setItem(input.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
++        // mintychochip start - item provenance: rehydrate stamped stacks after restart
++        if (!this.getItem().isEmpty()) {
++            dev.mintychochip.provenance.ItemProvenance.rehydrate(
++                this.getItem(),
++                dev.mintychochip.provenance.StackLocation.itemEntity(this.getUUID())
++            );
++        }
++        // mintychochip end - item provenance
 +        // Paper start - Friction API
 +        input.getString("Paper.FrictionState").ifPresent(frictionState -> {
 +            try {
@@ -169,7 +194,7 @@
          }
      }
  
-@@ -342,10 +_,73 @@
+@@ -342,10 +_,79 @@
              ItemStack itemStack = this.getItem();
              Item item = itemStack.getItem();
              int orgCount = itemStack.getCount();
@@ -236,6 +261,12 @@
 +            // CraftBukkit end
 +            // Paper end - PlayerAttemptPickupItemEvent
              if (this.pickupDelay == 0 && (this.target == null || this.target.equals(player.getUUID())) && player.getInventory().add(itemStack)) {
++                // mintychochip start - item provenance: transfer on successful pickup (never a collision)
++                dev.mintychochip.provenance.ItemProvenance.transfer(
++                    itemStack,
++                    dev.mintychochip.provenance.StackLocation.labeled("player:" + player.getUUID())
++                );
++                // mintychochip end - item provenance
 +                if (flyAtPlayer) // Paper - PlayerPickupItemEvent
                  player.take(this, orgCount);
                  if (itemStack.isEmpty()) {
@@ -244,6 +275,29 @@
                      itemStack.setCount(orgCount);
                  }
  
+@@ -355,6 +_,22 @@
+         }
+     }
+ 
++    // mintychochip start - item provenance: death on despawn / void / destroy
++    @Override
++    public void remove(final Entity.RemovalReason reason, org.bukkit.event.entity.EntityRemoveEvent.@Nullable Cause eventCause) {
++        if (!this.level().isClientSide() && eventCause != null) {
++            switch (eventCause) {
++                case DESPAWN, DEATH, OUT_OF_WORLD ->
++                    dev.mintychochip.provenance.ItemProvenance.noteDestroyed(this.getItem());
++                default -> {
++                }
++            }
++        }
++        super.remove(reason, eventCause);
++    }
++    // mintychochip end - item provenance
++
++
+     @Override
+     public Component getName() {
+         Component name = this.getCustomName();
 @@ -382,6 +_,7 @@
  
      public void setItem(final ItemStack itemStack) {

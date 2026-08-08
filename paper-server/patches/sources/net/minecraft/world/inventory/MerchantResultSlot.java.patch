@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/MerchantResultSlot.java
 +++ b/net/minecraft/world/inventory/MerchantResultSlot.java
-@@ -47,13 +_,34 @@
+@@ -47,16 +_,74 @@
  
      @Override
      public void onTake(final Player player, final ItemStack carried) {
@@ -31,9 +31,49 @@
          if (offer != null) {
              ItemStack buyA = this.slots.getItem(0);
              ItemStack buyB = this.slots.getItem(1);
++            // mintychochip start - item provenance: capture payment ids before take
++            final java.util.List<java.util.UUID> paymentParents =
++                dev.mintychochip.provenance.ItemProvenance.collectParents(java.util.List.of(buyA, buyB));
++            // mintychochip end - item provenance
              if (offer.take(buyA, buyB) || offer.take(buyB, buyA)) {
 -                this.merchant.notifyTrade(offer);
 +                this.merchant.processTrade(offer, event); // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
++                // mintychochip start - item provenance: trade result only after payment + processing succeed
++                if (!carried.isEmpty()) {
++                    dev.mintychochip.provenance.ItemProvenance.onTrade(
++                        carried,
++                        paymentParents,
++                        dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++                    );
++                }
++                // mintychochip end - item provenance
                  player.awardStat(Stats.TRADED_WITH_VILLAGER);
                  this.slots.setItem(0, buyA);
                  this.slots.setItem(1, buyB);
++                // mintychochip start - item provenance: payment consume
++                if (buyA.isEmpty()) {
++                    // payment may already be empty after take; death handled if we captured ids
++                }
++                for (final java.util.UUID paymentId : paymentParents) {
++                    final boolean stillLive =
++                        (!buyA.isEmpty() && dev.mintychochip.provenance.StackStamp.readId(buyA).map(paymentId::equals).orElse(false))
++                            || (!buyB.isEmpty() && dev.mintychochip.provenance.StackStamp.readId(buyB).map(paymentId::equals).orElse(false));
++                    if (!stillLive) {
++                        dev.mintychochip.provenance.ItemProvenance.death(
++                            paymentId,
++                            dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                            null
++                        );
++                    } else {
++                        if (!buyA.isEmpty()) {
++                            dev.mintychochip.provenance.ItemProvenance.noteConsumed(buyA);
++                        }
++                        if (!buyB.isEmpty()) {
++                            dev.mintychochip.provenance.ItemProvenance.noteConsumed(buyB);
++                        }
++                    }
++                }
++                // mintychochip end - item provenance
+             }
+ 
+             this.merchant.overrideXp(this.merchant.getVillagerXp() + offer.getXp());

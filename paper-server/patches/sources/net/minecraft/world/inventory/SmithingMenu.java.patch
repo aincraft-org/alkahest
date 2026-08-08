@@ -10,6 +10,51 @@
  
      public SmithingMenu(final int containerId, final Inventory inventory) {
          this(containerId, inventory, ContainerLevelAccess.NULL);
+@@ -70,6 +_,18 @@
+ 
+     @Override
+     protected void onTake(final Player player, final ItemStack carried) {
++        // mintychochip start - item provenance: smithing transform
++        final java.util.List<java.util.UUID> parents = dev.mintychochip.provenance.ItemProvenance.collectParents(
++            this.getRelevantItems()
++        );
++        if (!carried.isEmpty()) {
++            dev.mintychochip.provenance.ItemProvenance.onSpecialRecipe(
++                carried,
++                parents,
++                dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++            );
++        }
++        // mintychochip end - item provenance
+         carried.onCraftedBy(player, carried.getCount());
+         this.resultSlots.awardUsedRecipes(player, this.getRelevantItems());
+         this.shrinkStackInSlot(0);
+@@ -89,8 +_,25 @@
+     private void shrinkStackInSlot(final int slot) {
+         ItemStack stack = this.inputSlots.getItem(slot);
+         if (!stack.isEmpty()) {
++            // mintychochip start - item provenance
++            final java.util.Optional<java.util.UUID> id =
++                dev.mintychochip.provenance.StackStamp.readId(stack);
++            // mintychochip end - item provenance
+             stack.shrink(1);
+             this.inputSlots.setItem(slot, stack);
++            // mintychochip start - item provenance
++            if (stack.isEmpty()) {
++                id.ifPresent(uuid ->
++                    dev.mintychochip.provenance.ItemProvenance.death(
++                        uuid,
++                        dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                        null
++                    )
++                );
++            } else {
++                dev.mintychochip.provenance.ItemProvenance.noteConsumed(stack);
++            }
++            // mintychochip end - item provenance
+         }
+     }
+ 
 @@ -103,6 +_,7 @@
                  && this.getSlot(2).hasItem()
                  && !this.getSlot(this.getResultSlot()).hasItem();

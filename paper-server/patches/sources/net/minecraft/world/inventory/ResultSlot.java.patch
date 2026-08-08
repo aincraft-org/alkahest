@@ -34,3 +34,75 @@
          this.checkTakeAchievements(carried);
          CraftingInput.Positioned positionedRecipe = this.craftSlots.asPositionedCraftInput();
          CraftingInput input = positionedRecipe.input();
+@@ -94,17 +_,71 @@
+         int recipeTop = positionedRecipe.top();
+         NonNullList<ItemStack> remaining = this.getRemainingItems(input, player.level());
+ 
++        // mintychochip start - item provenance: craft transform + ingredient consume
++        final java.util.List<net.minecraft.world.item.ItemStack> ingredientSnapshot = new java.util.ArrayList<>();
++        for (int y = 0; y < input.height(); y++) {
++            for (int x = 0; x < input.width(); x++) {
++                int slot = x + recipeLeft + (y + recipeTop) * this.craftSlots.getWidth();
++                ingredientSnapshot.add(this.craftSlots.getItem(slot));
++            }
++        }
++        final java.util.List<java.util.UUID> parents =
++            dev.mintychochip.provenance.ItemProvenance.collectParents(ingredientSnapshot);
++        final dev.mintychochip.provenance.StackLocation craftLocation =
++            dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1);
++        if (!carried.isEmpty()) {
++            dev.mintychochip.provenance.ItemProvenance.onCrafted(carried, parents, craftLocation);
++        }
++        // mintychochip end - item provenance
++
+         for (int y = 0; y < input.height(); y++) {
+             for (int x = 0; x < input.width(); x++) {
+                 int slot = x + recipeLeft + (y + recipeTop) * this.craftSlots.getWidth();
+                 ItemStack itemStack = this.craftSlots.getItem(slot);
+                 ItemStack replacement = remaining.get(x + y * input.width());
++                // mintychochip start - item provenance: ingredient consume + remainder parent
++                java.util.Optional<java.util.UUID> consumedId = java.util.Optional.empty();
++                // mintychochip end - item provenance
+                 if (!itemStack.isEmpty()) {
++                    // mintychochip start - item provenance: track ingredient consume
++                    consumedId = dev.mintychochip.provenance.StackStamp.readId(itemStack);
+                     this.craftSlots.removeItem(slot, 1);
+                     itemStack = this.craftSlots.getItem(slot);
++                    if (itemStack.isEmpty()) {
++                        consumedId.ifPresent(id ->
++                            dev.mintychochip.provenance.ItemProvenance.death(
++                                id,
++                                dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                                null
++                            )
++                        );
++                    } else {
++                        dev.mintychochip.provenance.ItemProvenance.noteConsumed(itemStack);
++                    }
++                    // mintychochip end - item provenance
+                 }
+ 
+                 if (!replacement.isEmpty()) {
++                    // mintychochip start - item provenance: craft remainder (empty bucket/bottle)
++                    final java.util.List<java.util.UUID> remainderParents = new java.util.ArrayList<>();
++                    consumedId.ifPresent(remainderParents::add);
++                    if (remainderParents.isEmpty()) {
++                        remainderParents.addAll(parents);
++                    }
++                    if (!remainderParents.isEmpty()) {
++                        dev.mintychochip.provenance.ItemProvenance.onIdentityHandoff(
++                            replacement,
++                            remainderParents,
++                            craftLocation
++                        );
++                    } else {
++                        dev.mintychochip.provenance.ItemProvenance.birthIfAbsent(
++                            replacement,
++                            dev.mintychochip.provenance.ProvenanceSource.SPECIAL_RECIPE,
++                            craftLocation
++                        );
++                    }
++                    // mintychochip end - item provenance
+                     if (itemStack.isEmpty()) {
+                         this.craftSlots.setItem(slot, replacement);
+                     } else if (ItemStack.isSameItemSameComponents(itemStack, replacement)) {

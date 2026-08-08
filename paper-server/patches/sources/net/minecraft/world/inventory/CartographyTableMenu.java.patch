@@ -80,6 +80,45 @@
          this.access = access;
          this.addSlot(new Slot(this.container, 0, 15, 15) {
              @Override
+@@ -66,8 +_,38 @@
+ 
+             @Override
+             public void onTake(final Player player, final ItemStack carried) {
++                // mintychochip start - item provenance: cartography transform
++                final java.util.List<java.util.UUID> cartoParents =
++                    dev.mintychochip.provenance.ItemProvenance.collectParents(
++                        java.util.List.of(
++                            CartographyTableMenu.this.container.getItem(0),
++                            CartographyTableMenu.this.container.getItem(1)
++                        )
++                    );
++                if (!carried.isEmpty()) {
++                    dev.mintychochip.provenance.ItemProvenance.onSpecialRecipe(
++                        carried,
++                        cartoParents,
++                        dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++                    );
++                }
++                final java.util.Optional<java.util.UUID> mapId =
++                    dev.mintychochip.provenance.StackStamp.readId(CartographyTableMenu.this.container.getItem(0));
++                final java.util.Optional<java.util.UUID> extraId =
++                    dev.mintychochip.provenance.StackStamp.readId(CartographyTableMenu.this.container.getItem(1));
++                // mintychochip end - item provenance
+                 CartographyTableMenu.this.slots.get(0).remove(1);
+                 CartographyTableMenu.this.slots.get(1).remove(1);
++                // mintychochip start - item provenance
++                dev.mintychochip.provenance.ItemProvenance.afterInputShrink(
++                    mapId,
++                    CartographyTableMenu.this.container.getItem(0)
++                );
++                dev.mintychochip.provenance.ItemProvenance.afterInputShrink(
++                    extraId,
++                    CartographyTableMenu.this.container.getItem(1)
++                );
++                // mintychochip end - item provenance
+                 carried.getItem().onCraftedBy(carried, player);
+                 access.execute((level, pos) -> {
+                     long gameTime = level.getGameTime();
 @@ -87,10 +_,12 @@
              }
          });

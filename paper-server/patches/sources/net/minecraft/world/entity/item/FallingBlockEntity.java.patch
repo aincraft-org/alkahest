@@ -8,15 +8,18 @@
  
      public FallingBlockEntity(final EntityType<? extends FallingBlockEntity> type, final Level level) {
          super(type, level);
-@@ -97,6 +_,7 @@
+@@ -97,6 +_,10 @@
              pos.getZ() + 0.5,
              state.hasProperty(BlockStateProperties.WATERLOGGED) ? state.setValue(BlockStateProperties.WATERLOGGED, false) : state
          );
 +        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(entity, pos, state.getFluidState().createLegacyBlock())) return entity; // CraftBukkit
++        // mintychochip start - item provenance: placement rides with falling block
++        dev.mintychochip.provenance.ItemProvenance.onEntityPicksBlock(entity.getUUID(), level, pos);
++        // mintychochip end - item provenance
          level.setBlock(pos, state.getFluidState().createLegacyBlock(), Block.UPDATE_ALL);
          level.addFreshEntity(entity);
          return entity;
-@@ -147,13 +_,22 @@
+@@ -147,13 +_,28 @@
      @Override
      public void tick() {
          if (this.blockState.isAir()) {
@@ -31,7 +34,13 @@
 +            // Paper start - Configurable falling blocks height nerf
 +            if (this.level().paperConfig().fixes.fallingBlockHeightNerf.test(v -> this.getY() > v)) {
 +                if (this.dropItem && this.level() instanceof final ServerLevel serverLevel && serverLevel.getGameRules().get(GameRules.ENTITY_DROPS)) {
-+                    this.spawnAtLocation(serverLevel, block);
++                    // mintychochip start - item provenance
++                    final net.minecraft.world.item.ItemStack drop = new net.minecraft.world.item.ItemStack(block);
++                    dev.mintychochip.provenance.ItemProvenance.releaseCarriedOntoStack(this.getUUID(), drop);
++                    this.spawnAtLocation(serverLevel, drop);
++                    // mintychochip end - item provenance
++                } else {
++                    dev.mintychochip.provenance.ItemProvenance.discardCarried(this.getUUID()); // mintychochip
 +                }
 +                this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.OUT_OF_WORLD);
 +                return;
@@ -40,14 +49,21 @@
              this.handlePortal();
              if (this.level() instanceof ServerLevel serverLevel && (this.isAlive() || this.forceTickAfterTeleportToDuplicate)) {
                  BlockPos pos = this.blockPosition();
-@@ -174,12 +_,12 @@
+@@ -174,12 +_,18 @@
                  }
  
                  if (!this.onGround() && !isStuckInWater) {
 -                    if (this.time > 100 && (pos.getY() <= this.level().getMinY() || pos.getY() > this.level().getMaxY()) || this.time > 600) {
 +                    if ((this.time > 100 && this.autoExpire) && (pos.getY() <= this.level().getMinY() || pos.getY() > this.level().getMaxY()) || (this.time > 600 && this.autoExpire)) { // Paper - Expand FallingBlock API
                          if (this.dropItem && serverLevel.getGameRules().get(GameRules.ENTITY_DROPS)) {
-                             this.spawnAtLocation(serverLevel, block);
+-                            this.spawnAtLocation(serverLevel, block);
++                            // mintychochip start - item provenance
++                            final net.minecraft.world.item.ItemStack drop = new net.minecraft.world.item.ItemStack(block);
++                            dev.mintychochip.provenance.ItemProvenance.releaseCarriedOntoStack(this.getUUID(), drop);
++                            this.spawnAtLocation(serverLevel, drop);
++                            // mintychochip end - item provenance
++                        } else {
++                            dev.mintychochip.provenance.ItemProvenance.discardCarried(this.getUUID()); // mintychochip
                          }
  
 -                        this.discard();
@@ -55,7 +71,7 @@
                      }
                  } else {
                      BlockState currentState = this.level().getBlockState(pos);
-@@ -196,11 +_,17 @@
+@@ -196,11 +_,24 @@
                                      this.blockState = this.blockState.setValue(BlockStateProperties.WATERLOGGED, true);
                                  }
  
@@ -66,6 +82,13 @@
 +                                }
 +                                // CraftBukkit end
                                  if (this.level().setBlock(pos, this.blockState, Block.UPDATE_ALL)) {
++                                    // mintychochip start - item provenance: restore placement at landing pos
++                                    dev.mintychochip.provenance.ItemProvenance.onEntityPlacesBlock(
++                                        this.getUUID(),
++                                        this.level(),
++                                        pos
++                                    );
++                                    // mintychochip end - item provenance
                                      serverLevel.getChunkSource()
                                          .chunkMap
                                          .sendToTrackingPlayers(this, new ClientboundBlockUpdatePacket(pos, this.level().getBlockState(pos)));
@@ -74,38 +97,56 @@
                                      if (block instanceof Fallable fallable) {
                                          fallable.onLand(this.level(), pos, this.blockState, currentState, this);
                                      }
-@@ -225,19 +_,19 @@
+@@ -225,19 +_,32 @@
                                          }
                                      }
                                  } else if (this.dropItem && serverLevel.getGameRules().get(GameRules.ENTITY_DROPS)) {
 -                                    this.discard();
 +                                    this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DROP); // CraftBukkit - add Bukkit remove cause
                                      this.callOnBrokenAfterFall(block, pos);
-                                     this.spawnAtLocation(serverLevel, block);
+-                                    this.spawnAtLocation(serverLevel, block);
++                                    // mintychochip start - item provenance
++                                    final net.minecraft.world.item.ItemStack drop = new net.minecraft.world.item.ItemStack(block);
++                                    dev.mintychochip.provenance.ItemProvenance.releaseCarriedOntoStack(this.getUUID(), drop);
++                                    this.spawnAtLocation(serverLevel, drop);
++                                    // mintychochip end - item provenance
++                                } else {
++                                    dev.mintychochip.provenance.ItemProvenance.discardCarried(this.getUUID()); // mintychochip
                                  }
                              } else {
 -                                this.discard();
 +                                this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DROP); // CraftBukkit - add Bukkit remove cause
                                  if (this.dropItem && serverLevel.getGameRules().get(GameRules.ENTITY_DROPS)) {
                                      this.callOnBrokenAfterFall(block, pos);
-                                     this.spawnAtLocation(serverLevel, block);
+-                                    this.spawnAtLocation(serverLevel, block);
++                                    // mintychochip start - item provenance
++                                    final net.minecraft.world.item.ItemStack drop = new net.minecraft.world.item.ItemStack(block);
++                                    dev.mintychochip.provenance.ItemProvenance.releaseCarriedOntoStack(this.getUUID(), drop);
++                                    this.spawnAtLocation(serverLevel, drop);
++                                    // mintychochip end - item provenance
++                                } else {
++                                    dev.mintychochip.provenance.ItemProvenance.discardCarried(this.getUUID()); // mintychochip
                                  }
                              }
                          } else {
 -                            this.discard();
 +                            this.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
++                            dev.mintychochip.provenance.ItemProvenance.discardCarried(this.getUUID()); // mintychochip
                              this.callOnBrokenAfterFall(block, pos);
                          }
                      }
-@@ -297,6 +_,7 @@
+@@ -297,6 +_,10 @@
          }
  
          output.putBoolean("CancelDrop", this.cancelDrop);
 +        if (!this.autoExpire) output.putBoolean("Paper.AutoExpire", false); // Paper - Expand FallingBlock API
++        // mintychochip start - item provenance: persist carried placement across save
++        dev.mintychochip.provenance.ItemProvenance.saveCarriedTo(this.getUUID(), output);
++        // mintychochip end - item provenance
      }
  
      @Override
-@@ -308,8 +_,9 @@
+@@ -308,8 +_,12 @@
          this.fallDamagePerDistance = input.getFloatOr("FallHurtAmount", 0.0F);
          this.fallDamageMax = input.getIntOr("FallHurtMax", 40);
          this.dropItem = input.getBooleanOr("DropItem", true);
@@ -113,6 +154,9 @@
 +        this.blockData = input.read("TileEntityData", CompoundTag.CODEC).map(blockData -> this.level().paperConfig().entities.spawning.filterBadTileEntityNbtFromFallingBlocks && this.blockState.getBlock() instanceof net.minecraft.world.level.block.GameMasterBlock ? null : blockData).map(CompoundTag::copy).orElse(null); // Paper - Filter bad block entity nbt data from falling blocks
          this.cancelDrop = input.getBooleanOr("CancelDrop", false);
 +        this.autoExpire = input.getBooleanOr("Paper.AutoExpire", true); // Paper - Expand FallingBlock API
++        // mintychochip start - item provenance
++        dev.mintychochip.provenance.ItemProvenance.loadCarriedFrom(this.getUUID(), input);
++        // mintychochip end - item provenance
      }
  
      public void setHurtsEntities(final float damagePerDistance, final int damageMax) {

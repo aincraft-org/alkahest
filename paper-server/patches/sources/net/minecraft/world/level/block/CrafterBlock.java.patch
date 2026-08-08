@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/CrafterBlock.java
 +++ b/net/minecraft/world/level/block/CrafterBlock.java
-@@ -156,6 +_,13 @@
+@@ -156,9 +_,25 @@
              } else {
                  RecipeHolder<CraftingRecipe> pickedRecipe = recipe.get();
                  ItemStack results = pickedRecipe.value().assemble(var11);
@@ -14,6 +14,43 @@
                  if (results.isEmpty()) {
                      level.levelEvent(LevelEvent.SOUND_CRAFTER_FAIL, pos, 0);
                  } else {
++                    // mintychochip start - item provenance: crafter craft
++                    final java.util.List<java.util.UUID> parents =
++                        dev.mintychochip.provenance.ItemProvenance.collectParents(blockEntity.getItems());
++                    dev.mintychochip.provenance.ItemProvenance.onCrafted(
++                        results,
++                        parents,
++                        dev.mintychochip.provenance.StackLocation.labeled("crafter:" + pos.getX() + "," + pos.getY() + "," + pos.getZ())
++                    );
++                    // mintychochip end - item provenance
+                     blockEntity.setCraftingTicksRemaining(6);
+                     level.setBlock(pos, state.setValue(CRAFTING, true), Block.UPDATE_CLIENTS);
+                     results.onCraftedBySystem(level);
+@@ -172,7 +_,24 @@
+ 
+                     blockEntity.getItems().forEach(it -> {
+                         if (!it.isEmpty()) {
++                            // mintychochip start - item provenance
++                            final java.util.Optional<java.util.UUID> id =
++                                dev.mintychochip.provenance.StackStamp.readId(it);
++                            // mintychochip end - item provenance
+                             it.shrink(1);
++                            // mintychochip start - item provenance
++                            if (it.isEmpty()) {
++                                id.ifPresent(uuid ->
++                                    dev.mintychochip.provenance.ItemProvenance.death(
++                                        uuid,
++                                        dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                                        null
++                                    )
++                                );
++                            } else {
++                                dev.mintychochip.provenance.ItemProvenance.noteConsumed(it);
++                            }
++                            // mintychochip end - item provenance
+                         }
+                     });
+                     blockEntity.setChanged();
 @@ -197,7 +_,25 @@
          Container into = HopperBlockEntity.getContainerAt(level, pos.relative(direction));
          ItemStack remaining = results.copy();

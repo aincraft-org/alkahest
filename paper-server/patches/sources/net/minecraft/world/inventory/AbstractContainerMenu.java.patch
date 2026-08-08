@@ -99,15 +99,24 @@
                  Slot slot = this.slots.get(slotIndex);
                  ItemStack carriedItemStack = this.getCarried();
                  if (canItemQuickReplace(slot, carriedItemStack, true)
-@@ -374,6 +_,7 @@
+@@ -374,6 +_,16 @@
                      }
  
                      int remaining = this.getCarried().getCount();
 +                    it.unimi.dsi.fastutil.ints.Int2ObjectMap<net.minecraft.world.item.ItemStack> draggedSlots = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(); // CraftBukkit - Store slots from drag in map (raw slot id -> new stack)
++
++                    // mintychochip start - item provenance: capture pre-drag slot identities
++                    final java.util.Map<Integer, java.util.UUID> preSlotIds = new java.util.HashMap<>();
++                    for (Slot pre : this.quickcraftSlots) {
++                        if (pre != null && pre.hasItem()) {
++                            dev.mintychochip.provenance.StackStamp.readId(pre.getItem()).ifPresent(id -> preSlotIds.put(pre.index, id));
++                        }
++                    }
++                    // mintychochip end - item provenance
  
                      for (Slot slot : this.quickcraftSlots) {
                          ItemStack carriedItemStack = this.getCarried();
-@@ -386,12 +_,42 @@
+@@ -386,12 +_,76 @@
                              int maxSize = Math.min(source.getMaxStackSize(), slot.getMaxStackSize(source));
                              int newCount = Math.min(getQuickCraftPlaceCount(this.quickcraftSlots.size(), this.quickcraftType, source) + carry, maxSize);
                              remaining -= newCount - carry;
@@ -149,6 +158,40 @@
 +                            view.setItem(entry.getIntKey(), org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(entry.getValue()));
 +                        }
 +                        this.setCarried(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getCursor()));
++                        // mintychochip start - item provenance: each drag destination is a distinct split child
++                        final java.util.Optional<java.util.UUID> dragParent = dev.mintychochip.provenance.StackStamp.readId(source);
++                        if (dragParent.isPresent()) {
++                            final int remainingAfterDrag = remaining;
++                            for (final it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry<net.minecraft.world.item.ItemStack> entry : draggedSlots.int2ObjectEntrySet()) {
++                                final net.minecraft.world.item.ItemStack dest = entry.getValue();
++                                if (dest.isEmpty()) {
++                                    continue;
++                                }
++                                final java.util.Optional<java.util.UUID> childId =
++                                    dev.mintychochip.provenance.ItemProvenance.mintChild(dest, dragParent.get(), remainingAfterDrag);
++                                childId.ifPresent(id -> {
++                                    final java.util.UUID pre = preSlotIds.get(entry.getIntKey());
++                                    if (pre != null && !pre.equals(id)) {
++                                        dev.mintychochip.provenance.ItemProvenance.death(
++                                            pre,
++                                            dev.mintychochip.provenance.ProvenanceReason.MERGED,
++                                            id
++                                        );
++                                    }
++                                });
++                            }
++                            if (remainingAfterDrag <= 0) {
++                                dev.mintychochip.provenance.ItemProvenance.death(
++                                    dragParent.get(),
++                                    dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                                    null
++                                );
++                            } else {
++                                dev.mintychochip.provenance.ItemProvenance.live().get(dragParent.get())
++                                    .ifPresent(e -> e.setCount(remainingAfterDrag));
++                            }
++                        }
++                        // mintychochip end - item provenance
 +                    } else {
 +                        this.setCarried(oldCarried);
 +                    }
@@ -169,6 +212,30 @@
                      } else {
                          player.drop(this.getCarried().split(1), true);
                      }
+@@ -460,7 +_,23 @@
+                         } else if (ItemStack.isSameItemSameComponents(clicked, carried)) {
+                             Optional<ItemStack> newCarried = slot.tryRemove(clicked.getCount(), carried.getMaxStackSize() - carried.getCount(), player);
+                             newCarried.ifPresent(itemsTaken -> {
++                                // mintychochip start - item provenance: menu merge into cursor
++                                final java.util.Optional<java.util.UUID> absorbedId =
++                                    dev.mintychochip.provenance.StackStamp.readId(itemsTaken);
++                                final int moved = itemsTaken.getCount();
++                                // mintychochip end - item provenance
+                                 carried.grow(itemsTaken.getCount());
++                                // mintychochip start - item provenance
++                                // itemsTaken was fully moved into carried; slot remaining is clicked after tryRemove
++                                dev.mintychochip.provenance.ItemProvenance.afterContainerMerge(
++                                    carried,
++                                    itemsTaken.copyWithCount(0),
++                                    absorbedId,
++                                    moved,
++                                    dev.mintychochip.provenance.StackLocation.labeled("menu-slot:" + slot.index),
++                                    dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++                                );
++                                // mintychochip end - item provenance
+                                 slot.onTake(player, itemsTaken);
+                             });
+                         }
 @@ -468,8 +_,18 @@
                  }
  

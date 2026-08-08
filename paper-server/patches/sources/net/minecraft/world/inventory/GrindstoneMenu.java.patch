@@ -62,8 +62,29 @@
          this.access = access;
          this.addSlot(new Slot(this.repairSlots, 0, 49, 19) {
              @Override
-@@ -68,7 +_,11 @@
+@@ -66,15 +_,54 @@
+ 
+             @Override
              public void onTake(final Player player, final ItemStack carried) {
++                // mintychochip start - item provenance: grindstone transform
++                final java.util.List<java.util.UUID> grindParents = dev.mintychochip.provenance.ItemProvenance.collectParents(
++                    java.util.List.of(
++                        GrindstoneMenu.this.repairSlots.getItem(0),
++                        GrindstoneMenu.this.repairSlots.getItem(1)
++                    )
++                );
++                if (!carried.isEmpty()) {
++                    dev.mintychochip.provenance.ItemProvenance.onSpecialRecipe(
++                        carried,
++                        grindParents,
++                        dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++                    );
++                }
++                final java.util.Optional<java.util.UUID> g0 =
++                    dev.mintychochip.provenance.StackStamp.readId(GrindstoneMenu.this.repairSlots.getItem(0));
++                final java.util.Optional<java.util.UUID> g1 =
++                    dev.mintychochip.provenance.StackStamp.readId(GrindstoneMenu.this.repairSlots.getItem(1));
++                // mintychochip end - item provenance
                  access.execute((level, pos) -> {
                      if (level instanceof ServerLevel serverLevel) {
 -                        ExperienceOrb.award(serverLevel, Vec3.atCenterOf(pos), this.getExperienceAmount(level));
@@ -75,6 +96,28 @@
                      }
  
                      level.levelEvent(LevelEvent.SOUND_GRINDSTONE_USED, pos, 0);
+                 });
+                 GrindstoneMenu.this.repairSlots.setItem(0, ItemStack.EMPTY);
+                 GrindstoneMenu.this.repairSlots.setItem(1, ItemStack.EMPTY);
++                // mintychochip start - item provenance
++                g0.ifPresent(id ->
++                    dev.mintychochip.provenance.ItemProvenance.death(
++                        id,
++                        dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                        null
++                    )
++                );
++                g1.ifPresent(id ->
++                    dev.mintychochip.provenance.ItemProvenance.death(
++                        id,
++                        dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                        null
++                    )
++                );
++                // mintychochip end - item provenance
+             }
+ 
+             private int getExperienceAmount(final Level level) {
 @@ -105,6 +_,7 @@
              }
          });

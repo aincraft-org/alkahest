@@ -72,7 +72,7 @@
  
      public BrewingStandBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
          super(BlockEntityTypes.BREWING_STAND, worldPosition, blockState);
-@@ -99,8 +_,21 @@
+@@ -99,8 +_,26 @@
      public static void serverTick(final Level level, final BlockPos pos, final BlockState selfState, final BrewingStandBlockEntity entity) {
          ItemStack fuel = entity.items.get(4);
          if (entity.fuel <= 0 && fuel.is(ItemTags.BREWING_FUEL)) {
@@ -90,7 +90,12 @@
 +
 +            entity.fuel = event.getFuelPower();
 +            if (entity.fuel > 0 && event.isConsuming()) {
++                // mintychochip start - item provenance: brewing fuel
++                final java.util.Optional<java.util.UUID> fuelId =
++                    dev.mintychochip.provenance.StackStamp.readId(fuel);
 +                fuel.shrink(1);
++                dev.mintychochip.provenance.ItemProvenance.afterInputShrink(fuelId, fuel);
++                // mintychochip end - item provenance
 +            }
 +            // CraftBukkit end
              setChanged(level, pos, selfState);
@@ -121,7 +126,7 @@
              entity.ingredient = ingredient.getItem();
              setChanged(level, pos, selfState);
          }
-@@ -172,13 +_,37 @@
+@@ -172,21 +_,116 @@
          return false;
      }
  
@@ -130,12 +135,23 @@
          ItemStack ingredient = items.get(3);
          PotionBrewing potionBrewing = level.potionBrewing();
  
+-        for (int dest = 0; dest < 3; dest++) {
+-            items.set(dest, potionBrewing.mix(ingredient, items.get(dest)));
+-        }
++        // mintychochip start - item provenance: capture brew parents before mix
++        final java.util.Optional<java.util.UUID> ingredientId =
++            dev.mintychochip.provenance.StackStamp.readId(ingredient);
++        final java.util.Optional<java.util.UUID>[] bottleParents = new java.util.Optional[3];
++        for (int dest = 0; dest < 3; dest++) {
++            bottleParents[dest] = dev.mintychochip.provenance.StackStamp.readId(items.get(dest));
++        }
++        final dev.mintychochip.provenance.StackLocation brewHolder = dev.mintychochip.provenance.StackLocation.labeled("brewing:" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
++        // mintychochip end - item provenance
++
 +        // CraftBukkit start
 +        org.bukkit.inventory.InventoryHolder owner = entity.getOwner();
 +        java.util.List<org.bukkit.inventory.ItemStack> brewResults = new java.util.ArrayList<>(3);
-         for (int dest = 0; dest < 3; dest++) {
--            items.set(dest, potionBrewing.mix(ingredient, items.get(dest)));
--        }
++        for (int dest = 0; dest < 3; dest++) {
 +            brewResults.add(dest, org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potionBrewing.mix(ingredient, items.get(dest))));
 +        }
 +
@@ -159,9 +175,80 @@
 +            }
 +        }
 +        // CraftBukkit end
++
++        // mintychochip start - item provenance: stamp brew results + consume bottles/ingredient
++        for (int dest = 0; dest < 3; dest++) {
++            final ItemStack brewed = items.get(dest);
++            if (brewed.isEmpty()) {
++                // Bottle was consumed even when a plugin emptied the result.
++                bottleParents[dest].ifPresent(id ->
++                    dev.mintychochip.provenance.ItemProvenance.death(
++                        id,
++                        dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                        null
++                    )
++                );
++                continue;
++            }
++            final java.util.List<java.util.UUID> parents = new java.util.ArrayList<>();
++            bottleParents[dest].ifPresent(parents::add);
++            ingredientId.ifPresent(parents::add);
++            dev.mintychochip.provenance.ItemProvenance.onSpecialRecipe(brewed, parents, brewHolder);
++            bottleParents[dest].ifPresent(id ->
++                dev.mintychochip.provenance.ItemProvenance.death(
++                    id,
++                    dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                    null
++                )
++            );
++        }
++        // mintychochip end - item provenance
  
          ingredient.shrink(1);
++        // mintychochip start - item provenance
++        if (ingredient.isEmpty()) {
++            ingredientId.ifPresent(id ->
++                dev.mintychochip.provenance.ItemProvenance.death(
++                    id,
++                    dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                    null
++                )
++            );
++        } else {
++            dev.mintychochip.provenance.ItemProvenance.noteConsumed(ingredient);
++        }
++        // mintychochip end - item provenance
          ItemStackTemplate remainder = ingredient.getItem().getCraftingRemainder();
+         if (remainder != null) {
+             if (ingredient.isEmpty()) {
+-                ingredient = remainder.create();
++                final ItemStack remainderStack = remainder.create();
++                // mintychochip start - item provenance
++                ingredientId.ifPresent(id ->
++                    dev.mintychochip.provenance.ItemProvenance.onIdentityHandoff(
++                        remainderStack,
++                        java.util.List.of(id),
++                        brewHolder
++                    )
++                );
++                // mintychochip end - item provenance
++                ingredient = remainderStack;
+             } else {
+-                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), remainder.create());
++                final ItemStack droppedRemainder = remainder.create();
++                // mintychochip start - item provenance
++                ingredientId.ifPresent(id ->
++                    dev.mintychochip.provenance.ItemProvenance.onIdentityHandoff(
++                        droppedRemainder,
++                        java.util.List.of(id),
++                        brewHolder
++                    )
++                );
++                // mintychochip end - item provenance
++                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), droppedRemainder);
+             }
+         }
+ 
 @@ -217,13 +_,13 @@
  
      @Override

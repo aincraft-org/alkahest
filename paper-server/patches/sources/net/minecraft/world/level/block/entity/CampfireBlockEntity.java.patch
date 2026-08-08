@@ -8,7 +8,7 @@
  
      public CampfireBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
          super(BlockEntityTypes.CAMPFIRE, worldPosition, blockState);
-@@ -64,12 +_,42 @@
+@@ -64,12 +_,60 @@
              ItemStack itemStack = entity.items.get(slot);
              if (!itemStack.isEmpty()) {
                  changed = true;
@@ -42,6 +42,24 @@
 +                        apiResult = blockCookEvent.getResult();
 +                        result = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(apiResult);
 +                        // CraftBukkit end
++                        // mintychochip start - item provenance: campfire smelt
++                        final java.util.Optional<java.util.UUID> inputId =
++                            dev.mintychochip.provenance.StackStamp.readId(itemStack);
++                        if (!result.isEmpty()) {
++                            dev.mintychochip.provenance.ItemProvenance.onSmelted(
++                                result,
++                                inputId.orElse(null),
++                                dev.mintychochip.provenance.StackLocation.labeled("campfire:" + pos.getX() + "," + pos.getY() + "," + pos.getZ())
++                            );
++                        }
++                        inputId.ifPresent(id ->
++                            dev.mintychochip.provenance.ItemProvenance.death(
++                                id,
++                                dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                                null
++                            )
++                        );
++                        // mintychochip end - item provenance
 +                        // Paper start - Fix item locations dropped from campfires
 +                        double deviation = 0.05F * RandomSource.GAUSSIAN_SPREAD_FACTOR;
 +                        while (!result.isEmpty()) {

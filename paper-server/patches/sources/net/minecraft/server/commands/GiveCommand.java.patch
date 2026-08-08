@@ -1,7 +1,118 @@
 --- a/net/minecraft/server/commands/GiveCommand.java
 +++ b/net/minecraft/server/commands/GiveCommand.java
-@@ -63,7 +_,7 @@
+@@ -1,15 +_,23 @@
+ package net.minecraft.server.commands;
+ 
+ import com.mojang.brigadier.CommandDispatcher;
++import com.mojang.brigadier.StringReader;
+ import com.mojang.brigadier.arguments.IntegerArgumentType;
++import com.mojang.brigadier.arguments.StringArgumentType;
+ import com.mojang.brigadier.exceptions.CommandSyntaxException;
++import com.mojang.brigadier.suggestion.Suggestions;
++import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+ import java.util.Collection;
++import java.util.List;
++import java.util.Locale;
++import java.util.concurrent.CompletableFuture;
+ import net.minecraft.commands.CommandBuildContext;
+ import net.minecraft.commands.CommandSourceStack;
+ import net.minecraft.commands.Commands;
++import net.minecraft.commands.SharedSuggestionProvider;
+ import net.minecraft.commands.arguments.EntityArgument;
+-import net.minecraft.commands.arguments.item.ItemArgument;
+ import net.minecraft.commands.arguments.item.ItemInput;
++import net.minecraft.commands.arguments.item.ItemParser;
+ import net.minecraft.network.chat.Component;
+ import net.minecraft.server.level.ServerPlayer;
+ import net.minecraft.sounds.SoundEvents;
+@@ -21,20 +_,33 @@
+     public static final int MAX_ALLOWED_ITEMSTACKS = 100;
+ 
+     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
++        // mintychochip:
++        // Use brigadier word (string) instead of minecraft:item_stack for the item arg.
++        // The client validates item_stack against its local item registry and paints unknown
++        // ids red — custom Materials only exist server-side. String args stay white/green;
++        // ItemParser still resolves vanilla + custom + components on execute.
+         dispatcher.register(
+             Commands.literal("give")
+                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                 .then(
+                     Commands.argument("targets", EntityArgument.players())
+                         .then(
+-                            Commands.argument("item", ItemArgument.item(context))
+-                                .executes(c -> giveItem(c.getSource(), ItemArgument.getItem(c, "item"), EntityArgument.getPlayers(c, "targets"), 1))
++                            Commands.argument("item", StringArgumentType.word())
++                                .suggests((ctx, builder) -> suggestItemsWithCustom(context, builder))
++                                .executes(
++                                    c -> giveItem(
++                                        c.getSource(),
++                                        parseItem(context, StringArgumentType.getString(c, "item")),
++                                        EntityArgument.getPlayers(c, "targets"),
++                                        1
++                                    )
++                                )
+                                 .then(
+                                     Commands.argument("count", IntegerArgumentType.integer(1))
+                                         .executes(
+                                             c -> giveItem(
+                                                 c.getSource(),
+-                                                ItemArgument.getItem(c, "item"),
++                                                parseItem(context, StringArgumentType.getString(c, "item")),
+                                                 EntityArgument.getPlayers(c, "targets"),
+                                                 IntegerArgumentType.getInteger(c, "count")
+                                             )
+@@ -45,6 +_,39 @@
+         );
+     }
+ 
++    // mintychochip start - parse item word via ItemParser (custom Materials + components)
++    private static ItemInput parseItem(final CommandBuildContext context, final String raw) throws CommandSyntaxException {
++        return new ItemParser(context).parse(new StringReader(raw));
++    }
++
++    private static CompletableFuture<Suggestions> suggestItemsWithCustom(
++        final CommandBuildContext context,
++        final SuggestionsBuilder builder
++    ) {
++        final String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
++        try {
++            for (final dev.mintychochip.customblock.CustomBlockDefinition def
++                : dev.mintychochip.customblock.CustomBlocks.all()) {
++                final String full = def.namespacedKey().toString();
++                final String ns = def.namespacedKey().getNamespace();
++                final String path = def.namespacedKey().getKey();
++                if (remaining.isEmpty()
++                    || SharedSuggestionProvider.matchesSubStr(remaining, full.toLowerCase(Locale.ROOT))
++                    || SharedSuggestionProvider.matchesSubStr(remaining, ns)
++                    || SharedSuggestionProvider.matchesSubStr(remaining, path)) {
++                    builder.suggest(full);
++                }
++            }
++        } catch (final Throwable ignored) {
++            // catalog not ready
++        }
++        final SuggestionsBuilder vanillaBuilder = builder.createOffset(builder.getStart());
++        return new ItemParser(context)
++            .fillSuggestions(vanillaBuilder)
++            .thenApply(vanilla -> Suggestions.merge(builder.getInput(), List.of(builder.build(), vanilla)));
++    }
++    // mintychochip end - parse item word via ItemParser
++
+     private static int giveItem(final CommandSourceStack source, final ItemInput input, final Collection<ServerPlayer> players, final int count) throws CommandSyntaxException {
+         ItemStack prototypeItemStack = input.createItemStack(1);
+         int maxStackSize = prototypeItemStack.getMaxStackSize();
+@@ -61,9 +_,16 @@
+                 int size = Math.min(maxStackSize, remaining);
+                 remaining -= size;
                  ItemStack copyToDrop = prototypeItemStack.copyWithCount(size);
++                // mintychochip start - item provenance: /give birth
++                dev.mintychochip.provenance.ItemProvenance.birth(
++                    copyToDrop,
++                    dev.mintychochip.provenance.ProvenanceSource.GIVE,
++                    dev.mintychochip.provenance.StackLocation.playerSlot(player.getUUID(), -1)
++                );
++                // mintychochip end - item provenance
                  boolean added = player.getInventory().add(copyToDrop);
                  if (added && copyToDrop.isEmpty()) {
 -                    ItemEntity drop = player.drop(prototypeItemStack.copy(), false);

@@ -379,7 +379,7 @@
  
      public void updatePOIOnBlockStateChange(final BlockPos pos, final BlockState oldState, final BlockState newState) {
      }
-@@ -279,20 +_,38 @@
+@@ -279,20 +_,42 @@
      }
  
      @Override
@@ -419,6 +419,10 @@
 -            Block.dropResources(blockState, this, pos, blockEntity, breaker, ItemStack.EMPTY);
 +            Block.dropResources(blockState, this, pos, blockEntity, breaker, ItemStack.EMPTY, false); // Paper - Properly handle xp dropping
 +            blockState.getBlock().popExperience((ServerLevel) this, pos, xp, breaker); // Paper - Properly handle xp dropping; custom amount
++        } else {
++            // mintychochip start - item provenance: clear placement when destroyed without drops
++            dev.mintychochip.provenance.ItemProvenance.clearPlacement(this, pos);
++            // mintychochip end - item provenance
          }
  
          boolean destroyed = this.setBlock(pos, fluidState.createLegacyBlock(), Block.UPDATE_ALL, updateLimit);

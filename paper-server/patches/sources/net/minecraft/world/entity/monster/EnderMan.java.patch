@@ -31,7 +31,23 @@
      }
  
      @Override
-@@ -207,6 +_,15 @@
+@@ -197,6 +_,9 @@
+         }
+ 
+         this.addPersistentAngerSaveData(output);
++        // mintychochip start - item provenance: persist placement while carrying a block
++        dev.mintychochip.provenance.ItemProvenance.saveCarriedTo(this.getUUID(), output);
++        // mintychochip end - item provenance
+     }
+ 
+     @Override
+@@ -204,9 +_,21 @@
+         super.readAdditionalSaveData(input);
+         this.setCarriedBlock(input.read("carriedBlockState", BlockState.CODEC).filter(blockState -> !blockState.isAir()).orElse(null));
+         this.readPersistentAngerSaveData(this.level(), input);
++        // mintychochip start - item provenance
++        dev.mintychochip.provenance.ItemProvenance.loadCarriedFrom(this.getUUID(), input);
++        // mintychochip end - item provenance
      }
  
      private boolean isBeingStaredBy(final Player player) {
@@ -100,7 +116,7 @@
      @Override
      public boolean requiresCustomPersistence() {
          return super.requiresCustomPersistence() || this.getCarriedBlock() != null;
-@@ -451,16 +_,19 @@
+@@ -451,16 +_,26 @@
              int yt = Mth.floor(this.enderman.getY() + random.nextDouble() * 2.0);
              int zt = Mth.floor(this.enderman.getZ() - 1.0 + random.nextDouble() * 2.0);
              BlockPos pos = new BlockPos(xt, yt, zt);
@@ -115,6 +131,13 @@
                  if (this.canPlaceBlock(level, pos, carried, targetState, belowState, below)) {
 +                    if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.enderman, pos, carried)) { // CraftBukkit - Place event
                      level.setBlock(pos, carried, Block.UPDATE_ALL);
++                    // mintychochip start - item provenance: restore placement after enderman place
++                    dev.mintychochip.provenance.ItemProvenance.onEntityPlacesBlock(
++                        this.enderman.getUUID(),
++                        level,
++                        pos
++                    );
++                    // mintychochip end - item provenance
                      level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(this.enderman, carried));
                      this.enderman.setCarriedBlock(null);
 +                    } // CraftBukkit
@@ -130,7 +153,7 @@
                              this.enderman.teleport();
                          }
  
-@@ -591,15 +_,18 @@
+@@ -591,15 +_,25 @@
              int yt = Mth.floor(this.enderman.getY() + random.nextDouble() * 3.0);
              int zt = Mth.floor(this.enderman.getZ() - 2.0 + random.nextDouble() * 4.0);
              BlockPos pos = new BlockPos(xt, yt, zt);
@@ -143,6 +166,13 @@
              boolean reachable = result.getBlockPos().equals(pos);
              if (blockState.is(BlockTags.ENDERMAN_HOLDABLE) && reachable) {
 +                if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.enderman, pos, blockState.getFluidState().createLegacyBlock())) { // Paper - Place event
++                // mintychochip start - item provenance: carry placement while held
++                dev.mintychochip.provenance.ItemProvenance.onEntityPicksBlock(
++                    this.enderman.getUUID(),
++                    level,
++                    pos
++                );
++                // mintychochip end - item provenance
                  level.removeBlock(pos, false);
                  level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(this.enderman, blockState));
                  this.enderman.setCarriedBlock(blockState.getBlock().defaultBlockState());

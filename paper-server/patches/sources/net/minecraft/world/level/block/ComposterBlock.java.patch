@@ -12,7 +12,7 @@
                  level.levelEvent(LevelEvent.COMPOSTER_FILL, pos, state != newState ? 1 : 0);
                  player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
                  itemStack.consume(1, player);
-@@ -287,7 +_,19 @@
+@@ -287,8 +_,25 @@
      ) {
          int fillLevel = state.getValue(LEVEL);
          if (fillLevel < 7 && COMPOSTABLES.containsKey(itemStack.getItem())) {
@@ -30,10 +30,16 @@
 +            }
 +            // Paper end
 +            // CraftBukkit end
++            // mintychochip start - item provenance: hopper/composter consume
++            final java.util.Optional<java.util.UUID> compostId =
++                dev.mintychochip.provenance.StackStamp.readId(itemStack);
              itemStack.shrink(1);
++            dev.mintychochip.provenance.ItemProvenance.afterInputShrink(compostId, itemStack);
++            // mintychochip end - item provenance
              return newState;
          } else {
-@@ -296,6 +_,14 @@
+             return state;
+@@ -296,9 +_,25 @@
      }
  
      public static BlockState extractProduce(final Entity sourceEntity, final BlockState state, final Level level, final BlockPos pos) {
@@ -47,7 +53,19 @@
 +        // CraftBukkit end
          if (!level.isClientSide()) {
              Vec3 itemPos = Vec3.atLowerCornerWithOffset(pos, 0.5, 1.01, 0.5).offsetRandomXZ(level.getRandom(), 0.7F);
-             ItemEntity entity = new ItemEntity(level, itemPos.x(), itemPos.y(), itemPos.z(), new ItemStack(Items.BONE_MEAL));
+-            ItemEntity entity = new ItemEntity(level, itemPos.x(), itemPos.y(), itemPos.z(), new ItemStack(Items.BONE_MEAL));
++            final ItemStack boneMeal = new ItemStack(Items.BONE_MEAL);
++            // mintychochip start - item provenance: composter bone meal birth
++            dev.mintychochip.provenance.ItemProvenance.birthIfAbsent(
++                boneMeal,
++                dev.mintychochip.provenance.ProvenanceSource.LOOT,
++                dev.mintychochip.provenance.StackLocation.labeled("composter:" + pos.getX() + "," + pos.getY() + "," + pos.getZ())
++            );
++            // mintychochip end - item provenance
++            ItemEntity entity = new ItemEntity(level, itemPos.x(), itemPos.y(), itemPos.z(), boneMeal);
+             entity.setDefaultPickUpDelay();
+             level.addFreshEntity(entity);
+         }
 @@ -315,17 +_,45 @@
          return newState;
      }
@@ -95,9 +113,20 @@
          level.setBlock(pos, newState, Block.UPDATE_ALL);
          level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
          if (newLevel == 7) {
-@@ -369,13 +_,14 @@
+@@ -367,15 +_,24 @@
+     public WorldlyContainer getContainer(final BlockState state, final LevelAccessor level, final BlockPos pos) {
+         int contentLevel = state.getValue(LEVEL);
          if (contentLevel == 8) {
-             return new ComposterBlock.OutputContainer(state, level, pos, new ItemStack(Items.BONE_MEAL));
+-            return new ComposterBlock.OutputContainer(state, level, pos, new ItemStack(Items.BONE_MEAL));
++            // mintychochip start - item provenance: hopper OutputContainer bone-meal birth
++            final ItemStack boneMeal = new ItemStack(Items.BONE_MEAL);
++            dev.mintychochip.provenance.ItemProvenance.birthIfAbsent(
++                boneMeal,
++                dev.mintychochip.provenance.ProvenanceSource.LOOT,
++                dev.mintychochip.provenance.StackLocation.labeled("composter:" + pos.getX() + "," + pos.getY() + "," + pos.getZ())
++            );
++            // mintychochip end - item provenance
++            return new ComposterBlock.OutputContainer(state, level, pos, boneMeal);
          } else {
 -            return contentLevel < 7 ? new ComposterBlock.InputContainer(state, level, pos) : new ComposterBlock.EmptyContainer();
 +            return contentLevel < 7 ? new ComposterBlock.InputContainer(state, level, pos) : new ComposterBlock.EmptyContainer(level, pos); // CraftBukkit - empty levelAccessor, blockPos

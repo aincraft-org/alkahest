@@ -58,7 +58,7 @@
      private @Nullable Item item;
      private static final int CACHE_SIZE = 256;
      private static final ThreadLocal<Object2ByteLinkedOpenHashMap<Block.ShapePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
-@@ -382,6 +_,27 @@
+@@ -382,10 +_,37 @@
          return state.getDrops(params);
      }
  
@@ -78,6 +78,9 @@
 +            }
 +            state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, false); // Paper - Properly handle xp dropping
 +            block.popExperience(serverLevel, pos, event.getExpToDrop()); // Paper - Properly handle xp dropping
++            // mintychochip start - item provenance: clear placement after break drops
++            dev.mintychochip.provenance.ItemProvenance.clearPlacement(level, pos);
++            // mintychochip end - item provenance
 +        }
 +        return true;
 +    }
@@ -86,20 +89,32 @@
      public static void dropResources(final BlockState state, final Level level, final BlockPos pos) {
          if (level instanceof ServerLevel serverLevel) {
              getDrops(state, serverLevel, pos, null).forEach(stack -> popResource(level, pos, stack));
-@@ -396,6 +_,12 @@
+             state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
++            // mintychochip start - item provenance: clear placement after break drops
++            dev.mintychochip.provenance.ItemProvenance.clearPlacement(level, pos);
++            // mintychochip end - item provenance
          }
      }
  
+@@ -393,8 +_,17 @@
+         if (level instanceof ServerLevel serverLevel) {
+             getDrops(state, serverLevel, pos, blockEntity).forEach(stack -> popResource(serverLevel, pos, stack));
+             state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
++            // mintychochip start - item provenance
++            dev.mintychochip.provenance.ItemProvenance.clearPlacement(serverLevel, pos);
++            // mintychochip end - item provenance
+         }
+     }
++
 +    // Paper start - Properly handle xp dropping
 +    public static void dropResources(final BlockState state, final Level level, final BlockPos pos, final @Nullable BlockEntity blockEntity, final @Nullable Entity breaker, final ItemStack tool) {
 +        dropResources(state, level, pos, blockEntity, breaker, tool, true);
 +    }
 +    // Paper end - Properly handle xp dropping
-+
+ 
      public static void dropResources(
          final BlockState state,
-         final Level level,
-@@ -403,10 +_,11 @@
+@@ -403,10 +_,14 @@
          final @Nullable BlockEntity blockEntity,
          final @Nullable Entity breaker,
          final ItemStack tool
@@ -109,11 +124,40 @@
              getDrops(state, serverLevel, pos, blockEntity, breaker, tool).forEach(stack -> popResource(level, pos, stack));
 -            state.spawnAfterBreak(serverLevel, pos, tool, true);
 +            state.spawnAfterBreak(serverLevel, pos, tool, dropExperience); // Paper - Properly handle xp dropping
++            // mintychochip start - item provenance: clear placement after break drops
++            dev.mintychochip.provenance.ItemProvenance.clearPlacement(level, pos);
++            // mintychochip end - item provenance
          }
      }
  
-@@ -439,13 +_,25 @@
+@@ -416,7 +_,7 @@
+         double x = pos.getX() + 0.5 + Mth.nextDouble(random, -0.25, 0.25);
+         double y = pos.getY() + 0.5 + Mth.nextDouble(random, -0.25, 0.25) - halfHeight;
+         double z = pos.getZ() + 0.5 + Mth.nextDouble(random, -0.25, 0.25);
+-        popResource(level, () -> new ItemEntity(level, x, y, z, itemStack), itemStack);
++        popResource(level, () -> new ItemEntity(level, x, y, z, itemStack), itemStack, pos);
+     }
+ 
+     public static void popResourceFromFace(final Level level, final BlockPos pos, final Direction face, final ItemStack itemStack) {
+@@ -432,20 +_,40 @@
+         double deltaX = stepX == 0 ? Mth.nextDouble(random, -0.1, 0.1) : stepX * 0.1;
+         double deltaY = stepY == 0 ? Mth.nextDouble(random, 0.0, 0.1) : stepY * 0.1 + 0.1;
+         double deltaZ = stepZ == 0 ? Mth.nextDouble(random, -0.1, 0.1) : stepZ * 0.1;
+-        popResource(level, () -> new ItemEntity(level, x, y, z, itemStack, deltaX, deltaY, deltaZ), itemStack);
++        popResource(level, () -> new ItemEntity(level, x, y, z, itemStack, deltaX, deltaY, deltaZ), itemStack, pos);
+     }
+ 
+-    private static void popResource(final Level level, final Supplier<ItemEntity> entityFactory, final ItemStack itemStack) {
++    private static void popResource(
++        final Level level,
++        final Supplier<ItemEntity> entityFactory,
++        final ItemStack itemStack,
++        final BlockPos pos
++    ) {
          if (level instanceof ServerLevel serverLevel && !itemStack.isEmpty() && serverLevel.getGameRules().get(GameRules.BLOCK_DROPS)) {
++            // mintychochip start - item provenance: BLOCK_RECOVER if placed, else BLOCK_DROP
++            dev.mintychochip.provenance.ItemProvenance.stampBlockDrop(level, pos, itemStack);
++            // mintychochip end - item provenance
              ItemEntity entity = entityFactory.get();
              entity.setDefaultPickUpDelay();
 -            level.addFreshEntity(entity);
@@ -154,7 +198,7 @@
      public void playerDestroy(
          final Level level,
          final Player player,
-@@ -470,10 +_,13 @@
+@@ -470,10 +_,17 @@
          final BlockState state,
          final @Nullable BlockEntity blockEntity,
          final ItemStack destroyedWith
@@ -166,6 +210,10 @@
 +        player.causeFoodExhaustion(0.005F, org.bukkit.event.entity.EntityExhaustionEvent.ExhaustionReason.BLOCK_MINED); // CraftBukkit - EntityExhaustionEvent
 +        if (includeDrops) { // Paper - fix drops not preventing stats/food exhaustion
 +        dropResources(state, level, pos, blockEntity, player, destroyedWith, dropExp); // Paper - Properly handle xp dropping
++        } else {
++            // mintychochip start - item provenance: creative/no-drop break still clears placement
++            dev.mintychochip.provenance.ItemProvenance.clearPlacement(level, pos);
++            // mintychochip end - item provenance
 +        } // Paper - fix drops not preventing stats/food exhaustion
      }
  

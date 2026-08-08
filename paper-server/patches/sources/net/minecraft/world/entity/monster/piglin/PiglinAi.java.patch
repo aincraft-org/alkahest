@@ -56,6 +56,19 @@
                      putInInventory(body, mainHandItem);
                  } else {
                      throwItems(body, Collections.singletonList(mainHandItem));
+@@ -441,6 +_,12 @@
+             body.swing(InteractionHand.OFF_HAND);
+ 
+             for (ItemStack itemStack : itemStacks) {
++                // mintychochip start - item provenance: piglin barter / throw loot
++                dev.mintychochip.provenance.ItemProvenance.birthLoot(
++                    itemStack,
++                    dev.mintychochip.provenance.StackLocation.labeled("piglin:" + body.getUUID())
++                );
++                // mintychochip end - item provenance
+                 BehaviorUtils.throwItem(body, itemStack, targetPos.add(0.0, 1.0, 0.0));
+             }
+         }
 @@ -464,7 +_,7 @@
              return false;
          } else if (isAdmiringDisabled(body) && body.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {

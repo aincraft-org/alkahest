@@ -44,3 +44,17 @@
          List<Integer> availableSlots = this.getAvailableSlots(container, random);
          this.shuffleAndSplitItems(itemStacks, availableSlots.size(), random);
  
+@@ -159,6 +_,13 @@
+             if (itemStack.isEmpty()) {
+                 container.setItem(availableSlots.remove(availableSlots.size() - 1), ItemStack.EMPTY);
+             } else {
++                // mintychochip start - item provenance: chest/loot container birth
++                dev.mintychochip.provenance.ItemProvenance.birthIfAbsent(
++                    itemStack,
++                    dev.mintychochip.provenance.ProvenanceSource.LOOT,
++                    dev.mintychochip.provenance.StackLocation.labeled("loot_container")
++                );
++                // mintychochip end - item provenance
+                 container.setItem(availableSlots.remove(availableSlots.size() - 1), itemStack);
+             }
+         }

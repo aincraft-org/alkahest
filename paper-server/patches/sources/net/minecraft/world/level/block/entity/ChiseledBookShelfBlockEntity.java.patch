@@ -61,11 +61,19 @@
          }
  
          return retrievedItem;
-@@ -91,7 +_,7 @@
+@@ -91,7 +_,15 @@
      public void setItem(final int slot, final ItemStack itemStack) {
          if (this.acceptsItemType(itemStack)) {
              this.getItems().set(slot, itemStack);
 -            this.updateState(slot);
++            // mintychochip start - item provenance: chiseled bookshelf park
++            if (!itemStack.isEmpty()) {
++                final String holder = this.level != null
++                    ? "bookshelf:" + this.worldPosition.getX() + "," + this.worldPosition.getY() + "," + this.worldPosition.getZ()
++                    : "bookshelf";
++                dev.mintychochip.provenance.ItemProvenance.onParked(itemStack, dev.mintychochip.provenance.StackLocation.labeled(holder));
++            }
++            // mintychochip end - item provenance
 +            if (this.level != null) this.updateState(slot); // CraftBukkit - SPIGOT-7381: check for null world
          } else if (itemStack.isEmpty()) {
              this.removeItem(slot, this.getMaxStackSize());

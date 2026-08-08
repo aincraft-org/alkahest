@@ -64,11 +64,14 @@
          level.setBlock(this.worldPosition, turnsInto.defaultBlockState(), Block.UPDATE_ALL);
      }
  
-@@ -141,7 +_,12 @@
+@@ -141,8 +_,27 @@
              double zo = dropPos.getZ() + 0.5 * centerRange + halfSize;
              ItemEntity entity = new ItemEntity(level, xo, yo, zo, this.item.split(level.getRandom().nextInt(21) + 10));
              entity.setDeltaMovement(Vec3.ZERO);
 -            level.addFreshEntity(entity);
++            // mintychochip start - item provenance: split() stamps the dropped part; track it for event outcome
++            final java.util.Optional<java.util.UUID> droppedId = dev.mintychochip.provenance.StackStamp.readId(entity.getItem());
++            // mintychochip end - item provenance
 +            // CraftBukkit start
 +            if (user instanceof final ServerPlayer serverPlayer) {
 +                org.bukkit.block.Block bblock = org.bukkit.craftbukkit.block.CraftBlock.at(this.level, this.worldPosition);
@@ -76,5 +79,17 @@
 +            }
 +            // CraftBukkit end
              this.item = ItemStack.EMPTY;
++            // mintychochip start - item provenance: cancelled drop leaves no phantom live identity
++            if (entity.isRemoved() || entity.getItem().isEmpty()) {
++                droppedId.ifPresent(id ->
++                    dev.mintychochip.provenance.ItemProvenance.death(
++                        id,
++                        dev.mintychochip.provenance.ProvenanceReason.DESTROYED,
++                        null
++                    )
++                );
++            }
++            // mintychochip end - item provenance
          }
      }
+ 

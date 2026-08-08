@@ -41,7 +41,7 @@
          double spawnX = position.x();
          double spawnY = position.y();
          double spawnZ = position.z();
-@@ -46,7 +_,43 @@
+@@ -46,7 +_,56 @@
              random.triangle(0.2, 0.0172275 * accuracy),
              random.triangle(direction.getStepZ() * pow, 0.0172275 * accuracy)
          );
@@ -51,6 +51,12 @@
 +    // CraftBukkit start - void -> boolean return
 +    public static boolean spawnItem(Level level, ItemStack itemStack, int accuracy, Direction direction, Position position, BlockSource source) {
 +        if (itemStack.isEmpty()) return true;
++        // mintychochip start - item provenance: dispenser/dropper eject ensure
++        dev.mintychochip.provenance.ItemProvenance.ensure(
++            itemStack,
++            dev.mintychochip.provenance.StackLocation.labeled("dispenser:" + source.pos().getX() + "," + source.pos().getY() + "," + source.pos().getZ())
++        );
++        // mintychochip end - item provenance
 +        ItemEntity itemEntity = DefaultDispenseItemBehavior.prepareItem(level, itemStack, accuracy, direction, position);
 +
 +        org.bukkit.block.Block block = org.bukkit.craftbukkit.block.CraftBlock.at(level, source.pos());
@@ -63,7 +69,14 @@
 +            return false;
 +        }
 +
-+        itemEntity.setItem(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getItem()));
++        final ItemStack dispensed = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getItem());
++        // mintychochip start - item provenance
++        dev.mintychochip.provenance.ItemProvenance.ensure(
++            dispensed,
++            dev.mintychochip.provenance.StackLocation.labeled("dispenser:" + source.pos().getX() + "," + source.pos().getY() + "," + source.pos().getZ())
++        );
++        // mintychochip end - item provenance
++        itemEntity.setItem(dispensed);
 +        itemEntity.setDeltaMovement(org.bukkit.craftbukkit.util.CraftVector.toVec3(event.getVelocity()));
 +
 +        if (source.state().is(net.minecraft.world.level.block.Blocks.DISPENSER) && !event.getItem().getType().equals(craftItem.getType())) {

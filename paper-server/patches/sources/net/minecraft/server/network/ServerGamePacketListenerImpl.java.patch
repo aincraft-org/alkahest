@@ -2367,7 +2367,7 @@
              }
          }
      }
-@@ -2040,10 +_,48 @@
+@@ -2040,13 +_,79 @@
  
              boolean validSlot = packet.slotNum() >= 1 && packet.slotNum() <= 45;
              boolean validData = itemStack.isEmpty() || itemStack.getCount() <= itemStack.getMaxStackSize();
@@ -2409,6 +2409,31 @@
 +            }
 +            // CraftBukkit end
              if (validSlot && validData) {
++                // mintychochip start - item provenance: creative slot replacement
++                if (!itemStack.isEmpty()) {
++                    // Overwritten slot identity leaves the census.
++                    dev.mintychochip.provenance.StackStamp.readId(this.player.inventoryMenu.getSlot(packet.slotNum()).getItem())
++                        .ifPresent(old -> dev.mintychochip.provenance.ItemProvenance.death(
++                            old,
++                            dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                            null
++                        ));
++                    // The slot copy is a fresh server identity; spawn/use hooks track it further.
++                    dev.mintychochip.provenance.ItemProvenance.birth(
++                        itemStack,
++                        dev.mintychochip.provenance.ProvenanceSource.GIVE,
++                        dev.mintychochip.provenance.StackLocation.playerSlot(this.player.getUUID(), packet.slotNum())
++                    );
++                } else {
++                    // Slot cleared: the old identity is gone.
++                    dev.mintychochip.provenance.StackStamp.readId(this.player.inventoryMenu.getSlot(packet.slotNum()).getItem())
++                        .ifPresent(old -> dev.mintychochip.provenance.ItemProvenance.death(
++                            old,
++                            dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                            null
++                        ));
++                }
++                // mintychochip end - item provenance
                  this.player.inventoryMenu.getSlot(packet.slotNum()).setByPlayer(itemStack);
                  this.player.inventoryMenu.setRemoteSlot(packet.slotNum(), itemStack);
                  this.player.inventoryMenu.broadcastChanges();
@@ -2416,6 +2441,12 @@
              } else if (drop && validData) {
                  if (this.dropSpamThrottler.isUnderThreshold()) {
                      this.dropSpamThrottler.increment();
++                    // mintychochip start - item provenance: leave birth to the accepted drop path
++                    // (Entity.spawnAtLocation births/transfers only after EntityDropItemEvent)
++                    // mintychochip end - item provenance
+                     this.player.drop(itemStack, true);
+                 } else {
+                     LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
 @@ -2057,15 +_,38 @@
  
      @Override

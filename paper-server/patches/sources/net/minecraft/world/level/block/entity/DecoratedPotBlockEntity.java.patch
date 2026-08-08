@@ -76,3 +76,18 @@
      }
  
      public Direction getDirection() {
+@@ -151,6 +_,14 @@
+     public void setTheItem(final ItemStack itemStack) {
+         this.unpackLootTable(null);
+         this.item = itemStack;
++        // mintychochip start - item provenance: decorated pot park
++        if (!this.item.isEmpty()) {
++            final String holder = this.level != null
++                ? "pot:" + this.worldPosition.getX() + "," + this.worldPosition.getY() + "," + this.worldPosition.getZ()
++                : "pot";
++            dev.mintychochip.provenance.ItemProvenance.onParked(this.item, dev.mintychochip.provenance.StackLocation.labeled(holder));
++        }
++        // mintychochip end - item provenance
+     }
+ 
+     @Override

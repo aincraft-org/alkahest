@@ -75,6 +75,21 @@
          }
  
          @Override
+@@ -151,6 +_,14 @@
+ 
+     public void setBook(final ItemStack book, final @Nullable Player resolutionContext) {
+         this.book = this.resolveBook(book, resolutionContext);
++        // mintychochip start - item provenance: lectern park
++        if (!this.book.isEmpty()) {
++            final String holder = this.level != null
++                ? "lectern:" + this.worldPosition.getX() + "," + this.worldPosition.getY() + "," + this.worldPosition.getZ()
++                : "lectern";
++            dev.mintychochip.provenance.ItemProvenance.onParked(this.book, dev.mintychochip.provenance.StackLocation.labeled(holder));
++        }
++        // mintychochip end - item provenance
+         this.page = 0;
+         this.pageCount = getPageCount(this.book);
+         this.setChanged();
 @@ -161,7 +_,7 @@
          if (newPage != this.page) {
              this.page = newPage;

@@ -8,7 +8,7 @@
          if (placementState == null) {
              return InteractionResult.FAIL;
          }
-@@ -73,21 +_,52 @@
+@@ -73,21 +_,73 @@
          Player player = updatedPlaceContext.getPlayer();
          ItemStack itemStack = updatedPlaceContext.getItemInHand();
          BlockState placedState = level.getBlockState(pos);
@@ -58,8 +58,29 @@
 +        if (player == null) // Paper - Fix block place logic; reintroduce this for the dispenser (i.e the shulker)
          level.playSound(player, pos, this.getPlaceSound(placedState), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
          level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, placedState));
++        // mintychochip start - item provenance: placement memory before consume
++        final java.util.Optional<java.util.UUID> placedId =
++            dev.mintychochip.provenance.ItemProvenance.idOf(itemStack);
++        dev.mintychochip.provenance.ItemProvenance.onBlockPlaced(level, pos, itemStack, player);
++        final java.util.Optional<java.util.UUID> stackId = placedId.isPresent()
++            ? placedId
++            : dev.mintychochip.provenance.ItemProvenance.idOf(itemStack);
++        // mintychochip end - item provenance
          itemStack.consume(1, player);
 -        return InteractionResult.SUCCESS;
++        // mintychochip start - item provenance: note consume after place
++        if (itemStack.isEmpty()) {
++            stackId.ifPresent(id ->
++                dev.mintychochip.provenance.ItemProvenance.death(
++                    id,
++                    dev.mintychochip.provenance.ProvenanceReason.CONSUMED,
++                    null
++                )
++            );
++        } else {
++            dev.mintychochip.provenance.ItemProvenance.noteConsumed(itemStack);
++        }
++        // mintychochip end - item provenance
 +        return InteractionResult.SUCCESS.configurePaper(context); // Paper
      }
  
