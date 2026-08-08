@@ -335,6 +335,13 @@ tasks.registerRunTask("runPaperclip") {
     classpath(tasks.createPaperclipJar.flatMap { it.outputZip })
     mainClass.set(null as String?)
 }
+tasks.named<io.papermc.paperweight.tasks.CreateBundlerJar>("createBundlerJar") {
+    outputZip.set(layout.buildDirectory.file("libs/alkahest-bundler-${project.version}.jar"))
+}
+
+tasks.named<io.papermc.paperweight.tasks.CreatePaperclipJar>("createPaperclipJar") {
+    outputZip.set(layout.buildDirectory.file("libs/alkahest-paperclip-${project.version}.jar"))
+}
 fill {
     project("alkahest")
     versionFamily(paperweight.minecraftVersion.map { it.split(".", "-").takeWhile { part -> part.toIntOrNull() != null }.take(2).joinToString(".") })
