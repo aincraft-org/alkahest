@@ -11,7 +11,7 @@
 | **UUID** | Unique stack-instance id stamped in `CUSTOM_DATA` → `MintyProvenance` |
 | **Birth** | Stack enters the economy (drop, craft, give, …) |
 | **Death** | UUID leaves live census (consumed, merged, destroyed) |
-| **Lineage** | Parent UUID list (split/craft/smelt/trade) for history walks |
+| **Lineage** | Ordered parent UUID list for split/craft/smelt/trade/merge history walks |
 | **Live census** | `uuid → holder` map; second distinct holder → **COLLISION** (dupe) |
 
 ### Rules
@@ -20,15 +20,21 @@
 2. Partial `split` **mints** child UUID with `parent=[parentId]`.
 3. Full split (parent emptied) **moves** identity with the items.
 4. Craft / smelt / special / trade **mint** result UUID with parent ingredient UUIDs.
-5. Provenance stamp is **ignored** for `isSameItemSameComponents` so stacks still merge.
-6. Restart **rehydrates** stamped stacks into the live census (not a new birth).
-7. `birthIfAbsent` avoids double-mint when multiple hooks fire on the same stack.
-8. **Placement memory:** place stamps the block pos with the stack UUID; break
+5. A successful merge **mints** a `MERGE` UUID with ordered parents
+   `[targetIdBefore, sourceIdBefore]`; the old target UUID dies and the source UUID
+   dies only when fully absorbed. A partial source remainder keeps its UUID and
+   updated count.
+6. Merging two stacks with the same UUID records `DUPLICATE_MERGE`; it never
+   launders quantity or mints a replacement identity.
+7. Provenance stamp is **ignored** for `isSameItemSameComponents` so stacks still merge.
+8. Restart **rehydrates** stamped stacks into the live census (not a new birth).
+9. `birthIfAbsent` avoids double-mint when multiple hooks fire on the same stack.
+10. **Placement memory:** place stamps the block pos with the stack UUID; break
    re-emits {@code BLOCK_RECOVER} children (anti place→break wash).
-9. **Persistence:** per-dimension {@code ProvenancePlacementsData} SavedData
+11. **Persistence:** per-dimension {@code ProvenancePlacementsData} SavedData
    (`mintychochip/provenance_placements`) auto-saves with the world.
-10. **Pistons:** placement moves with pushed blocks.
-11. **Dispensers / machine place:** any {@code BlockItem.place} path (player or null player)
+12. **Pistons:** placement moves with pushed blocks.
+13. **Dispensers / machine place:** any {@code BlockItem.place} path (player or null player)
     records placement with placer {@code machine} when no player.
 
 ## Example narrative
@@ -42,6 +48,16 @@ c1,c2,c3,sticks    DEATH CONSUMED
 P claimed by steve
 P claimed by hacker  → COLLISION id=P
 explain(P) walks pickaxe → cobble/sticks ancestors
+```
+
+Merge example:
+
+```
+target cobble       BIRTH BLOCK_DROP id=T
+source cobble       BIRTH LOOT id=S
+target + source     BIRTH MERGE parents=[T,S] id=M
+T, S                DEATH MERGED (full absorption)
+explain(M) walks M → target/source ancestors
 ```
 
 ## Layout
@@ -67,15 +83,15 @@ explain(P) walks pickaxe → cobble/sticks ancestors
 | `EnderMan` take/place | carry placement while held |
 | `PiglinAi.throwItemsTowardPos` | LOOT birth (barter) |
 | `BrushableBlockEntity.dropContent` | LOOT birth (archaeology) |
-| `Inventory.addResource` | player inv merge → {@code afterContainerMerge} |
-| `HopperBlockEntity.tryMoveInItem` | hopper/chest/any container merge |
-| `TransportItemsBetweenContainers` | copper golem chest pickup + deposit/merge |
-| `Slot.safeInsert` | all menu/GUI slot merges |
-| `AbstractContainerMenu` cursor merge | shift/click into cursor |
+| `Inventory.addResource` | player inventory merge → capture both pre-merge UUIDs; emit `MERGE` node |
+| `HopperBlockEntity.tryMoveInItem` | hopper/chest/any container merge with both pre-merge UUIDs |
+| `TransportItemsBetweenContainers` | copper golem chest pickup + deposit/merge with lineage |
+| `Slot.safeInsert` | all menu/GUI slot merges with lineage |
+| `AbstractContainerMenu` cursor merge | shift/click into cursor; craft result is stamped before transfer |
 | `FallingBlockEntity` / `EnderMan` NBT | entity-carried placement survives save |
 | `AuditFileSink` | {@code <world>/mintychochip/provenance-audit.jsonl} |
 | `ProvenancePlacementsData` | world SavedData persistence |
-| `ResultSlot.onTake` | CRAFT + ingredient death |
+| `ResultSlot` craft transfer / `onTake` | preflight, `CRAFT` stamp before move, idempotent follow-up |
 | `CrafterBlock.dispenseFrom` | CRAFT |
 | `AbstractFurnaceBlockEntity.burn` | SMELT |
 | `CampfireBlockEntity.cookTick` | SMELT |
@@ -87,7 +103,7 @@ explain(P) walks pickaxe → cobble/sticks ancestors
 | `FishingHook.retrieve` | LOOT |
 | `Entity.spawnAtLocation` | ENTITY_DROP if unstamped |
 | `ItemEntity` pickup / remove | CLAIM; DEATH on despawn/void/destroy |
-| `ItemEntity.merge` | MERGE death |
+| `ItemEntity.merge` | `MERGE` node from both pre-merge UUIDs; source remains live on partial merge |
 | `AnvilMenu.onTake` | SPECIAL_RECIPE + input death |
 | `GrindstoneMenu` result take | SPECIAL_RECIPE + input death |
 | `LoomMenu` result take | SPECIAL_RECIPE + banner/dye consume |
