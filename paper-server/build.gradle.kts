@@ -260,6 +260,16 @@ sourceSets {
     }
 }
 
+// Gradle 9 validation: compileJava reads src/minecraft/java, which is written by the
+// paperweight patching tasks. Declare the edge explicitly (paperweight core 2.0.0-beta.21
+// doesn't wire it, and Gradle 9.4 rejects implicit dependencies between these).
+tasks.named("compileJava") {
+    dependsOn("applySourcePatches", "applyFeaturePatches", "applyResourcePatches")
+}
+tasks.named("processResources") {
+    dependsOn("applyResourcePatches")
+}
+
 fun TaskContainer.registerRunTask(
     name: String,
     block: JavaExec.() -> Unit
