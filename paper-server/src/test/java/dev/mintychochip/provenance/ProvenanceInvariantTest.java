@@ -82,10 +82,21 @@ public class ProvenanceInvariantTest {
         ItemProvenance.birth(survivor, ProvenanceSource.LOOT, target).orElseThrow();
         final ItemStack duplicate = survivor.copy();
 
+        final Optional<UUID> targetIdBefore = StackStamp.readId(survivor);
+        final Optional<UUID> sourceIdBefore = StackStamp.readId(duplicate);
         survivor.grow(duplicate.getCount());
         duplicate.setCount(0);
-        final Optional<UUID> duplicatedId = StackStamp.readId(survivor);
-        assertTrue(ItemProvenance.afterContainerMerge(survivor, duplicate, duplicatedId, 4, source, target));
+
+        assertTrue(ItemProvenance.afterContainerMerge(
+            survivor,
+            duplicate,
+            targetIdBefore,
+            sourceIdBefore,
+            4,
+            source,
+            target
+        ));
+        assertEquals(targetIdBefore.orElseThrow(), StackStamp.readId(survivor).orElseThrow());
         assertEquals(1, ItemProvenance.collisions().size());
         assertEquals(ProvenanceCollisionKind.DUPLICATE_MERGE, ItemProvenance.collisions().getFirst().kind());
     }

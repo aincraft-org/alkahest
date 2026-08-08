@@ -193,19 +193,32 @@ public class ItemProvenanceTest {
     }
 
     @Test
-    public void mergeAbsorbsUuid() {
-        final ItemStack a = new ItemStack(Items.COBBLESTONE, 10);
-        final ItemStack b = new ItemStack(Items.COBBLESTONE, 5);
-        final UUID idA = ItemProvenance.birth(a, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
-        final UUID idB = ItemProvenance.birth(b, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
+    public void mergeCreatesDerivedUuid() {
+        final ItemStack target = new ItemStack(Items.COBBLESTONE, 10);
+        final ItemStack source = new ItemStack(Items.COBBLESTONE, 5);
+        final UUID targetId = ItemProvenance.birth(target, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        final UUID sourceId = ItemProvenance.birth(source, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
+        final Optional<UUID> targetIdBefore = StackStamp.readId(target);
+        final Optional<UUID> sourceIdBefore = StackStamp.readId(source);
 
-        a.grow(b.getCount());
-        b.setCount(0);
-        ItemProvenance.onMerge(a, b, HAND, CHEST);
+        target.grow(source.getCount());
+        source.setCount(0);
+        assertFalse(ItemProvenance.afterContainerMerge(
+            target,
+            source,
+            targetIdBefore,
+            sourceIdBefore,
+            5,
+            CHEST,
+            HAND
+        ));
 
-        assertTrue(ItemProvenance.live().contains(idA));
-        assertFalse(ItemProvenance.live().contains(idB));
-        assertTrue(ItemProvenance.lineage().get(idB).orElseThrow().dead());
+        final StackProvenance merged = StackStamp.read(target).orElseThrow();
+        assertEquals(ProvenanceSource.MERGE, merged.source());
+        assertEquals(List.of(targetId, sourceId), merged.parents());
+        assertFalse(ItemProvenance.live().contains(targetId));
+        assertFalse(ItemProvenance.live().contains(sourceId));
+        assertTrue(ItemProvenance.live().contains(merged.id()));
         assertTrue(ItemProvenance.collisions().isEmpty());
     }
 
@@ -250,57 +263,106 @@ public class ItemProvenanceTest {
     }
 
     @Test
-    public void inventoryFullMergeDeathsAbsorbedUuid() {
-        final ItemStack a = new ItemStack(Items.DIRT, 32);
-        final ItemStack b = new ItemStack(Items.DIRT, 16);
-        final UUID idA = ItemProvenance.birth(a, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
-        final UUID idB = ItemProvenance.birth(b, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
-        a.grow(b.getCount());
-        ItemProvenance.onInventoryMergeFullyAbsorbed(a, b, HAND, CHEST);
-        assertTrue(ItemProvenance.live().contains(idA));
-        assertFalse(ItemProvenance.live().contains(idB));
-        assertTrue(ItemProvenance.lineage().get(idB).orElseThrow().dead());
+    public void inventoryFullMergeCreatesDerivedUuid() {
+        final ItemStack target = new ItemStack(Items.DIRT, 32);
+        final ItemStack source = new ItemStack(Items.DIRT, 16);
+        final UUID targetId = ItemProvenance.birth(target, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        final UUID sourceId = ItemProvenance.birth(source, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
+        final Optional<UUID> targetIdBefore = StackStamp.readId(target);
+        final Optional<UUID> sourceIdBefore = StackStamp.readId(source);
+
+        target.grow(source.getCount());
+        source.setCount(0);
+        assertFalse(ItemProvenance.afterContainerMerge(
+            target,
+            source,
+            targetIdBefore,
+            sourceIdBefore,
+            16,
+            CHEST,
+            HAND
+        ));
+
+        final UUID mergedId = StackStamp.readId(target).orElseThrow();
+        assertEquals(ProvenanceSource.MERGE, StackStamp.read(target).orElseThrow().source());
+        assertEquals(List.of(targetId, sourceId), StackStamp.read(target).orElseThrow().parents());
+        assertFalse(ItemProvenance.live().contains(targetId));
+        assertFalse(ItemProvenance.live().contains(sourceId));
+        assertTrue(ItemProvenance.live().contains(mergedId));
     }
 
     @Test
-    public void afterContainerMergeWorksForHopperStyleFullAbsorb() {
-        final ItemStack chest = new ItemStack(Items.COBBLESTONE, 40);
-        final ItemStack hopper = new ItemStack(Items.COBBLESTONE, 24);
-        final UUID chestId = ItemProvenance.birth(chest, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
-        final UUID hopId = ItemProvenance.birth(hopper, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+    public void afterContainerMergeCreatesLineageNodeForFullAbsorb() {
+        final ItemStack target = new ItemStack(Items.COBBLESTONE, 40);
+        final ItemStack source = new ItemStack(Items.COBBLESTONE, 24);
+        final UUID targetId = ItemProvenance.birth(target, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
+        final UUID sourceId = ItemProvenance.birth(source, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        final Optional<UUID> targetIdBefore = StackStamp.readId(target);
+        final Optional<UUID> sourceIdBefore = StackStamp.readId(source);
 
         final int moved = 24;
-        final Optional<UUID> absorbed = StackStamp.readId(hopper);
-        hopper.shrink(moved);
-        chest.grow(moved);
-        ItemProvenance.afterContainerMerge(chest, hopper, absorbed, moved, HAND, CHEST);
+        source.shrink(moved);
+        target.grow(moved);
+        assertFalse(ItemProvenance.afterContainerMerge(
+            target,
+            source,
+            targetIdBefore,
+            sourceIdBefore,
+            moved,
+            HAND,
+            CHEST
+        ));
 
-        assertTrue(hopper.isEmpty() || hopper.getCount() == 0);
-        assertEquals(64, chest.getCount());
-        assertTrue(ItemProvenance.live().contains(chestId));
-        assertFalse(ItemProvenance.live().contains(hopId));
-        assertTrue(ItemProvenance.lineage().get(hopId).orElseThrow().dead());
-        assertTrue(ItemProvenance.collisions().isEmpty());
+        final StackProvenance merged = StackStamp.read(target).orElseThrow();
+        assertEquals(64, target.getCount());
+        assertEquals(ProvenanceSource.MERGE, merged.source());
+        assertEquals(List.of(targetId, sourceId), merged.parents());
+        assertNotEquals(targetId, merged.id());
+        assertNotEquals(sourceId, merged.id());
+        assertFalse(ItemProvenance.live().contains(targetId));
+        assertFalse(ItemProvenance.live().contains(sourceId));
+        assertTrue(ItemProvenance.live().contains(merged.id()));
+        assertTrue(ItemProvenance.lineage().get(targetId).orElseThrow().dead());
+        assertTrue(ItemProvenance.lineage().get(sourceId).orElseThrow().dead());
+        assertTrue(ItemProvenance.audit().snapshot().stream()
+            .anyMatch(event -> event.type() == ProvenanceEventType.MERGE && event.id().equals(merged.id())));
     }
 
     @Test
-    public void afterContainerMergePartialKeepsBothLive() {
-        final ItemStack a = new ItemStack(Items.COBBLESTONE, 50);
-        final ItemStack b = new ItemStack(Items.COBBLESTONE, 30);
-        final UUID idA = ItemProvenance.birth(a, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
-        final UUID idB = ItemProvenance.birth(b, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+    public void afterContainerMergeCreatesLineageNodeForPartialMove() {
+        final ItemStack target = new ItemStack(Items.COBBLESTONE, 50);
+        final ItemStack source = new ItemStack(Items.COBBLESTONE, 30);
+        final UUID targetId = ItemProvenance.birth(target, ProvenanceSource.BLOCK_DROP, CHEST).orElseThrow();
+        final UUID sourceId = ItemProvenance.birth(source, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        final Optional<UUID> targetIdBefore = StackStamp.readId(target);
+        final Optional<UUID> sourceIdBefore = StackStamp.readId(source);
 
         final int moved = 14;
-        final Optional<UUID> absorbed = StackStamp.readId(b);
-        b.shrink(moved);
-        a.grow(moved);
-        ItemProvenance.afterContainerMerge(a, b, absorbed, moved, HAND, CHEST);
+        source.shrink(moved);
+        target.grow(moved);
+        assertFalse(ItemProvenance.afterContainerMerge(
+            target,
+            source,
+            targetIdBefore,
+            sourceIdBefore,
+            moved,
+            HAND,
+            CHEST
+        ));
 
-        assertEquals(64, a.getCount());
-        assertEquals(16, b.getCount());
-        assertTrue(ItemProvenance.live().contains(idA));
-        assertTrue(ItemProvenance.live().contains(idB));
-        assertTrue(ItemProvenance.collisions().isEmpty());
+        final StackProvenance merged = StackStamp.read(target).orElseThrow();
+        assertEquals(64, target.getCount());
+        assertEquals(16, source.getCount());
+        assertEquals(ProvenanceSource.MERGE, merged.source());
+        assertEquals(List.of(targetId, sourceId), merged.parents());
+        assertNotEquals(targetId, merged.id());
+        assertNotEquals(sourceId, merged.id());
+        assertEquals(sourceId, StackStamp.readId(source).orElseThrow());
+        assertFalse(ItemProvenance.live().contains(targetId));
+        assertTrue(ItemProvenance.live().contains(sourceId));
+        assertTrue(ItemProvenance.live().contains(merged.id()));
+        assertTrue(ItemProvenance.lineage().get(targetId).orElseThrow().dead());
+        assertFalse(ItemProvenance.lineage().get(sourceId).orElseThrow().dead());
     }
 
     @Test

@@ -68,6 +68,39 @@ public class ProvenancePersistenceTest {
     }
 
     @Test
+    public void mergeSourceAndParentsPersistAndReload() throws Exception {
+        ProvenanceWriter.install(tempDir, message -> {
+        });
+        final ItemStack target = new ItemStack(Items.COBBLESTONE, 40);
+        final ItemStack source = new ItemStack(Items.COBBLESTONE, 24);
+        final UUID targetId = ItemProvenance.birth(target, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        final UUID sourceId = ItemProvenance.birth(source, ProvenanceSource.BLOCK_DROP, StackLocation.labeled("chest:test")).orElseThrow();
+        final Optional<UUID> targetIdBefore = StackStamp.readId(target);
+        final Optional<UUID> sourceIdBefore = StackStamp.readId(source);
+        target.grow(source.getCount());
+        source.setCount(0);
+
+        assertFalse(ItemProvenance.afterContainerMerge(
+            target,
+            source,
+            targetIdBefore,
+            sourceIdBefore,
+            24,
+            StackLocation.labeled("chest:test"),
+            HAND
+        ));
+        final UUID mergedId = StackStamp.readId(target).orElseThrow();
+
+        ProvenanceWriter.flushAndClose();
+        ProvenanceWriter.clearInstall();
+        try (ProvenanceRepository repository = new ProvenanceRepository(tempDir.resolve("mintychochip/provenance.db"))) {
+            final LineageNode loaded = repository.loadLineage(mergedId).orElseThrow();
+            assertEquals(ProvenanceSource.MERGE, loaded.source());
+            assertEquals(List.of(targetId, sourceId), loaded.parents());
+        }
+    }
+
+    @Test
     public void collisionIsPersistedAndReloadable() {
         ProvenanceWriter.install(tempDir, message -> {
         });

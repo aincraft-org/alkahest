@@ -316,7 +316,7 @@ public final class ProvenanceBukkitCommand extends Command {
         sender.sendMessage(text("│", DARK_GRAY));
         sender.sendMessage(
             text("│ ", DARK_GRAY).append(text("lineage", GOLD, BOLD))
-                .append(text("  (parents above → root)", DARK_GRAY))
+                .append(text("  (current stack → contributors)", DARK_GRAY))
         );
         sender.sendMessage(text("│", DARK_GRAY));
 
@@ -466,6 +466,7 @@ public final class ProvenanceBukkitCommand extends Command {
     private static NamedTextColor sourceColor(final ProvenanceSource source) {
         return switch (source) {
             case CRAFT, SMELT, SPECIAL_RECIPE -> AQUA;
+            case MERGE -> AQUA;
             case SPLIT -> LIGHT_PURPLE;
             case BLOCK_DROP, ENTITY_DROP, LOOT -> GREEN;
             case BLOCK_RECOVER -> GOLD;

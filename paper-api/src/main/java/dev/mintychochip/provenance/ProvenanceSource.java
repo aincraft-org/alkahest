@@ -21,6 +21,8 @@ public enum ProvenanceSource {
     SMELT,
     /** Stonecutter, smithing, loom, etc. */
     SPECIAL_RECIPE,
+    /** A container merge derived a new stack identity from target and source. */
+    MERGE,
     /** Split from a parent stack (partial pick). */
     SPLIT,
     /** Admin /give, creative, or explicit mint API. */

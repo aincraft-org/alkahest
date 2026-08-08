@@ -208,14 +208,11 @@ public final class ItemProvenance {
         LINEAGE.put(node);
         LIVE.put(new LiveEntry(id, itemId, location, stack.getCount(), now));
 
-        final ProvenanceEventType eventType =
-            source == ProvenanceSource.CRAFT
-                || source == ProvenanceSource.SMELT
-                || source == ProvenanceSource.SPECIAL_RECIPE
-                || source == ProvenanceSource.TRADE
-                || source == ProvenanceSource.BLOCK_RECOVER
-                ? ProvenanceEventType.TRANSFORM
-                : ProvenanceEventType.BIRTH;
+        final ProvenanceEventType eventType = switch (source) {
+            case MERGE -> ProvenanceEventType.MERGE;
+            case CRAFT, SMELT, SPECIAL_RECIPE, TRADE, BLOCK_RECOVER -> ProvenanceEventType.TRANSFORM;
+            default -> ProvenanceEventType.BIRTH;
+        };
 
         AUDIT.append(new ProvenanceEvent(
             now,
@@ -654,83 +651,63 @@ public final class ItemProvenance {
     }
 
     /**
-     * Two independent stacks combined: survivor keeps identity; absorbed UUID dies.
-     * Merging two stacks that already share a UUID is recorded as a duplicate-merge
-     * collision instead of being silently normalized.
+     * Record a container merge as a new stack identity.
+     *
+     * <p>Call after {@code sourceRemaining} has been shrunk and
+     * {@code targetSurvivor} has been grown. The two UUIDs must be captured before
+     * either stack is mutated. A normal merge retires the old target identity and
+     * creates a {@link ProvenanceSource#MERGE} node with both old identities as
+     * parents. A partial merge leaves the source identity live on its remainder.
+     *
+     * @return true when a duplicate-merge collision was recorded
      */
-    public static boolean onMerge(
-        final @NotNull ItemStack survivor,
-        final @NotNull ItemStack absorbed,
-        final @NotNull StackLocation survivorLocation,
-        final @NotNull StackLocation absorbedLocation
+    public static boolean afterContainerMerge(
+        final @NotNull ItemStack targetSurvivor,
+        final @NotNull ItemStack sourceRemaining,
+        final @NotNull Optional<UUID> targetIdBefore,
+        final @NotNull Optional<UUID> sourceIdBefore,
+        final int amountMoved,
+        final @NotNull StackLocation sourceLocation,
+        final @NotNull StackLocation targetLocation
     ) {
-        if (!enabled) {
+        if (!enabled || targetSurvivor.isEmpty() || amountMoved <= 0
+            || targetIdBefore.isEmpty() || sourceIdBefore.isEmpty()) {
             return false;
         }
-        final Optional<UUID> absorbedId = StackStamp.readId(absorbed);
-        if (!survivor.isEmpty()) {
-            ensure(survivor, survivorLocation);
-        }
-        if (absorbedId.isEmpty()) {
+        final UUID targetId = targetIdBefore.get();
+        final UUID sourceId = sourceIdBefore.get();
+        final Optional<UUID> currentTargetId = StackStamp.readId(targetSurvivor);
+        final Optional<UUID> currentSourceId = StackStamp.readId(sourceRemaining);
+        if (!targetIdBefore.equals(currentTargetId)
+            || (!sourceRemaining.isEmpty() && !sourceIdBefore.equals(currentSourceId))) {
             return false;
         }
-        final Optional<UUID> survivorId = StackStamp.readId(survivor);
-        if (survivorId.isPresent() && survivorId.get().equals(absorbedId.get())) {
-            recordCollision(absorbedId.get(), ProvenanceCollisionKind.DUPLICATE_MERGE, absorbedLocation, survivorLocation);
+        if (targetId.equals(sourceId)) {
+            recordCollision(sourceId, ProvenanceCollisionKind.DUPLICATE_MERGE, sourceLocation, targetLocation);
             return true;
         }
-        death(absorbedId.get(), ProvenanceReason.MERGED, survivorId.orElse(null));
-        if (survivorId.isPresent()) {
-            final long now = System.currentTimeMillis();
-            AUDIT.append(new ProvenanceEvent(
-                now,
-                ProvenanceEventType.MERGE,
-                survivorId.get(),
-                itemId(survivor),
-                null,
-                ProvenanceReason.MERGED,
-                List.of(absorbedId.get()),
-                survivorLocation.display(),
-                null
-            ));
-            final LiveEntry live = LIVE.get(survivorId.get()).orElse(null);
-            if (live != null) {
-                live.setCount(survivor.getCount());
-            }
+
+        final boolean fullyAbsorbed = sourceRemaining.isEmpty() || sourceRemaining.getCount() <= 0;
+        final UUID mergedId = birth(
+            targetSurvivor,
+            ProvenanceSource.MERGE,
+            targetLocation,
+            List.of(targetId, sourceId)
+        ).orElse(null);
+        if (mergedId == null) {
+            return false;
+        }
+        death(targetId, ProvenanceReason.MERGED, mergedId);
+        if (fullyAbsorbed) {
+            death(sourceId, ProvenanceReason.MERGED, mergedId);
+        } else {
+            observe(sourceRemaining, sourceLocation);
         }
         return false;
     }
 
-    public static boolean onInventoryMergeFullyAbsorbed(
-        final @NotNull ItemStack survivor,
-        final @NotNull ItemStack absorbed,
-        final @NotNull StackLocation survivorLocation,
-        final @NotNull StackLocation absorbedLocation
-    ) {
-        if (!enabled || survivor.isEmpty()) {
-            return false;
-        }
-        final Optional<UUID> absorbedId = StackStamp.readId(absorbed);
-        if (absorbedId.isEmpty()) {
-            return false;
-        }
-        final Optional<UUID> survivorId = StackStamp.readId(survivor);
-        if (survivorId.isPresent() && survivorId.get().equals(absorbedId.get())) {
-            recordCollision(absorbedId.get(), ProvenanceCollisionKind.DUPLICATE_MERGE, absorbedLocation, survivorLocation);
-            return true;
-        }
-        if (survivorId.isEmpty()) {
-            ensure(survivor, survivorLocation);
-        }
-        return onMerge(survivor, absorbed, survivorLocation, absorbedLocation);
-    }
-
     /**
-     * Universal container merge (player inv, hopper, chest slot, menu click, …).
-     * Call <strong>after</strong> {@code source} has been shrunk and {@code target}
-     * grown, with {@code absorbedIdBefore} captured from the source before the shrink.
-     *
-     * @return true when a duplicate-merge collision was recorded
+     * Temporary migration delegate for callers that only captured the source UUID.
      */
     public static boolean afterContainerMerge(
         final @NotNull ItemStack targetSurvivor,
@@ -740,40 +717,29 @@ public final class ItemProvenance {
         final @NotNull StackLocation sourceLocation,
         final @NotNull StackLocation targetLocation
     ) {
-        if (!enabled || amountMoved <= 0) {
+        if (!enabled || targetSurvivor.isEmpty() || amountMoved <= 0) {
             return false;
         }
         if (absorbedIdBefore.isEmpty()) {
-            // Unstamped incoming: track whatever remains so partial legacy stacks are not invisible.
             if (!sourceRemaining.isEmpty()) {
                 ensure(sourceRemaining, sourceLocation);
             }
             return false;
         }
-        final UUID absorbedId = absorbedIdBefore.get();
-        final Optional<UUID> survivorId = StackStamp.readId(targetSurvivor);
-        final boolean fullyAbsorbed = sourceRemaining.isEmpty() || sourceRemaining.getCount() <= 0;
-        if (survivorId.isPresent() && survivorId.get().equals(absorbedId)) {
-            // Two independent stacks sharing one identity merged — laundering attempt.
-            recordCollision(absorbedId, ProvenanceCollisionKind.DUPLICATE_MERGE, sourceLocation, targetLocation);
-            return true;
-        }
-        if (fullyAbsorbed) {
-            if (survivorId.isEmpty() && !targetSurvivor.isEmpty()) {
-                ensure(targetSurvivor, targetLocation);
-            }
-            death(absorbedId, ProvenanceReason.MERGED, StackStamp.readId(targetSurvivor).orElse(null));
-            if (!targetSurvivor.isEmpty()) {
-                observe(targetSurvivor, targetLocation);
-            }
-            return false;
-        }
-        // Partial: both identities remain.
-        observe(targetSurvivor, targetLocation);
-        observe(sourceRemaining, sourceLocation);
-        return false;
+        return afterContainerMerge(
+            targetSurvivor,
+            sourceRemaining,
+            StackStamp.readId(targetSurvivor),
+            absorbedIdBefore,
+            amountMoved,
+            sourceLocation,
+            targetLocation
+        );
     }
 
+    /**
+     * Temporary migration delegate for callers that can only provide post-merge stacks.
+     */
     public static boolean afterContainerMerge(
         final @NotNull ItemStack targetSurvivor,
         final @NotNull ItemStack sourceRemaining,
@@ -784,10 +750,63 @@ public final class ItemProvenance {
         return afterContainerMerge(
             targetSurvivor,
             sourceRemaining,
+            StackStamp.readId(targetSurvivor),
             StackStamp.readId(sourceRemaining),
             amountMoved,
             sourceLocation,
             targetLocation
+        );
+    }
+
+    /**
+     * Temporary migration delegate for legacy full-absorption callers.
+     */
+    public static boolean onMerge(
+        final @NotNull ItemStack survivor,
+        final @NotNull ItemStack absorbed,
+        final @NotNull StackLocation survivorLocation,
+        final @NotNull StackLocation absorbedLocation
+    ) {
+        if (!enabled || survivor.isEmpty()) {
+            return false;
+        }
+        ensure(survivor, survivorLocation);
+        final Optional<UUID> sourceIdBefore = StackStamp.readId(absorbed);
+        final ItemStack sourceRemaining = absorbed.copyWithCount(0);
+        return afterContainerMerge(
+            survivor,
+            sourceRemaining,
+            StackStamp.readId(survivor),
+            sourceIdBefore,
+            Math.max(1, absorbed.getCount()),
+            absorbedLocation,
+            survivorLocation
+        );
+    }
+
+    /**
+     * Temporary migration delegate for inventory paths that report full absorption
+     * without retaining a zero-count source stack.
+     */
+    public static boolean onInventoryMergeFullyAbsorbed(
+        final @NotNull ItemStack survivor,
+        final @NotNull ItemStack absorbed,
+        final @NotNull StackLocation survivorLocation,
+        final @NotNull StackLocation absorbedLocation
+    ) {
+        if (!enabled || survivor.isEmpty()) {
+            return false;
+        }
+        ensure(survivor, survivorLocation);
+        final ItemStack sourceRemaining = absorbed.copyWithCount(0);
+        return afterContainerMerge(
+            survivor,
+            sourceRemaining,
+            StackStamp.readId(survivor),
+            StackStamp.readId(absorbed),
+            Math.max(1, absorbed.getCount()),
+            absorbedLocation,
+            survivorLocation
         );
     }
 
