@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/SnowLayerBlock.java
 +++ b/net/minecraft/world/level/block/SnowLayerBlock.java
-@@ -103,6 +_,11 @@
+@@ -103,9 +_,34 @@
      @Override
      protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
          if (level.getBrightness(LightLayer.BLOCK, pos) > 11) {
@@ -11,4 +11,28 @@
 +            // CraftBukkit end
              dropResources(state, level, pos);
              level.removeBlock(pos, false);
-         }
+-        }
++            return;
++        }
++        // mintychochip start - seasonal thaw: melt snow where biome is warm enough to rain
++        // Uses Biome.warmEnoughToRain (already includes Seasons.temperatureSwing). Permanently
++        // frozen biomes stay snowy; winter-only snow peels off after spring/summer/autumn.
++        if (level.getBiome(pos).value().warmEnoughToRain(pos, level.getSeaLevel())) {
++            final int layers = state.getValue(LAYERS);
++            final BlockState next = layers > 1
++                ? state.setValue(LAYERS, layers - 1)
++                : Blocks.AIR.defaultBlockState();
++            if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockFadeEvent(level, pos, next).isCancelled()) {
++                return;
++            }
++            if (layers > 1) {
++                level.setBlock(pos, next, Block.UPDATE_ALL);
++            } else {
++                // Natural thaw — no snowball drops
++                level.removeBlock(pos, false);
++            }
++        }
++        // mintychochip end - seasonal thaw
+     }
+ 
+     @Override
