@@ -132,7 +132,36 @@ public final class ProvenanceSpillJournal {
         if (!Files.isRegularFile(this.path)) {
             return List.of();
         }
-        final List<String> lines = Files.readAllLines(this.path, StandardCharsets.UTF_8);
+        return parseFile(this.path);
+    }
+
+    /**
+     * Atomically seize spill contents for replay: moves the file aside so concurrent
+     * {@link #appendLineage append*} calls create a new spill file, then parses and
+     * deletes the aside copy.
+     */
+    public synchronized @NotNull List<SpillRecord> takeAll() throws IOException {
+        if (!Files.isRegularFile(this.path)) {
+            return List.of();
+        }
+        final Path aside = this.path.resolveSibling(this.path.getFileName().toString() + ".replay");
+        Files.deleteIfExists(aside);
+        Files.move(this.path, aside);
+        try {
+            return parseFile(aside);
+        } finally {
+            Files.deleteIfExists(aside);
+        }
+    }
+
+    public synchronized void truncate() throws IOException {
+        if (Files.exists(this.path)) {
+            Files.delete(this.path);
+        }
+    }
+
+    private static @NotNull List<SpillRecord> parseFile(final @NotNull Path file) throws IOException {
+        final List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
         final List<String> nonBlank = new ArrayList<>(lines.size());
         for (final String line : lines) {
             if (line != null && !line.isBlank()) {
@@ -154,12 +183,6 @@ public final class ProvenanceSpillJournal {
             }
         }
         return List.copyOf(out);
-    }
-
-    public synchronized void truncate() throws IOException {
-        if (Files.exists(this.path)) {
-            Files.delete(this.path);
-        }
     }
 
     public long sizeBytes() {

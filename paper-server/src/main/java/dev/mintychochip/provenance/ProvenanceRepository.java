@@ -289,6 +289,63 @@ public final class ProvenanceRepository implements AutoCloseable {
         return out;
     }
 
+    /** Row count for tests / ops (`SELECT COUNT(*) FROM lineage`). */
+    public synchronized long countLineage() {
+        if (this.failed) {
+            return 0L;
+        }
+        try (PreparedStatement ps = this.connection.prepareStatement("SELECT COUNT(*) FROM lineage");
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getLong(1) : 0L;
+        } catch (final SQLException ex) {
+            this.failed = true;
+            ProvenanceWriter.reportStorageError("lineage count", ex);
+            return 0L;
+        }
+    }
+
+    /**
+     * Run work inside a single SQLite transaction (writer-thread batching).
+     * Nested calls reuse the outer transaction.
+     */
+    public synchronized void runInTransaction(final @NotNull Runnable work) {
+        Objects.requireNonNull(work, "work");
+        if (this.failed) {
+            work.run();
+            return;
+        }
+        try {
+            final boolean wasAuto = this.connection.getAutoCommit();
+            if (!wasAuto) {
+                work.run();
+                return;
+            }
+            this.connection.setAutoCommit(false);
+            try {
+                work.run();
+                this.connection.commit();
+            } catch (final RuntimeException ex) {
+                try {
+                    this.connection.rollback();
+                } catch (final SQLException ignored) {
+                    // already failing
+                }
+                throw ex;
+            } finally {
+                try {
+                    this.connection.setAutoCommit(true);
+                } catch (final SQLException ex) {
+                    this.failed = true;
+                    ProvenanceWriter.reportStorageError("transaction restore autocommit", ex);
+                }
+            }
+        } catch (final SQLException ex) {
+            this.failed = true;
+            ProvenanceWriter.reportStorageError("transaction begin", ex);
+            work.run();
+        }
+    }
+
     private static @NotNull ProvenanceEvent toEvent(final ResultSet rs) throws SQLException {
         final String relatedRaw = rs.getString("related");
         final List<UUID> related = new ArrayList<>();

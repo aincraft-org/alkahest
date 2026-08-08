@@ -55,9 +55,15 @@ public class ProvenancePersistenceTest {
         final UUID childId = StackStamp.readId(child).orElseThrow();
         final ItemStack persistedChild = child.copy();
 
+        // Ensure durable writes land before simulated restart (async writer).
+        ProvenanceWriter.flushAndClose();
+        ProvenanceWriter.clearInstall();
+
         // Simulated restart: runtime state wiped, durable store stays.
         ItemProvenance.clearAll();
         ItemProvenance.lineage().clearCache();
+        ProvenanceWriter.install(tempDir, message -> {
+        });
         ItemProvenance.rehydrate(persistedChild, HAND);
 
         assertTrue(
@@ -166,6 +172,46 @@ public class ProvenancePersistenceTest {
             assertEquals(1, loaded.size());
             assertEquals(ProvenanceEventType.BIRTH, loaded.getFirst().type());
             assertEquals(id, loaded.getFirst().id());
+        }
+    }
+
+    @Test
+    public void criticalWritesNeverDropUnderQueuePressure() throws Exception {
+        // Tiny capacity forces spill path for critical lineage writes.
+        ProvenanceWriter.installForTest(tempDir, message -> {
+        }, 4);
+        final int n = 200;
+        for (int i = 0; i < n; i++) {
+            final ItemStack s = new ItemStack(Items.COBBLESTONE, 1);
+            ItemProvenance.birth(s, ProvenanceSource.BLOCK_DROP, HAND);
+        }
+        ProvenanceWriter.flushAndClose();
+        ProvenanceWriter.clearInstall();
+
+        final String status = ProvenanceWriter.status();
+        assertTrue(status.equals("not installed") || !status.contains("queue-dropped="),
+            "status must not report critical queue drops: " + status);
+
+        try (ProvenanceRepository repo = new ProvenanceRepository(tempDir.resolve("mintychochip/provenance.db"))) {
+            assertTrue(repo.countLineage() >= n, "all births must land in lineage, got " + repo.countLineage());
+        }
+    }
+
+    @Test
+    public void auditIsInSqliteAfterFlush() throws Exception {
+        ProvenanceWriter.install(tempDir, message -> {
+        });
+        final ItemStack stack = new ItemStack(Items.COBBLESTONE, 1);
+        final UUID id = ItemProvenance.birth(stack, ProvenanceSource.BLOCK_DROP, HAND).orElseThrow();
+        ProvenanceWriter.flushAndClose();
+        ProvenanceWriter.clearInstall();
+
+        try (ProvenanceRepository repo = new ProvenanceRepository(tempDir.resolve("mintychochip/provenance.db"))) {
+            final List<ProvenanceEvent> events = repo.loadRecentAudit(20);
+            assertTrue(
+                events.stream().anyMatch(e -> e.id().equals(id) && e.type() == ProvenanceEventType.BIRTH),
+                "birth audit must be in SQLite after flush"
+            );
         }
     }
 }
