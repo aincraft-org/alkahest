@@ -1,6 +1,6 @@
 # Provenance durable store — design
 
-**Status:** approved (design)  
+**Status:** implemented  
 **Package:** `dev.mintychochip.provenance`  
 **Depends on:** [item provenance core](./2026-08-07-item-provenance-design.md)  
 **Goal:** Strong, deferred durability for full lineage, last-seen live census, collisions, and permanent audit — without freezing the server tick.

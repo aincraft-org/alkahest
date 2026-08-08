@@ -53,6 +53,12 @@ explain(P) walks pickaxe → cobble/sticks ancestors
 | Vanilla hooks | see table below |
 | Command | `/provenance inspect\|live\|audit\|collisions\|dupe-sim\|clear` |
 
+### Persistence
+
+- Placements: per-dimension SavedData (`mintychochip/provenance_placements`)
+- Durable store: see `2026-08-08-provenance-durable-store-design.md`
+  (`provenance.db` lineage + live + collisions + audit; spill journal; no main-thread JDBC)
+
 ## Vanilla hooks
 
 | Path | Source / action |
