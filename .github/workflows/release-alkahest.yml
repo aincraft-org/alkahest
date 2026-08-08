@@ -80,16 +80,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          jar_path="$(find paper-server/build/libs -maxdepth 1 -type f -name 'alkahest-paperclip-*.jar' -print -quit)"
-          if [[ -z "$jar_path" ]]; then
+          paperclip_jar="$(find paper-server/build/libs -maxdepth 1 -type f -name 'alkahest-paperclip-*.jar' -print -quit)"
+          if [[ -z "$paperclip_jar" ]]; then
             echo "::error::No Alkahest Paperclip jar was produced"
             exit 1
           fi
-          manifest="$(unzip -p "$jar_path" META-INF/MANIFEST.MF)"
+          server_jar="paper-server/build/libs/paper-server-${RELEASE_VERSION}.jar"
+          if [[ ! -f "$server_jar" ]]; then
+            echo "::error::No packaged Alkahest server jar was produced for $RELEASE_VERSION"
+            exit 1
+          fi
+          manifest="$(unzip -p "$server_jar" META-INF/MANIFEST.MF)"
           [[ "$manifest" == *$'Brand-Id: mintychochip:alkahest'* ]]
           [[ "$manifest" == *$'Brand-Name: Alkahest'* ]]
           [[ "$manifest" == *"Specification-Version: $RELEASE_VERSION"* ]]
-          echo "PAPERCLIP_JAR=$jar_path" >> "$GITHUB_ENV"
+          echo "PAPERCLIP_JAR=$paperclip_jar" >> "$GITHUB_ENV"
 
       - name: Publish GitHub release
         run: |
