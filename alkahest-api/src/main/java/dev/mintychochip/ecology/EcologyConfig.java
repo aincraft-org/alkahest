@@ -33,39 +33,83 @@ public final class EcologyConfig {
 
     private static volatile EcologySettings settings = EcologyDefaults.create();
     private static volatile boolean loadedFromDisk;
+    private static volatile CachedConfig cached;
 
     private EcologyConfig() {
+    }
+
+    private record CachedConfig(Path configPath, EcologySettings settings) {
     }
 
     public static EcologySettings get() {
         return settings;
     }
 
-    public static synchronized EcologySettings ensureLoaded(final Path serverDirectory) {
+    /**
+     * Returns the settings for {@code serverDirectory}, reusing the cached result
+     * for the same normalized config path. This is the hot-path entry point: it
+     * never re-reads disk once a config has been loaded (or failed) for a path.
+     *
+     * @param serverDirectory server root, or {@code null} to return current settings
+     */
+    public static EcologySettings ensureLoaded(final Path serverDirectory) {
         if (serverDirectory == null) {
             return settings;
         }
-        final Path path = serverDirectory.resolve(RELATIVE_PATH);
+        final Path configPath = serverDirectory.resolve(RELATIVE_PATH).toAbsolutePath().normalize();
+        final CachedConfig current = cached;
+        if (current != null && current.configPath.equals(configPath)) {
+            return current.settings;
+        }
+        return loadConfig(configPath, false);
+    }
+
+    /**
+     * Forces a reload of {@code serverDirectory}'s config, bypassing the cache.
+     * Used by the explicit {@link Ecology#load(Path)} API for administrative/API
+     * reloads; server tick hot paths use {@link #ensureLoaded(Path)}.
+     */
+    public static synchronized EcologySettings reload(final Path serverDirectory) {
+        if (serverDirectory == null) {
+            return settings;
+        }
+        final Path configPath = serverDirectory.resolve(RELATIVE_PATH).toAbsolutePath().normalize();
+        return loadConfig(configPath, true);
+    }
+
+    private static synchronized EcologySettings loadConfig(final Path configPath, final boolean force) {
+        final CachedConfig current = cached;
+        if (!force && current != null && current.configPath.equals(configPath)) {
+            return current.settings;
+        }
         try {
-            if (!Files.exists(path)) {
-                Files.createDirectories(path.getParent());
-                writeDefaults(path);
-                LOGGER.info("[mintychochip] Wrote default ecology config to {}", path.toAbsolutePath());
+            if (!Files.exists(configPath)) {
+                Files.createDirectories(configPath.getParent());
+                writeDefaults(configPath);
+                LOGGER.info("[mintychochip] Wrote default ecology config to {}", configPath.toAbsolutePath());
             }
-            settings = load(path);
+            final EcologySettings loaded = load(configPath);
+            cached = new CachedConfig(configPath, loaded);
+            settings = loaded;
             loadedFromDisk = true;
             LOGGER.info(
                 "[mintychochip] Loaded ecology config from {} ({} crops, {} animals, animalsEnabled={})",
-                path.toAbsolutePath(),
+                configPath.toAbsolutePath(),
                 settings.catalog().all().size(),
                 settings.animalCatalog().all().size(),
                 settings.animalsEnabled()
             );
+            return loaded;
         } catch (final Exception ex) {
-            LOGGER.error("[mintychochip] Failed to load ecology config {}; using built-in defaults", path, ex);
-            settings = EcologyDefaults.create();
+            LOGGER.error("[mintychochip] Failed to load ecology config {}; using built-in defaults", configPath, ex);
+            final EcologySettings fallback = EcologyDefaults.create();
+            // Cache the failure so a malformed config cannot be re-read on every hot-path call;
+            // an explicit reload can recover once the file is repaired.
+            cached = new CachedConfig(configPath, fallback);
+            settings = fallback;
+            loadedFromDisk = false;
+            return fallback;
         }
-        return settings;
     }
 
     public static boolean isLoadedFromDisk() {

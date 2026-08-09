@@ -25,8 +25,11 @@ public final class AnimalEcology {
     }
 
     public static boolean isEnabled(final ServerLevel level) {
-        EcologyConfig.ensureLoaded(level.getServer().getServerDirectory());
-        return EcologyConfig.get().animalsEnabled();
+        return settings(level).animalsEnabled();
+    }
+
+    private static EcologySettings settings(final ServerLevel level) {
+        return EcologyConfig.ensureLoaded(level.getServer().getServerDirectory());
     }
 
     /**
@@ -38,13 +41,21 @@ public final class AnimalEcology {
         final ServerLevel level,
         final BlockPos pos
     ) {
-        if (!isEnabled(level)) {
+        return pickReplacement(settings(level), level, pos);
+    }
+
+    private static Optional<EntityType<? extends Mob>> pickReplacement(
+        final EcologySettings cfg,
+        final ServerLevel level,
+        final BlockPos pos
+    ) {
+        if (!cfg.animalsEnabled()) {
             return Optional.empty();
         }
-        final ClimateSample climate = CropEcology.sampleClimate(level, pos);
+        final ClimateSample climate = CropEcology.sampleClimate(cfg, level, pos);
         final Season season = Seasons.current();
         final Optional<AnimalProfile> profile = AnimalSelector.select(
-            EcologyConfig.get().animalCatalog(),
+            cfg.animalCatalog(),
             climate,
             season,
             RNG
@@ -66,12 +77,12 @@ public final class AnimalEcology {
         final BlockPos pos,
         final EntityType<?> vanillaType
     ) {
-        if (!isEnabled(level)) {
+        final EcologySettings cfg = settings(level);
+        if (!cfg.animalsEnabled()) {
             return null;
         }
         // Only manage passive land animals; hostiles never go through CREATURE.
-        final Optional<EntityType<? extends Mob>> pick = pickReplacement(level, pos);
-        return pick.orElse(null);
+        return pickReplacement(cfg, level, pos).orElse(null);
     }
 
     public static boolean shouldManageCategory(final MobCategory category) {

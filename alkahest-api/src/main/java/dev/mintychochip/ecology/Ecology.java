@@ -17,7 +17,7 @@ public final class Ecology {
 
     /** Load or create {@code config/mintychochip/ecology.json} under {@code serverDirectory}. */
     public static EcologySettings load(final Path serverDirectory) {
-        return EcologyConfig.ensureLoaded(Objects.requireNonNull(serverDirectory, "serverDirectory"));
+        return EcologyConfig.reload(Objects.requireNonNull(serverDirectory, "serverDirectory"));
     }
 
     /** Active settings (defaults until {@link #load(Path)} runs). */

@@ -39,12 +39,12 @@ public final class CropEcology {
         final Block block,
         final RandomSource random
     ) {
-        settings(level);
-        final CropProfile crop = profile(block);
+        final EcologySettings cfg = settings(level);
+        final CropProfile crop = profile(cfg, block);
         if (crop == null) {
             return true;
         }
-        final ClimateSample climate = sampleClimate(level, pos);
+        final ClimateSample climate = sampleClimate(cfg, level, pos);
         final double p = SuitabilityEngine.acceptProbability(crop, climate);
         if (p <= 0.0) {
             return false;
@@ -60,8 +60,7 @@ public final class CropEcology {
         if (!(level instanceof ServerLevel serverLevel)) {
             return true;
         }
-        settings(serverLevel);
-        return SuitabilityEngine.isSuitable(crop, sampleClimate(serverLevel, pos));
+        return SuitabilityEngine.isSuitable(crop, sampleClimate(settings(serverLevel), serverLevel, pos));
     }
 
     public static boolean allowsForcedGrowth(final Level level, final BlockPos pos, final Block block) {
@@ -76,12 +75,12 @@ public final class CropEcology {
         if (!(level instanceof ServerLevel serverLevel)) {
             return false;
         }
-        settings(serverLevel);
-        final CropProfile crop = profile(block);
+        final EcologySettings cfg = settings(serverLevel);
+        final CropProfile crop = profile(cfg, block);
         if (crop == null) {
             return false;
         }
-        if (SuitabilityEngine.isSuitable(crop, sampleClimate(serverLevel, pos))) {
+        if (SuitabilityEngine.isSuitable(crop, sampleClimate(cfg, serverLevel, pos))) {
             return false;
         }
         popQuietly(serverLevel, pos);
@@ -115,15 +114,22 @@ public final class CropEcology {
     }
 
     public static @Nullable CropProfile profile(final Block block) {
+        return profile(EcologyConfig.get(), block);
+    }
+
+    private static @Nullable CropProfile profile(final EcologySettings cfg, final Block block) {
         final Identifier key = BuiltInRegistries.BLOCK.getKey(block);
         if (key == null) {
             return null;
         }
-        return EcologyConfig.get().catalog().forBlock(key.toString());
+        return cfg.catalog().forBlock(key.toString());
     }
 
     public static ClimateSample sampleClimate(final ServerLevel level, final BlockPos pos) {
-        final EcologySettings cfg = settings(level);
+        return sampleClimate(settings(level), level, pos);
+    }
+
+    public static ClimateSample sampleClimate(final EcologySettings cfg, final ServerLevel level, final BlockPos pos) {
         final Holder<Biome> biomeHolder = level.getBiome(pos);
         final Biome biome = biomeHolder.value();
         final String biomeKey = biomeHolder.unwrapKey()
@@ -173,9 +179,7 @@ public final class CropEcology {
         public boolean waterAt(final int blockX, final int blockZ) {
             final int x = this.originX + blockX;
             final int z = this.originZ + blockZ;
-            if (!this.level.getChunkSource().hasChunk(x >> 4, z >> 4)) {
-                return false;
-            }
+            // WaterProximity only calls waterAt after loadedAt succeeds, so no chunk guard is needed here.
             final int y = this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
             final BlockPos surface = new BlockPos(x, y, z);
             if (this.level.getFluidState(surface).is(FluidTags.WATER)) {

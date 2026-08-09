@@ -2,6 +2,7 @@ package dev.mintychochip.ecology;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
@@ -53,6 +54,52 @@ public class EcologyConfigTest {
         assertTrue(loaded.catalog().forBlock("minecraft:carrots") != null);
         assertTrue(Files.size(path) > 100);
     }
+    @Test
+    public void ensureLoadedReusesSettingsForSameServerDirectory() throws Exception {
+        final EcologySettings first = EcologyConfig.ensureLoaded(this.tempDir);
+        writeWheatHumidity(this.tempDir, 0.5, 0.6);
+
+        final EcologySettings cached = EcologyConfig.ensureLoaded(this.tempDir.resolve(".").toAbsolutePath().normalize());
+
+        assertSame(first, cached);
+        assertEquals(0.20, cached.catalog().forBlock("minecraft:wheat").minHumidity(), 1e-9);
+    }
+
+    @Test
+    public void publicLoadForcesReloadForSameServerDirectory() throws Exception {
+        EcologyConfig.ensureLoaded(this.tempDir);
+        writeWheatHumidity(this.tempDir, 0.5, 0.6);
+
+        final EcologySettings reloaded = Ecology.load(this.tempDir);
+
+        assertEquals(0.5, reloaded.catalog().forBlock("minecraft:wheat").minHumidity(), 1e-9);
+    }
+
+    @Test
+    public void failedLoadIsCachedUntilExplicitReload() throws Exception {
+        final Path path = this.tempDir.resolve(EcologyConfig.relativePath());
+        Files.createDirectories(path.getParent());
+        Files.writeString(path, "{");
+        final EcologySettings fallback = EcologyConfig.ensureLoaded(this.tempDir);
+        writeWheatHumidity(this.tempDir, 0.5, 0.6);
+
+        final EcologySettings cached = EcologyConfig.ensureLoaded(this.tempDir);
+
+        assertSame(fallback, cached);
+        assertEquals(0.20, cached.catalog().forBlock("minecraft:wheat").minHumidity(), 1e-9);
+        assertEquals(0.5, Ecology.load(this.tempDir).catalog().forBlock("minecraft:wheat").minHumidity(), 1e-9);
+    }
+
+    @Test
+    public void ensureLoadedChangesConfigurationForDifferentServerDirectory() throws Exception {
+        final Path firstDirectory = this.tempDir.resolve("first");
+        final Path secondDirectory = this.tempDir.resolve("second");
+        writeWheatHumidity(firstDirectory, 0.4, 0.5);
+        writeWheatHumidity(secondDirectory, 0.6, 0.7);
+
+        assertEquals(0.4, EcologyConfig.ensureLoaded(firstDirectory).catalog().forBlock("minecraft:wheat").minHumidity(), 1e-9);
+        assertEquals(0.6, EcologyConfig.ensureLoaded(secondDirectory).catalog().forBlock("minecraft:wheat").minHumidity(), 1e-9);
+    }
 
     @Test
     public void customCropJsonOverridesCatalog() {
@@ -65,5 +112,19 @@ public class EcologyConfigTest {
         final CropProfile wheatProfile = settings.catalog().forBlock("minecraft:wheat");
         assertEquals(0.5, wheatProfile.minHumidity(), 1e-9);
         assertEquals(0.6, wheatProfile.maxHumidity(), 1e-9);
+    }
+
+    private static void writeWheatHumidity(
+        final Path serverDirectory,
+        final double minHumidity,
+        final double maxHumidity
+    ) throws Exception {
+        final Path path = serverDirectory.resolve(EcologyConfig.relativePath());
+        Files.createDirectories(path.getParent());
+        final JsonObject root = EcologyDefaults.toJson();
+        final JsonObject wheat = root.getAsJsonObject("crops").getAsJsonObject("minecraft:wheat");
+        wheat.addProperty("minHumidity", minHumidity);
+        wheat.addProperty("maxHumidity", maxHumidity);
+        Files.writeString(path, root.toString());
     }
 }
