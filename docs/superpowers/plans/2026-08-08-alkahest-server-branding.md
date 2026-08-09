@@ -139,12 +139,12 @@ class ServerBuildInfoImplTest {
 
 Make the manifest constructor package-private only if required for this same-package test; do not expose it publicly.
 
-- [ ] **Step 2: Run the focused server test and verify the expected failure**
+- [ ] **Step 2: Run the server suite and verify the expected failure**
 
-Run:
+The server Gradle task includes only `**/**TestSuite.class`, so annotate the test with `@Normal` and run the containing suite:
 
 ```bash
-./gradlew :paper-server:test --tests 'io.papermc.paper.ServerBuildInfoImplTest' --no-daemon
+./gradlew :paper-server:test --tests 'org.bukkit.support.suite.NormalTestSuite' --no-daemon
 ```
 
 Expected result before implementation: compilation or assertions fail because `Specification-Version` is not parsed and the new release-version behavior is absent.
@@ -178,10 +178,10 @@ Run:
 
 ```bash
 ./gradlew :paper-api:test --tests 'org.bukkit.ServerVersionMessageTest' --no-daemon
-./gradlew :paper-server:test --tests 'io.papermc.paper.ServerBuildInfoImplTest' --no-daemon
+./gradlew :paper-server:test --tests 'org.bukkit.support.suite.NormalTestSuite' --no-daemon
 ```
 
-Expected result: both focused tests pass.
+Expected result: the API test passes and the server test report contains `ServerBuildInfoImplTest` with two passing test cases. Other pre-existing suite failures must be reported separately.
 
 - [ ] **Step 5: Commit the implementation and tests atomically**
 
