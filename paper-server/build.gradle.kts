@@ -340,7 +340,7 @@ tasks.named<io.papermc.paperweight.tasks.CreateBundlerJar>("createBundlerJar") {
 }
 
 tasks.named<io.papermc.paperweight.tasks.CreatePaperclipJar>("createPaperclipJar") {
-    outputZip.set(layout.buildDirectory.file("libs/alkahest-paperclip-${project.version}.jar"))
+    outputZip.set(layout.buildDirectory.file("libs/alkahest-${project.version}.jar"))
 }
 fill {
     project("alkahest")
