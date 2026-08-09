@@ -1,9 +1,10 @@
 package org.bukkit;
 
 import dev.mintychochip.customblock.CustomBlocks;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.jetbrains.annotations.ApiStatus;
@@ -23,11 +24,11 @@ import org.jspecify.annotations.NullMarked;
  */
 @ApiStatus.Internal
 @NullMarked
-final class MaterialRegistry extends Registry.NotARegistry<Material> {
+public final class MaterialRegistry extends Registry.NotARegistry<Material> {
 
     private final Registry<VanillaMaterial> vanilla;
 
-    MaterialRegistry(final Registry<VanillaMaterial> vanilla) {
+    public MaterialRegistry(final Registry<VanillaMaterial> vanilla) {
         this.vanilla = vanilla;
     }
 
@@ -42,21 +43,32 @@ final class MaterialRegistry extends Registry.NotARegistry<Material> {
 
     @Override
     public @NotNull Iterator<Material> iterator() {
-        final Set<Material> all = new LinkedHashSet<>();
+        final Collection<dev.mintychochip.customblock.CustomBlockDefinition> custom = CustomBlocks.all();
+        final List<Material> all = new ArrayList<>(this.vanilla.size() + custom.size());
         for (final VanillaMaterial v : this.vanilla) {
             all.add(v);
         }
-        all.addAll(CustomBlocks.all());
+        all.addAll(custom);
         return all.iterator();
     }
 
     @Override
     public int size() {
-        return this.vanilla.size() + CustomBlocks.catalog().size();
+        return this.vanilla.size() + CustomBlocks.all().size();
     }
 
     @Override
     public Stream<NamespacedKey> keyStream() {
         return StreamSupport.stream(this.spliterator(), false).map(Keyed::getKey);
+    }
+
+    /** Returns whether the value is the exact object in the native material registry. */
+    public boolean isNative(final Material value) {
+        return value != null && this.vanilla.get(value.getKey()) == value;
+    }
+
+    /** Returns whether the value is the exact object in the current custom-block catalog. */
+    public boolean isCatalog(final Material value) {
+        return value != null && CustomBlocks.get(value.getKey()).orElse(null) == value;
     }
 }

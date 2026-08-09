@@ -212,7 +212,7 @@ public enum VanillaParticle implements Particle {
      * @return the matching vanilla particle, or {@code null}
      */
     public static @Nullable VanillaParticle fromKey(final @Nullable NamespacedKey key) {
-        if (key == null) {
+        if (key == null || !NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
             return null;
         }
         return BY_PARTICLE_NAME.get(key.getKey());

@@ -38,6 +38,8 @@ public class CraftPotionType implements PotionType.InternalPotionData {
 
     public static Potion bukkitToMinecraft(PotionType bukkit) {
         Preconditions.checkArgument(bukkit != null);
+        Preconditions.checkArgument(!bukkit.isCustom(),
+            "potion type %s is catalog-backed and has no native potion holder", bukkit.getKey());
 
         return CraftRegistry.getMinecraftRegistry(Registries.POTION)
                 .getOptional(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
@@ -58,6 +60,8 @@ public class CraftPotionType implements PotionType.InternalPotionData {
 
     public static String bukkitToString(PotionType bukkit) {
         Preconditions.checkArgument(bukkit != null);
+        Preconditions.checkArgument(!bukkit.isCustom(),
+            "potion type %s is catalog-backed and cannot be serialized as a native potion", bukkit.getKey());
 
         return bukkit.getKey().toString();
     }

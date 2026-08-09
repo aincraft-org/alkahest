@@ -96,6 +96,11 @@ public final class CustomBlockDefinition implements Material {
         return this.key;
     }
 
+    @Override
+    public @NotNull String name() {
+        return this.key.toString();
+    }
+
     public NamespacedKey namespacedKey() {
         return this.key;
     }

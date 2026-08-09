@@ -114,6 +114,8 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     public static BlockState getBlock(Material material, byte data) {
+        Preconditions.checkArgument(material == null || !material.isCustom(),
+            "material %s is catalog-backed and has no native NMS block", material == null ? null : material.getKey());
         return CraftLegacy.fromLegacyData(CraftLegacy.toLegacy(material), data);
     }
 
@@ -122,6 +124,8 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     public static Item getItem(Material material, short data) {
+        Preconditions.checkArgument(material == null || !material.isCustom(),
+            "material %s is catalog-backed and has no native NMS item", material == null ? null : material.getKey());
         if (material.isLegacy()) {
             return CraftLegacy.fromLegacyData(CraftLegacy.toLegacy(material), data);
         }
@@ -172,27 +176,21 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     public static Item getItem(Material material) {
+        Preconditions.checkArgument(material == null || !material.isCustom(),
+            "material %s is catalog-backed and has no native NMS item", material == null ? null : material.getKey());
         if (material != null && material.isLegacy()) {
             material = CraftLegacy.fromLegacy(material);
         }
-        // mintychochip start - custom Material maps via itemMaterial
-        if (material instanceof dev.mintychochip.customblock.CustomBlockDefinition def) {
-            return getItem(def.itemMaterial());
-        }
-        // mintychochip end - custom Material maps via itemMaterial
 
         return CraftMagicNumbers.MATERIAL_ITEM.get(material);
     }
 
     public static Block getBlock(Material material) {
+        Preconditions.checkArgument(material == null || !material.isCustom(),
+            "material %s is catalog-backed and has no native NMS block", material == null ? null : material.getKey());
         if (material != null && material.isLegacy()) {
             material = CraftLegacy.fromLegacy(material);
         }
-        // mintychochip start - custom Material maps via carrierMaterial
-        if (material instanceof dev.mintychochip.customblock.CustomBlockDefinition def) {
-            return getBlock(def.carrierMaterial());
-        }
-        // mintychochip end - custom Material maps via carrierMaterial
 
         return CraftMagicNumbers.MATERIAL_BLOCK.get(material);
     }

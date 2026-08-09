@@ -235,23 +235,17 @@ public interface Particle extends Keyed {
      * @return a {@link com.destroystokyo.paper.ParticleBuilder} for the particle
      */
     @NotNull
-    default com.destroystokyo.paper.ParticleBuilder builder() {
-        return new com.destroystokyo.paper.ParticleBuilder(this);
-    }
+    com.destroystokyo.paper.ParticleBuilder builder();
 
     /**
      * {@code true} when this is a vanilla Minecraft particle constant.
      */
-    default boolean isVanilla() {
-        return this instanceof VanillaParticle;
-    }
+    boolean isVanilla();
 
     /**
      * {@code true} when this is a registered custom particle (not a vanilla constant).
      */
-    default boolean isCustom() {
-        return !isVanilla();
-    }
+    boolean isCustom();
 
     // ---- static lookup (compat with former enum statics; vanilla-only) ----
 

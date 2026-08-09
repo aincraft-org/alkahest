@@ -33,6 +33,9 @@ public class EntityTypeRegistryTest {
         assertTrue(Registry.ENTITY_TYPE.stream().anyMatch(t -> t == EntityType.PIG));
         assertTrue(Registry.ENTITY_TYPE.size() > 0);
         assertInstanceOf(EntityTypeRegistry.class, Registry.ENTITY_TYPE);
+        final EntityTypeRegistry registry = (EntityTypeRegistry) Registry.ENTITY_TYPE;
+        assertTrue(registry.isNative(EntityType.PIG));
+        assertFalse(registry.isCatalog(EntityType.PIG));
         assertNull(Registry.ENTITY_TYPE.get(NamespacedKey.minecraft("unknown")));
     }
 
@@ -46,6 +49,9 @@ public class EntityTypeRegistryTest {
         assertSame(def, Registry.ENTITY_TYPE.get(def.getKey()));
         assertSame(def, Registry.ENTITY_TYPE.getOrThrow(def.getKey()));
         assertTrue(Registry.ENTITY_TYPE.stream().anyMatch(t -> t == def));
+        final EntityTypeRegistry registry = (EntityTypeRegistry) Registry.ENTITY_TYPE;
+        assertFalse(registry.isNative(def));
+        assertTrue(registry.isCatalog(def));
         assertTrue(Registry.ENTITY_TYPE.keyStream().anyMatch(k -> k.equals(def.getKey())));
 
         final int sizeWithCustom = Registry.ENTITY_TYPE.size();

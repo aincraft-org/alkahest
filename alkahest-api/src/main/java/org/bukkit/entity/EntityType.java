@@ -1,7 +1,5 @@
 package org.bukkit.entity;
 
-import com.google.common.base.Preconditions;
-import java.util.Objects;
 import java.util.Optional;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
@@ -233,9 +231,7 @@ public interface EntityType extends Keyed, Translatable, net.kyori.adventure.tra
     @Override
     @NotNull
     @Deprecated(forRemoval = true)
-    default String getTranslationKey() {
-        return this.translationKey();
-    }
+    String getTranslationKey();
 
     @Override
     @NotNull
@@ -272,37 +268,25 @@ public interface EntityType extends Keyed, Translatable, net.kyori.adventure.tra
      *
      * <p>Source-compatible with former {@code Enum#name()}.
      */
-    default @NotNull String name() {
-        if (this instanceof Enum<?> e) {
-            return e.name();
-        }
-        return getKey().toString();
-    }
+    @NotNull
+    String name();
 
     /**
      * {@code true} when this is a vanilla Minecraft entity type constant.
      */
-    default boolean isVanilla() {
-        return this instanceof VanillaEntityType;
-    }
+    boolean isVanilla();
 
     /**
      * {@code true} when this is a registered custom entity type (not a vanilla constant).
      */
-    default boolean isCustom() {
-        return !isVanilla() && this != UNKNOWN;
-    }
+    boolean isCustom();
 
     /**
      * Spawn this type at {@code location} using the default spawn path.
      * Vanilla types create the entity class; custom types apply host presentation + identity.
      */
-    default @NotNull Entity spawn(@NotNull final Location location) {
-        Objects.requireNonNull(location, "location");
-        final World world = location.getWorld();
-        Preconditions.checkArgument(world != null, "location has no world");
-        return world.spawnEntity(location, this);
-    }
+    @NotNull
+    Entity spawn(@NotNull Location location);
 
     // ---- static lookup (compat with former enum statics) ----
 

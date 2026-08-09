@@ -9,9 +9,13 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import org.bukkit.Keyed;
 import org.bukkit.Particle;
+import org.bukkit.ParticleRegistry;
 import org.bukkit.Registry;
+import org.bukkit.VanillaParticle;
 import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.potion.PotionTypeRegistry;
+import org.bukkit.potion.VanillaPotionType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -19,19 +23,22 @@ public class PaperSimpleRegistry<T extends Enum<T> & Keyed, M> extends Registry.
 
     static Registry<EntityType> entityType() {
         // mintychochip - EntityType is an interface; vanilla constants live on VanillaEntityType.
-        // API EntityTypeRegistry merges vanilla + CustomEntities; this wrapper adds NMS tags.
+        // The shared adapter merges the atomic CustomEntities snapshot and delegates tags to vanilla.
         final PaperSimpleRegistry<org.bukkit.entity.VanillaEntityType, net.minecraft.world.entity.EntityType<?>> vanilla =
             new PaperSimpleRegistry<>(org.bukkit.entity.VanillaEntityType.class, entity -> entity != org.bukkit.entity.VanillaEntityType.UNKNOWN, BuiltInRegistries.ENTITY_TYPE);
-        final org.bukkit.EntityTypeRegistry merged = new org.bukkit.EntityTypeRegistry(vanilla);
-        return new EntityTypeRegistry(merged, vanilla);
+        return new EntityTypeRegistry(vanilla);
     }
 
     static Registry<Particle> particleType() {
-        return new PaperSimpleRegistry<>(Particle.class, BuiltInRegistries.PARTICLE_TYPE);
+        final PaperSimpleRegistry<VanillaParticle, net.minecraft.core.particles.ParticleType<?>> vanilla =
+            new PaperSimpleRegistry<>(VanillaParticle.class, BuiltInRegistries.PARTICLE_TYPE);
+        return new PaperCatalogRegistry<>(() -> vanilla, ParticleRegistry::asMap);
     }
 
     static Registry<PotionType> potion() {
-        return new PaperSimpleRegistry<>(PotionType.class, BuiltInRegistries.POTION);
+        final PaperSimpleRegistry<VanillaPotionType, net.minecraft.world.item.alchemy.Potion> vanilla =
+            new PaperSimpleRegistry<>(VanillaPotionType.class, BuiltInRegistries.POTION);
+        return new PaperCatalogRegistry<>(() -> vanilla, PotionTypeRegistry::asMap);
     }
 
     private final net.minecraft.core.Registry<M> nmsRegistry;

@@ -26,6 +26,10 @@ public final class CraftMemoryKey {
         if (bukkit == null) {
             return null;
         }
+        if (bukkit.isCustom()) {
+            throw new IllegalArgumentException(
+                "memory key " + bukkit.getKey() + " is catalog-backed and has no native memory module");
+        }
 
         return (MemoryModuleType<U>) CraftRegistry.getMinecraftRegistry(Registries.MEMORY_MODULE_TYPE)
                 .getOptional(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();

@@ -175,6 +175,11 @@ public final class ParticleRegistry {
         }
 
         @Override
+        public @NotNull com.destroystokyo.paper.ParticleBuilder builder() {
+            return new com.destroystokyo.paper.ParticleBuilder(this);
+        }
+
+        @Override
         public boolean isVanilla() {
             return false;
         }

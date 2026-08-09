@@ -59,6 +59,8 @@ public abstract class CraftParticle<D> implements Keyed {
 
     public static net.minecraft.core.particles.ParticleType<?> bukkitToMinecraft(Particle bukkit) {
         Preconditions.checkArgument(bukkit != null);
+        Preconditions.checkArgument(!bukkit.isCustom(),
+            "particle %s is catalog-backed and has no native NMS holder", bukkit.getKey());
 
         return CraftRegistry.getMinecraftRegistry(Registries.PARTICLE_TYPE)
                 .getOptional(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
@@ -66,6 +68,8 @@ public abstract class CraftParticle<D> implements Keyed {
 
     public static <D> ParticleOptions createParticleParam(Particle particle, D data) {
         Preconditions.checkArgument(particle != null, "particle cannot be null");
+        Preconditions.checkArgument(!particle.isCustom(),
+            "particle %s is catalog-backed and has no native NMS holder", particle.getKey());
 
         data = CraftParticle.convertLegacy(data);
         if (particle.getDataType() != Void.class) {

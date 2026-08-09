@@ -2,12 +2,14 @@ package dev.mintychochip.customentity;
 
 import java.util.Objects;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.SpawnCategory;
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,6 +54,11 @@ public final class CustomEntityDefinition implements EntityType {
     @Override
     public @NotNull NamespacedKey getKey() {
         return this.key;
+    }
+
+    @Override
+    public @NotNull String name() {
+        return this.key.toString();
     }
 
     public NamespacedKey namespacedKey() {
@@ -120,6 +127,12 @@ public final class CustomEntityDefinition implements EntityType {
     }
 
     @Override
+    @Deprecated(forRemoval = true)
+    public @NotNull String getTranslationKey() {
+        return this.translationKey();
+    }
+
+    @Override
     public @NotNull String translationKey() {
         // No client lang entry required; fall back to namespaced id.
         return this.key.toString();
@@ -148,6 +161,16 @@ public final class CustomEntityDefinition implements EntityType {
     @Override
     public boolean isCustom() {
         return true;
+    }
+
+    @Override
+    public @NotNull Entity spawn(@NotNull final Location location) {
+        Objects.requireNonNull(location, "location");
+        final World world = location.getWorld();
+        if (world == null) {
+            throw new IllegalArgumentException("location has no world");
+        }
+        return world.spawnEntity(location, this);
     }
 
     @Override

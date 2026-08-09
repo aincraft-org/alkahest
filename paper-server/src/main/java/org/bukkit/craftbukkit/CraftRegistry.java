@@ -139,7 +139,7 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
                 return bukkit.get(FieldRename.ENTITY_TYPE_RENAME.apply(namespacedKey, apiVersion));
             }
 
-            if (bClass == Particle.class) {
+            if (bClass == Particle.class || bClass == org.bukkit.VanillaParticle.class) {
                 return bukkit.get(FieldRename.PARTICLE_TYPE_RENAME.apply(namespacedKey, apiVersion));
             }
         }

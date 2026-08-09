@@ -3227,26 +3227,18 @@ public interface Material extends Keyed, Translatable, net.kyori.adventure.trans
      *
      * <p>Source-compatible with former {@code Enum#name()}.
      */
-    default @NotNull String name() {
-        if (this instanceof Enum<?> e) {
-            return e.name();
-        }
-        return getKey().toString();
-    }
+    @NotNull
+    String name();
 
     /**
      * {@code true} when this is a vanilla Minecraft material constant.
      */
-    default boolean isVanilla() {
-        return this instanceof VanillaMaterial;
-    }
+    boolean isVanilla();
 
     /**
      * {@code true} when this is a registered custom material (not a vanilla constant).
      */
-    default boolean isCustom() {
-        return !isVanilla();
-    }
+    boolean isCustom();
 
     // ---- static lookup (compat with former enum statics) ----
 

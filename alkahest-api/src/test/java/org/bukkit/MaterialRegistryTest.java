@@ -33,6 +33,9 @@ public class MaterialRegistryTest {
         assertTrue(Registry.MATERIAL.stream().anyMatch(m -> m == Material.STONE));
         assertTrue(Registry.MATERIAL.size() > 0);
         assertInstanceOf(MaterialRegistry.class, Registry.MATERIAL);
+        final MaterialRegistry registry = (MaterialRegistry) Registry.MATERIAL;
+        assertTrue(registry.isNative(Material.STONE));
+        assertFalse(registry.isCatalog(Material.STONE));
     }
 
     @Test
@@ -46,6 +49,9 @@ public class MaterialRegistryTest {
         assertSame(def, Registry.MATERIAL.get(def.getKey()));
         assertSame(def, Registry.MATERIAL.getOrThrow(def.getKey()));
         assertTrue(Registry.MATERIAL.stream().anyMatch(m -> m == def));
+        final MaterialRegistry registry = (MaterialRegistry) Registry.MATERIAL;
+        assertFalse(registry.isNative(def));
+        assertTrue(registry.isCatalog(def));
         assertTrue(Registry.MATERIAL.keyStream().anyMatch(k -> k.equals(def.getKey())));
 
         final int sizeWithCustom = Registry.MATERIAL.size();

@@ -1,7 +1,8 @@
 package org.bukkit.entity.memory;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -22,10 +23,20 @@ public final class MemoryKey<T> implements Keyed {
     private final NamespacedKey namespacedKey;
     private final Class<T> tClass;
 
-    private MemoryKey(NamespacedKey namespacedKey, Class<T> tClass) {
+    private MemoryKey(final NamespacedKey namespacedKey, final Class<T> tClass) {
+        this(namespacedKey, tClass, true);
+    }
+
+    private MemoryKey(final NamespacedKey namespacedKey, final Class<T> tClass, final boolean vanilla) {
         this.namespacedKey = namespacedKey;
         this.tClass = tClass;
-        MEMORY_KEYS.put(namespacedKey, this);
+        if (vanilla) {
+            NATIVE_MEMORY_KEYS.put(namespacedKey, this);
+        }
+    }
+
+    static <T> MemoryKey<T> custom(final NamespacedKey namespacedKey, final Class<T> tClass) {
+        return new MemoryKey<>(namespacedKey, tClass, false);
     }
 
     @NotNull
@@ -44,7 +55,19 @@ public final class MemoryKey<T> implements Keyed {
         return tClass;
     }
 
-    private static final Map<NamespacedKey, MemoryKey<?>> MEMORY_KEYS = new HashMap<>();
+    private static final Map<NamespacedKey, MemoryKey<?>> NATIVE_MEMORY_KEYS = new LinkedHashMap<>();
+
+    static MemoryKey<?> nativeValue(final NamespacedKey key) {
+        return NATIVE_MEMORY_KEYS.get(key);
+    }
+
+    public boolean isVanilla() {
+        return nativeValue(this.namespacedKey) == this;
+    }
+
+    public boolean isCustom() {
+        return !this.isVanilla();
+    }
 
     // Start generate - MemoryKey
     public static final MemoryKey<Boolean> ADMIRING_DISABLED = new MemoryKey<>(NamespacedKey.minecraft("admiring_disabled"), Boolean.class);
@@ -153,18 +176,20 @@ public final class MemoryKey<T> implements Keyed {
      * @return the {@link MemoryKey} or null when no {@link MemoryKey} is
      * available under that key
      */
-    @Nullable
-    public static MemoryKey<?> getByKey(@NotNull NamespacedKey namespacedKey) {
-        return MEMORY_KEYS.get(namespacedKey);
+    public static MemoryKey<?> getByKey(@NotNull final NamespacedKey namespacedKey) {
+        final MemoryKey<?> nativeKey = nativeValue(namespacedKey);
+        return nativeKey != null ? nativeKey : MemoryKeyRegistry.get(namespacedKey);
     }
 
     /**
-     * Returns the set of all MemoryKeys.
+     * Returns an immutable snapshot of all vanilla and catalog memory keys.
      *
-     * @return the memoryKeys
+     * @return the memory keys
      */
     @NotNull
     public static Set<MemoryKey<?>> values() {
-        return new HashSet<>(MEMORY_KEYS.values());
+        final Set<MemoryKey<?>> values = new LinkedHashSet<>(NATIVE_MEMORY_KEYS.values());
+        values.addAll(MemoryKeyRegistry.values());
+        return Collections.unmodifiableSet(values);
     }
 }

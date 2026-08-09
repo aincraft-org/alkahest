@@ -53,7 +53,7 @@ import org.bukkit.Fluid;
 import org.bukkit.GameEvent;
 import org.bukkit.GameRules;
 import org.bukkit.JukeboxSong;
-import org.bukkit.Material;
+import org.bukkit.VanillaMaterial;
 import org.bukkit.MusicInstrument;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -70,7 +70,7 @@ import org.bukkit.entity.Cat;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.CopperGolem;
 import org.bukkit.entity.Cow;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.VanillaEntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Frog;
 import org.bukkit.entity.Panda;
@@ -92,7 +92,7 @@ import org.bukkit.inventory.recipe.CookingBookCategory;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 import org.bukkit.map.MapCursor;
 import org.bukkit.map.MapPalette;
-import org.bukkit.potion.PotionType;
+import org.bukkit.potion.VanillaPotionType;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.tag.DamageTypeTags;
 import org.jspecify.annotations.NullMarked;
@@ -114,8 +114,8 @@ public final class Rewriters {
 
     private static void bootstrapApi(PatternSourceSetRewriter sourceSet) {
         sourceSet
-            .register("PotionType", PotionType.class, new EnumRegistryRewriter<>(Registries.POTION))
-            .register("EntityType", EntityType.class, new EntityTypeRewriter())
+            .register("PotionType", VanillaPotionType.class, new EnumRegistryRewriter<>(Registries.POTION))
+            .register("EntityType", VanillaEntityType.class, new EntityTypeRewriter())
             .register("DisplaySlot", DisplaySlot.class, new EnumCloneRewriter<>(net.minecraft.world.scores.DisplaySlot.class) {
                 @Override
                 protected EnumValue.Builder rewriteEnumValue(net.minecraft.world.scores.DisplaySlot slot) {
@@ -172,7 +172,7 @@ public final class Rewriters {
                     );
                 }
             })
-            .register(Material.class, composite(
+            .register(VanillaMaterial.class, composite(
                 holder("Blocks", new MaterialRewriter.Blocks()),
                 //holder("Material#isTransparent", MaterialRewriter.IsTransparent()),
 

@@ -5,6 +5,7 @@ import io.papermc.paper.InternalAPIBridge;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.boat.AcaciaBoat;
 import org.bukkit.entity.boat.AcaciaChestBoat;
@@ -204,7 +205,7 @@ public enum VanillaEntityType implements EntityType {
     ZOMBIE_NAUTILUS("zombie_nautilus", ZombieNautilus.class, -1),
     ZOMBIE_VILLAGER("zombie_villager", ZombieVillager.class, 27),
     ZOMBIFIED_PIGLIN("zombified_piglin", PigZombie.class, 57),
-        // End generate - EntityType
+    // End generate - EntityType
     /**
      * An unknown entity without an Entity Class
      */
@@ -329,6 +330,14 @@ public enum VanillaEntityType implements EntityType {
     public @NotNull org.bukkit.attribute.Attributable getDefaultAttributes() {
         Preconditions.checkArgument(this.hasDefaultAttributes(), this.key + " doesn't have default attributes");
         return InternalAPIBridge.get().getDefaultEntityAttributes(this.key);
+    }
+
+    @Override
+    public @NotNull Entity spawn(@NotNull final org.bukkit.Location location) {
+        Objects.requireNonNull(location, "location");
+        final org.bukkit.World world = location.getWorld();
+        Preconditions.checkArgument(world != null, "location has no world");
+        return world.spawnEntity(location, this);
     }
 
     @Override
