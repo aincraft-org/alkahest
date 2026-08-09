@@ -62,7 +62,7 @@ Assuming you have already forked the repository:
 1. Clone your fork to your local machine;
 2. Type `./gradlew applyPatches` in a terminal to apply the patches.
 On Windows, remove the `./` the beginning of `gradlew` commands;
-3. cd into `paper-server` for server changes, and `paper-api` for API changes.
+3. cd into `paper-server` for server changes, and `alkahest-api` for API changes.
 **Only changes made in `paper-server/src/minecraft` have to deal with the patch system.**
 
 `paper-server/src/minecraft` is not a git repositories in the traditional sense. Its

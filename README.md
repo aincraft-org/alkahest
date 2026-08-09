@@ -38,49 +38,65 @@ alkahestRun {
 `runAlkahest` is the jar-oriented root launcher. The lower-level `:paper-server:runServer`, `runDevServer`, `runBundler`, and `runPaperclip` tasks remain available for Paperweight development workflows.
 How To (Plugin Developers)
 ------
-* See our API [here](paper-api)
-* Paper API javadocs here: [papermc.io/javadocs](https://papermc.io/javadocs/)
-#### Repository (for paper-api)
-See [the docs](https://docs.papermc.io/paper/dev/project-setup/#adding-paper-as-a-dependency) for more details.
+* API source: [`alkahest-api`](alkahest-api)
+* Downloadable API jars: [GitHub releases](https://github.com/aincraft-org/alkahest/releases/latest)
+* Paper API javadocs: [papermc.io/javadocs](https://papermc.io/javadocs/)
+#### API artifact
+Release assets are named `alkahest-api-YYYY.MM.DD.N.jar`.
+
+To build the API from source and install it into the local Maven repository:
+
+```bash
+./gradlew :alkahest-api:publishToMavenLocal -PalkahestVersion=2026.08.08.3
+```
+
 ##### Gradle
+
 ```kotlin
 repositories {
-    maven {
-        url = uri("https://repo.papermc.io/repository/maven-public/")
-    }
+    mavenLocal()
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
-}
-
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+    compileOnly("io.papermc.paper:alkahest-api:2026.08.08.3")
 }
 ```
+
 ##### Maven
 
 ```xml
 <repository>
-    <id>papermc</id>
-    <url>https://repo.papermc.io/repository/maven-public/</url>
+    <id>local</id>
+    <url>file://${user.home}/.m2/repository</url>
 </repository>
 ```
 
 ```xml
 <dependency>
     <groupId>io.papermc.paper</groupId>
-    <artifactId>paper-api</artifactId>
-    <version>[26.2.build,)</version>
+    <artifactId>alkahest-api</artifactId>
+    <version>2026.08.08.3</version>
     <scope>provided</scope>
 </dependency>
+```
+
+The API keeps the `org.bukkit`, `io.papermc.paper`, and `dev.mintychochip`
+Java packages. The artifact coordinate is intentionally Alkahest-specific.
+
+```kotlin
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+}
 ```
 
 How To (Compiling Jar From Source)
 ------
 To compile Alkahest, you need JDK 25 and an internet connection.
 
-Clone this repo, run `./gradlew applyPatches`, then `./gradlew createPaperclipJar` from your terminal. You can find the compiled jar in the `paper-server/build/libs` directory.
+Clone this repo, run `./gradlew applyPatches`, then build either the API with
+`./gradlew :alkahest-api:jar` or the server with
+`./gradlew createPaperclipJar`. API jars are written to
+`alkahest-api/build/libs`; server jars are written to `paper-server/build/libs`.
 
 To get a full list of tasks, run `./gradlew tasks`.
 

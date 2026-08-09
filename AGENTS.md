@@ -4,7 +4,7 @@ This repository is a **private Paper fork** for a Minecraft server. Upstream is 
 
 **Upstream policy: Paper is our upstream, and we never push to it.** All work flows from PaperMC/Paper → this repo via rebase/graft only. Never push to the `upstream` remote, never open PRs upstream from this fork, and never push fork commits onto any branch that tracks `upstream`. The fork's distribution identity is **Alkahest** (jar name, brand, F3/`/version`), while the API surface remains `io.papermc.paper` / `org.bukkit` for plugin compatibility.
 
-Agents should treat this as a long-lived server fork: preserve upstream structure, keep custom code namespaced, and only touch vanilla/Paper files when a hook is required. The jar is branded **Alkahest** (`Brand-Id: mintychochip:alkahest`); upstream identity (`io.papermc.paper`, `paper-api`) is kept for plugin/API compatibility and is not renamed.
+Agents should treat this as a long-lived server fork: preserve upstream structure, keep custom code namespaced, and only touch vanilla/Paper files when a hook is required. The jar is branded **Alkahest** (`Brand-Id: mintychochip:alkahest`); API Java packages (`io.papermc.paper`, `org.bukkit`) remain for plugin compatibility, while the module/artifact is **`alkahest-api`**.
 
 ---
 
@@ -16,11 +16,11 @@ Current systems:
 
 | System | Package | Layer | Purpose |
 |--------|---------|-------|---------|
-| **Seasons** | `dev.mintychochip.season` | paper-api (+ thin NMS hooks) | Wall-clock seasons; temperature swing; winter snow via forced rain |
-| **Ecology** | `dev.mintychochip.ecology` | paper-api (pure) + paper-server NMS façade + thin hooks | Climate/humidity crop suitability; growth gating; unsuitable plant pop |
-| **Genetics** | `dev.mintychochip.genetics` | paper-api (pure engine + DTOs); server wiring later | Recombination breeding, sex-linked traits, point mutations |
-| **Custom blocks** | `dev.mintychochip.customblock` | paper-api (definitions); server place/break later | Multi-host custom blocks: chorus / mushroom / tripwire baked + packet displays |
-| **Provenance** | `dev.mintychochip.provenance` | paper-api (DTOs) + paper-server engine + thin NMS hooks | Stack UUID + birth/death/lineage; craft parents; dupe COLLISION |
+| **Seasons** | `dev.mintychochip.season` | alkahest-api (+ thin NMS hooks) | Wall-clock seasons; temperature swing; winter snow via forced rain |
+| **Ecology** | `dev.mintychochip.ecology` | alkahest-api (pure) + paper-server NMS façade + thin hooks | Climate/humidity crop suitability; growth gating; unsuitable plant pop |
+| **Genetics** | `dev.mintychochip.genetics` | alkahest-api (pure engine + DTOs); server wiring later | Recombination breeding, sex-linked traits, point mutations |
+| **Custom blocks** | `dev.mintychochip.customblock` | alkahest-api (definitions); server place/break later | Multi-host custom blocks: chorus / mushroom / tripwire baked + packet displays |
+| **Provenance** | `dev.mintychochip.provenance` | alkahest-api (DTOs) + paper-server engine + thin NMS hooks | Stack UUID + birth/death/lineage; craft parents; dupe COLLISION |
 
 Future custom work should continue under `dev.mintychochip.<feature>` unless it is a pure upstream-style fix.
 
@@ -40,8 +40,8 @@ Wholly new packages we own — including NMS-using server logic — belong as **
 
 | Layer | Path | Patch? |
 |-------|------|--------|
-| Public / pure API | `paper-api/src/main/java/dev/mintychochip/...` | **No** |
-| API tests | `paper-api/src/test/java/dev/mintychochip/...` | **No** |
+| Public / pure API | `alkahest-api/src/main/java/dev/mintychochip/...` | **No** |
+| API tests | `alkahest-api/src/test/java/dev/mintychochip/...` | **No** |
 | Server implementation (may use `net.minecraft.*`) | `paper-server/src/main/java/dev/mintychochip/...` | **No** |
 | Server tests | `paper-server/src/test/java/dev/mintychochip/...` | **No** |
 | Edits to **vanilla** classes | `paper-server/src/minecraft/java/net/minecraft/...` | **Yes** → rebuild patches |
@@ -67,7 +67,7 @@ That puts our code into the Minecraft patch tree, so every edit pays `applyPatch
 
 ```
 paper/
-├── paper-api/
+├── alkahest-api/
 │   └── src/main/java/dev/mintychochip/
 │       └── season/                 # EDIT — seasons API (normal sources)
 ├── paper-server/
@@ -92,7 +92,7 @@ paper/
 
 | Kind of change | Where | Versioned as |
 |----------------|-------|--------------|
-| Plugin-visible API, pure logic, clocks, enums | `paper-api/.../dev/mintychochip/<feature>/` | Normal `.java` files |
+| Plugin-visible API, pure logic, clocks, enums | `alkahest-api/.../dev/mintychochip/<feature>/` | Normal `.java` files |
 | Server logic that uses NMS (`ServerLevel`, blocks, biomes, …) | `paper-server/src/main/java/dev/mintychochip/<feature>/` | Normal `.java` files |
 | Change behavior of an existing vanilla class | Edit applied file under `src/minecraft/java/net/minecraft/...` | Per-file patch under `patches/sources/net/minecraft/...` |
 | Runtime config | Load from `config/mintychochip/<name>.json` (server root) | Defaults in code + optional committed example |
@@ -103,29 +103,29 @@ paper/
 
 ---
 
-## When to put features in paper-api vs paper-server
+## When to put features in alkahest-api vs paper-server
 
 **Default: `paper-server`.** Most mintychochip work is server-internal gameplay (NMS hooks, growth rules, config loaders, world simulation). That code lives in `paper-server/src/main/java/dev/mintychochip/` and is **not** on the plugin compile classpath.
 
-Plugins and external modules only compile against **`paper-api`**. Anything that stays solely under `paper-server` cannot be imported by a plugin — there is no public jar surface for those classes.
+**Plugins and external modules compile against the `alkahest-api` artifact.** Anything that stays solely under `paper-server` cannot be imported by a plugin — there is no public jar surface for those classes.
 
-### Use paper-api when plugins (or other modules) need to *import* it
+### Use alkahest-api when plugins (or other modules) need to *import* it
 
-Put types in `paper-api/src/main/java/dev/mintychochip/<feature>/` if any of these are true:
+Put types in `alkahest-api/src/main/java/dev/mintychochip/<feature>/` if any of these are true:
 
 | Reason | Examples |
 |--------|----------|
 | Plugins should call or read the feature | `Seasons.current()`, season enum for UI / quests / economy |
 | Stable contracts without NMS | enums, pure clocks, DTOs, service interfaces, events |
 | Other features / API code need a shared pure dependency | climate math that must not pull `net.minecraft` |
-| You want a compile-time dependency for external tools | tooling that depends on `paper-api` only |
+| You want a compile-time dependency for external tools | tooling that depends on `alkahest-api` only |
 
-**paper-api rules:**
+**alkahest-api rules:**
 
 - **No `net.minecraft.*`** — API is NMS-free (same as Bukkit/Paper).
 - Prefer **stable, small surfaces**: enums, pure functions, read-only queries, events, interfaces.
 - Implementation that needs blocks/biomes/levels stays on the server; the API exposes only what outsiders should see.
-- Optional split: thin API façade + server implementation (API interface in `paper-api`, NMS-backed class in `paper-server`).
+- Optional split: thin API façade + server implementation (API interface in `alkahest-api`, NMS-backed class in `paper-server`).
 
 ### Keep paper-server only when nothing external needs the types
 
@@ -145,20 +145,20 @@ Ecology is the model for this: full system on the server, plugins cannot `import
 You do **not** need API on day one. When a plugin needs access:
 
 1. Identify the **minimal** types/methods plugins need (e.g. “is this crop suitable here?”, current season).
-2. Move pure/NMS-free pieces into `paper-api` (or add a new façade there).
+2. Move pure/NMS-free pieces into `alkahest-api` (or add a new façade there).
 3. Leave NMS-heavy code in `paper-server`; implement the API façade from the server if needed.
-4. Do **not** dump entire server packages into `paper-api` just to “export everything.”
+4. Do **not** dump entire server packages into `alkahest-api` just to “export everything.”
 
 ### Mental model (Paper-style)
 
 ```
-plugin.jar  ──compiles against──►  paper-api  (public types only)
-server jar  ──includes both──►    paper-api + paper-server (+ NMS)
+plugin.jar  ──compiles against──►  alkahest-api  (public types only)
+server jar  ──includes both──►    alkahest-api + paper-server (+ NMS)
 ```
 
 | Layer | Who can import it? | Typical contents |
 |-------|--------------------|------------------|
-| **paper-api** | Plugins, API tests, pure tools | Enums, clocks, events, interfaces, pure helpers |
+| **alkahest-api** | Plugins, API tests, pure tools | Enums, clocks, events, interfaces, pure helpers |
 | **paper-server** | Server only (not plugin compile path) | NMS logic, config I/O, vanilla call targets |
 | **vanilla hooks** | N/A (patches) | Thin `// mintychochip` call sites |
 
@@ -240,7 +240,7 @@ Design: wall-clock (not in-game days); downtime-safe; API usable without ecology
 
 ### Ecology — `dev.mintychochip.ecology` (API + server)
 
-**API** (`paper-api/src/main/java/dev/mintychochip/ecology/`): pure model + config + math
+**API** (`alkahest-api/src/main/java/dev/mintychochip/ecology/`): pure model + config + math
 
 | Class | Role |
 |-------|------|
@@ -273,7 +273,7 @@ Unknown blocks (no catalog profile) pass through.
 
 ### Genetics — `dev.mintychochip.genetics` (API core)
 
-**API** (`paper-api/src/main/java/dev/mintychochip/genetics/`): pure recombination engine (no NMS).
+**API** (`alkahest-api/src/main/java/dev/mintychochip/genetics/`): pure recombination engine (no NMS).
 
 | Area | Role |
 |------|------|
@@ -295,7 +295,7 @@ Design: meiosis + linkage + X/Y/maternal inheritance + germline point mutations 
 
 **Tests:**
 ```bash
-./gradlew :paper-api:test --tests 'dev.mintychochip.genetics.*'
+./gradlew :alkahest-api:test --tests 'dev.mintychochip.genetics.*'
 ./gradlew :paper-server:test --tests 'dev.mintychochip.genetics.*'
 ```
 
@@ -303,7 +303,7 @@ Spec: `docs/superpowers/specs/2026-08-07-genetics-core-design.md`
 
 ### Custom blocks — `dev.mintychochip.customblock` (API definitions)
 
-**API** (`paper-api/src/main/java/dev/mintychochip/customblock/`): pure definitions + catalog (no NMS).
+**API** (`alkahest-api/src/main/java/dev/mintychochip/customblock/`): pure definitions + catalog (no NMS).
 
 | Class | Role |
 |-------|------|
@@ -335,13 +335,13 @@ Spec: `docs/superpowers/specs/2026-08-07-genetics-core-design.md`
 
 Design: identity is `NamespacedKey`; host chooses how the client sees it. `getType()` remains vanilla carrier/base. Place/break use normal Bukkit events; custom drops via stamped item. Pack auto-served on join (HTTP port 8765 by default).
 
-**Tests:** `./gradlew :paper-api:test --tests 'dev.mintychochip.customblock.*'`
+**Tests:** `./gradlew :alkahest-api:test --tests 'dev.mintychochip.customblock.*'`
 
 Spec: `docs/superpowers/specs/2026-08-07-custom-block-definition-design.md`
 
 ### Provenance — `dev.mintychochip.provenance` (item identity + dupe detect)
 
-**API** (`paper-api/.../provenance/`): pure enums/DTOs (`ProvenanceSource`, `LineageNode`, `ProvenanceEvent`, …).
+**API** (`alkahest-api/.../provenance/`): pure enums/DTOs (`ProvenanceSource`, `LineageNode`, `ProvenanceEvent`, …).
 
 **Server** (`paper-server/.../provenance/`):
 
@@ -369,34 +369,34 @@ Requires **JDK 25** (see `CONTRIBUTING.md` / Gradle toolchains).
 
 ```bash
 ./gradlew applyPatches          # needed for vanilla tree / existing hooks
-./gradlew :paper-api:test
+./gradlew :alkahest-api:test
 ./gradlew :paper-server:test --tests 'dev.mintychochip.*'
 ./gradlew createPaperclipJar
 ```
 
 ```bash
-./gradlew :paper-api:test --tests 'dev.mintychochip.season.*'
-./gradlew :paper-api:test --tests 'dev.mintychochip.ecology.*'
-./gradlew :paper-api:test --tests 'dev.mintychochip.customblock.*'
+./gradlew :alkahest-api:test --tests 'dev.mintychochip.season.*'
+./gradlew :alkahest-api:test --tests 'dev.mintychochip.ecology.*'
+./gradlew :alkahest-api:test --tests 'dev.mintychochip.customblock.*'
 ./gradlew :paper-server:test --tests 'dev.mintychochip.*'
 ```
 
 Local server workdir is typically `run/`. Do not commit worlds, heap dumps, or logs.
 
-**Note:** Editing only `dev.mintychochip` under `paper-api` or `paper-server/src/main` does **not** require `rebuildPatches`. Only vanilla (`src/minecraft`) edits do.
+**Note:** Editing only `dev.mintychochip` under `alkahest-api` or `paper-server/src/main` does **not** require `rebuildPatches`. Only vanilla (`src/minecraft`) edits do.
 
 ---
 
 ## Conventions for agents
 
 1. **Namespace** — `dev.mintychochip.<area>` only.
-2. **Server by default; API only when exportable** — new features start in `paper-server`. Promote to `paper-api` only when plugins/external code must compile against the types; keep that surface minimal and NMS-free.
+2. **Server by default; API only when exportable** — new features start in `paper-server`. Promote to `alkahest-api` only when plugins/external code must compile against the types; keep that surface minimal and NMS-free.
 3. **No patches for our packages** — main/API sources only.
 4. **Thin vanilla hooks** — logic in mintychochip classes; NMS only calls them; mark with `// mintychochip`.
 5. **Patch hygiene** — after any `src/minecraft` edit: `fixupSourcePatches` + `rebuildPatches`.
 6. **Do not** rewrite unrelated Paper feature patches while doing mintychochip work.
 7. **Config** — knobs under `config/mintychochip/`; defaults in code must match written JSON.
-8. **Tests** — seasons in paper-api tests; ecology/server logic in paper-server tests.
+8. **Tests** — seasons in alkahest-api tests; ecology/server logic in paper-server tests.
 9. **Upstream sync** — on Paper rebases, re-apply only the thin vanilla hooks carefully.
 10. **Scope** — implement what the task needs; no drive-by Paper/Moonrise refactors.
 
@@ -409,7 +409,7 @@ Local server workdir is typically `run/`. Do not commit worlds, heap dumps, or l
 rg -n 'mintychochip' paper-server/patches/sources/net
 
 # Our sources (preferred locations)
-find paper-api/src paper-server/src/main/java/dev -type f -name '*.java' 2>/dev/null
+find alkahest-api/src paper-server/src/main/java/dev -type f -name '*.java' 2>/dev/null
 find paper-server/src/test/java/dev -type f -name '*.java' 2>/dev/null
 
 # Accidental patch placement (should be empty after cleanup)
@@ -440,12 +440,12 @@ Default for a new feature?
 
 Do plugins / external code need to import or call this?
   → YES: put the *minimal* NMS-free surface in
-       paper-api/src/main/java/dev/mintychochip/<feature>/
+       alkahest-api/src/main/java/dev/mintychochip/<feature>/
      keep NMS implementation on the server
   → NO: stay entirely on paper-server
 
 Needs net.minecraft.* (ServerLevel, blocks, biomes, …)?
-  → paper-server only (never paper-api)
+  → paper-server only (never alkahest-api)
 
 Change vanilla behavior?
   → thin hook in paper-server/src/minecraft/java/net/minecraft/...
