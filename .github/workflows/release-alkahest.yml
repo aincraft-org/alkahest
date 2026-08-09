@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Configure date version
+      - name: Configure release version
         shell: bash
         run: |
           set -euo pipefail
@@ -73,19 +73,19 @@ jobs:
 
       - name: Compile and package Alkahest
         run: |
-          ./gradlew :paper-api:jar :paper-server:jar --stacktrace --no-daemon -PalkahestVersion="$RELEASE_VERSION"
+          ./gradlew :alkahest-api:jar :paper-server:jar --stacktrace --no-daemon -PalkahestVersion="$RELEASE_VERSION"
           ./gradlew createPaperclipJar --stacktrace --no-daemon -PalkahestVersion="$RELEASE_VERSION"
 
-      - name: Verify Alkahest release jar
+      - name: Verify release artifacts
         shell: bash
         run: |
           set -euo pipefail
-          release_jar="paper-server/build/libs/alkahest-${RELEASE_VERSION}.jar"
-          if [[ ! -f "$release_jar" ]]; then
-            echo "::error::No Alkahest release jar was produced for $RELEASE_VERSION"
+          api_jar="alkahest-api/build/libs/alkahest-api-${RELEASE_VERSION}.jar"
+          server_jar="paper-server/build/libs/paper-server-${RELEASE_VERSION}.jar"
+          if [[ ! -f "$api_jar" ]]; then
+            echo "::error::No Alkahest API jar was produced for $RELEASE_VERSION"
             exit 1
           fi
-          server_jar="paper-server/build/libs/paper-server-${RELEASE_VERSION}.jar"
           if [[ ! -f "$server_jar" ]]; then
             echo "::error::No packaged Alkahest server jar was produced for $RELEASE_VERSION"
             exit 1
@@ -94,11 +94,14 @@ jobs:
           [[ "$manifest" == *$'Brand-Id: mintychochip:alkahest'* ]]
           [[ "$manifest" == *$'Brand-Name: Alkahest'* ]]
           [[ "$manifest" == *"Specification-Version: $RELEASE_VERSION"* ]]
-          echo "RELEASE_JAR=$release_jar" >> "$GITHUB_ENV"
+          {
+            echo "API_JAR=$api_jar"
+            echo "RELEASE_JAR=$server_jar"
+          } >> "$GITHUB_ENV"
 
       - name: Publish GitHub release
         run: |
-          gh release create "$GITHUB_REF_NAME" "$RELEASE_JAR" \
+          gh release create "$GITHUB_REF_NAME" "$API_JAR" "$RELEASE_JAR" \
             --repo "$GITHUB_REPOSITORY" \
             --title "Alkahest $RELEASE_VERSION" \
             --generate-notes
