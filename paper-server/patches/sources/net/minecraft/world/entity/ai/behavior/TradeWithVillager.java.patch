@@ -1,0 +1,10 @@
+--- a/net/minecraft/world/entity/ai/behavior/TradeWithVillager.java
++++ b/net/minecraft/world/entity/ai/behavior/TradeWithVillager.java
+@@ -49,7 +_,6 @@
+         Villager target = (Villager)body.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
+         if (!(body.distanceToSqr(target) > 5.0)) {
+             BehaviorUtils.lockGazeAndWalkToEachOther(body, target, 0.5F, 2);
+-            body.gossip(level, target, timestamp);
+             boolean isFarmer = body.getVillagerData().profession().is(VillagerProfession.FARMER);
+             if (body.hasExcessFood() && (isFarmer || target.wantsMoreFood())) {
+                 throwHalfStack(body, Villager.FOOD_POINTS.keySet(), target);

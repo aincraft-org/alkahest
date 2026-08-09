@@ -1,5 +1,15 @@
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
+@@ -93,9 +_,7 @@
+ import net.minecraft.world.entity.LivingEntity;
+ import net.minecraft.world.entity.Mob;
+ import net.minecraft.world.entity.MobCategory;
+-import net.minecraft.world.entity.ReputationEventHandler;
+ import net.minecraft.world.entity.ai.navigation.PathNavigation;
+-import net.minecraft.world.entity.ai.village.ReputationEventType;
+ import net.minecraft.world.entity.ai.village.poi.PoiManager;
+ import net.minecraft.world.entity.ai.village.poi.PoiRecord;
+ import net.minecraft.world.entity.ai.village.poi.PoiType;
 @@ -195,7 +_,7 @@
      private final List<ServerPlayer> players = Lists.newArrayList();
      private final ServerChunkCache chunkSource;
@@ -1060,6 +1070,16 @@
                  PoiRecord record = this.getPoiManager().add(immutable, (Holder<PoiType>)poiType);
                  if (record != null) {
                      this.debugSynchronizers.registerPoi(record);
+@@ -1577,9 +_,6 @@
+         return this.getRaidAt(pos) != null;
+     }
+ 
+-    public void onReputationEvent(final ReputationEventType type, final Entity source, final ReputationEventHandler target) {
+-        target.onReputationEventFrom(type, source);
+-    }
+ 
+     public void saveDebugReport(final Path rootDir) throws IOException {
+         ChunkMap chunkMap = this.getChunkSource().chunkMap;
 @@ -1685,12 +_,12 @@
      }
  

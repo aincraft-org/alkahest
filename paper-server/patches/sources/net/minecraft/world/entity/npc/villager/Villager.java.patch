@@ -11,15 +11,33 @@
  import java.util.List;
  import java.util.Map;
  import java.util.Optional;
-@@ -65,7 +_,6 @@
+@@ -44,7 +_,6 @@
+ import net.minecraft.world.effect.MobEffects;
+ import net.minecraft.world.entity.AgeableMob;
+ import net.minecraft.world.entity.ConversionParams;
+-import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityDimensions;
+ import net.minecraft.world.entity.EntityEvent;
+ import net.minecraft.world.entity.EntitySpawnReason;
+@@ -55,7 +_,6 @@
+ import net.minecraft.world.entity.LivingEntity;
+ import net.minecraft.world.entity.Mob;
+ import net.minecraft.world.entity.Pose;
+-import net.minecraft.world.entity.ReputationEventHandler;
+ import net.minecraft.world.entity.SpawnGroupData;
+ import net.minecraft.world.entity.ai.ActivityData;
+ import net.minecraft.world.entity.ai.Brain;
+@@ -63,19 +_,13 @@
+ import net.minecraft.world.entity.ai.attributes.Attributes;
+ import net.minecraft.world.entity.ai.behavior.VillagerGoalPackages;
  import net.minecraft.world.entity.ai.gossip.GossipContainer;
- import net.minecraft.world.entity.ai.gossip.GossipType;
+-import net.minecraft.world.entity.ai.gossip.GossipType;
  import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 -import net.minecraft.world.entity.ai.memory.MemoryStatus;
- import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+-import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
  import net.minecraft.world.entity.ai.sensing.GolemSensor;
  import net.minecraft.world.entity.ai.sensing.SensorType;
-@@ -73,9 +_,7 @@
+-import net.minecraft.world.entity.ai.village.ReputationEventType;
  import net.minecraft.world.entity.ai.village.poi.PoiManager;
  import net.minecraft.world.entity.ai.village.poi.PoiType;
  import net.minecraft.world.entity.ai.village.poi.PoiTypes;
@@ -29,15 +47,39 @@
  import net.minecraft.world.entity.player.Player;
  import net.minecraft.world.entity.raid.Raid;
  import net.minecraft.world.entity.schedule.Activity;
-@@ -113,7 +_,6 @@
+@@ -94,15 +_,12 @@
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
+-public class Villager extends AbstractVillager implements VillagerDataHolder, ReputationEventHandler {
++public class Villager extends AbstractVillager implements VillagerDataHolder {
+     private static final Logger LOGGER = LogUtils.getLogger();
+     private static final EntityDataAccessor<VillagerData> DATA_VILLAGER_DATA = SynchedEntityData.defineId(Villager.class, EntityDataSerializers.VILLAGER_DATA);
+     private static final EntityDataAccessor<Boolean> DATA_VILLAGER_DATA_FINALIZED = SynchedEntityData.defineId(Villager.class, EntityDataSerializers.BOOLEAN);
+     public static final int BREEDING_FOOD_THRESHOLD = 12;
+     public static final Map<Item, Integer> FOOD_POINTS = ImmutableMap.of(Items.BREAD, 4, Items.POTATO, 1, Items.CARROT, 1, Items.BEETROOT, 1);
+-    private static final int MAX_GOSSIP_TOPICS = 10;
+-    private static final int GOSSIP_COOLDOWN = 1200;
+-    private static final int GOSSIP_DECAY_INTERVAL = 24000;
+     private static final int HOW_FAR_AWAY_TO_TALK_TO_OTHER_VILLAGERS_ABOUT_GOLEMS = 10;
+     private static final int HOW_MANY_VILLAGERS_NEED_TO_AGREE_TO_SPAWN_A_GOLEM = 5;
+     private static final long TIME_SINCE_SLEEPING_FOR_GOLEM_SPAWNING = 24000L;
+@@ -111,65 +_,40 @@
+     private static final int DEFAULT_XP = 0;
+     private static final byte DEFAULT_FOOD_LEVEL = 0;
      private static final int DEFAULT_LAST_RESTOCK = 0;
-     private static final int DEFAULT_LAST_GOSSIP_DECAY = 0;
+-    private static final int DEFAULT_LAST_GOSSIP_DECAY = 0;
      private static final int DEFAULT_RESTOCKS_TODAY = 0;
 -    private static final boolean DEFAULT_ASSIGN_PROFESSION_WHEN_SPAWNED = false;
      private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.63F);
      private int updateMerchantTimer;
      private boolean increaseProfessionLevelOnUpdate;
-@@ -126,50 +_,29 @@
+     private @Nullable Player lastTradedPlayer;
+     private int foodLevel = 0;
+     private final GossipContainer gossips = new GossipContainer();
+-    private long lastGossipTime;
+-    private long lastGossipDecayTime = 0L;
+     private int villagerXp = 0;
      private long lastRestockGameTime = 0L;
      public int numberOfRestocksToday = 0;
      private long lastRestockCheckDay;
@@ -45,7 +87,7 @@
 +    private int restockCheckTicks;
      private boolean assignProfessionWhenSpawned = false;
      private static final Brain.Provider<Villager> BRAIN_PROVIDER = Brain.provider(
-+        List.of(
+         List.of(
 +            MemoryModuleType.HOME,
 +            MemoryModuleType.JOB_SITE,
 +            MemoryModuleType.POTENTIAL_JOB_SITE,
@@ -53,7 +95,7 @@
 +            MemoryModuleType.LAST_SLEPT,
 +            MemoryModuleType.GOLEM_DETECTED_RECENTLY
 +        ),
-         List.of(
++        List.of(
              SensorType.NEAREST_LIVING_ENTITIES,
              SensorType.NEAREST_PLAYERS,
 -            SensorType.NEAREST_ITEMS,
@@ -150,7 +192,7 @@
  
          if (!this.isTrading() && this.updateMerchantTimer > 0) {
              this.updateMerchantTimer--;
-@@ -253,7 +_,7 @@
+@@ -253,12 +_,11 @@
                      this.increaseProfessionLevelOnUpdate = false;
                  }
  
@@ -159,14 +201,20 @@
              }
          }
  
-@@ -284,6 +_,7 @@
+         if (this.lastTradedPlayer != null) {
+-            level.onReputationEvent(ReputationEventType.TRADE, this.lastTradedPlayer, this);
+             level.broadcastEntityEvent(this, EntityEvent.VILLAGER_HAPPY);
+             this.lastTradedPlayer = null;
+         }
+@@ -284,7 +_,7 @@
              this.setUnhappyCounter(this.getUnhappyCounter() - 1);
          }
  
+-        this.maybeDecayGossip();
 +        this.tickRestockIfServer();
-         this.maybeDecayGossip();
      }
  
+     @Override
 @@ -426,6 +_,23 @@
          return this.allowedToRestock() && this.needsToRestock();
      }
@@ -191,9 +239,11 @@
      private void catchUpDemand() {
          int missedUpdates = 2 - this.numberOfRestocksToday;
          if (missedUpdates > 0) {
-@@ -491,9 +_,6 @@
+@@ -489,16 +_,13 @@
+         output.store("Gossips", GossipContainer.CODEC, this.gossips);
+         output.putInt("Xp", this.villagerXp);
          output.putLong("LastRestock", this.lastRestockGameTime);
-         output.putLong("LastGossipDecay", this.lastGossipDecayTime);
+-        output.putLong("LastGossipDecay", this.lastGossipDecayTime);
          output.putInt("RestocksToday", this.numberOfRestocksToday);
 -        if (this.assignProfessionWhenSpawned) {
 -            output.putBoolean("AssignProfessionWhenSpawned", true);
@@ -201,14 +251,19 @@
      }
  
      @Override
-@@ -499,5 +_,6 @@
-     @Override
      protected void readAdditionalSaveData(final ValueInput input) {
          super.readAdditionalSaveData(input);
 +        this.setCanPickUpLoot(false);
          Optional<VillagerData> villagerDataOptional = input.read("VillagerData", VillagerData.CODEC);
          if (input.getBooleanOr("VillagerDataFinalized", false) || villagerDataOptional.isPresent()) {
-@@ -517,7 +_,6 @@
+             this.setVillagerDataFinalized(true);
+@@ -511,13 +_,11 @@
+         input.read("Gossips", GossipContainer.CODEC).ifPresent(this.gossips::putAll);
+         this.villagerXp = input.getIntOr("Xp", 0);
+         this.lastRestockGameTime = input.getLongOr("LastRestock", 0L);
+-        this.lastGossipDecayTime = input.getLongOr("LastGossipDecay", 0L);
+         if (this.level() instanceof ServerLevel) {
+             this.refreshBrain((ServerLevel)this.level());
          }
  
          this.numberOfRestocksToday = input.getIntOr("RestocksToday", 0);
@@ -216,7 +271,7 @@
      }
  
      @Override
-@@ -585,7 +_,7 @@
+@@ -585,14 +_,13 @@
          }
  
          if (offer.shouldRewardExp()) {
@@ -225,16 +280,41 @@
          }
      }
  
-@@ -603,7 +_,7 @@
+     @Override
+     public void setLastHurtByMob(final @Nullable LivingEntity hurtBy) {
+         if (hurtBy != null && this.level() instanceof ServerLevel) {
+-            ((ServerLevel)this.level()).onReputationEvent(ReputationEventType.VILLAGER_HURT, hurtBy, this);
+             if (this.isAlive() && hurtBy instanceof Player) {
+                 this.level().broadcastEntityEvent(this, EntityEvent.VILLAGER_ANGRY);
+             }
+@@ -603,11 +_,7 @@
  
      @Override
      public void die(final DamageSource source) {
 -        LOGGER.info("Villager {} died, message: '{}'", this, source.getLocalizedDeathMessage(this).getString());
+-        Entity murderer = source.getEntity();
+-        if (murderer != null) {
+-            this.tellWitnessesThatIWasMurdered(murderer);
+-        }
 +        if (org.spigotmc.SpigotConfig.logVillagerDeaths) LOGGER.info("Villager {} died, message: '{}'", this, source.getLocalizedDeathMessage(this).getString()); // Spigot
-         Entity murderer = source.getEntity();
-         if (murderer != null) {
-             this.tellWitnessesThatIWasMurdered(murderer);
-@@ -634,18 +_,21 @@
+ 
+         this.releaseAllPois();
+         super.die(source);
+@@ -620,32 +_,25 @@
+         this.releasePoi(MemoryModuleType.MEETING_POINT);
+     }
+ 
+-    private void tellWitnessesThatIWasMurdered(final Entity murderer) {
+-        if (this.level() instanceof ServerLevel serverLevel) {
+-            Optional<NearestVisibleLivingEntities> witnesses = this.brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
+-            if (!witnesses.isEmpty()) {
+-                witnesses.get()
+-                    .findAll(ReputationEventHandler.class::isInstance)
+-                    .forEach(witness -> serverLevel.onReputationEvent(ReputationEventType.VILLAGER_KILLED, murderer, (ReputationEventHandler)witness));
+-            }
+-        }
+-    }
+ 
      public void releasePoi(final MemoryModuleType<GlobalPos> memoryType) {
          if (this.level() instanceof ServerLevel) {
              MinecraftServer server = ((ServerLevel)this.level()).getServer();
@@ -286,7 +366,7 @@
  
          return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
      }
-@@ -764,30 +_,25 @@
+@@ -764,12 +_,19 @@
      @Override
      public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
          if (level.getDifficulty() != Difficulty.PEACEFUL) {
@@ -308,11 +388,10 @@
              if (witch == null) {
                  super.thunderHit(level, lightningBolt);
              }
-         } else {
-             super.thunderHit(level, lightningBolt);
+@@ -778,18 +_,6 @@
          }
--    }
--
+     }
+ 
 -    @Override
 -    protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
 -        InventoryCarrier.pickUpItem(level, this, this, entity);
@@ -323,10 +402,12 @@
 -        Item item = itemStack.getItem();
 -        return (itemStack.is(ItemTags.VILLAGER_PICKS_UP) || this.getVillagerData().profession().value().requestedItems().contains(item))
 -            && this.getInventory().canAddItem(itemStack);
-     }
- 
+-    }
+-
      public boolean hasExcessFood() {
-@@ -809,15 +_,23 @@
+         return this.countFoodPointsInInventory() >= 24;
+     }
+@@ -809,36 +_,26 @@
  
      @Override
      protected void updateTrades(final ServerLevel level) {
@@ -345,12 +426,37 @@
              if (SharedConstants.DEBUG_UNLOCK_ALL_TRADES && data.level() < 5) {
                  this.increaseMerchantCareer(level);
              }
+-        }
+-    }
+-
+-    public void gossip(final ServerLevel level, final Villager target, final long timestamp) {
+-        if ((timestamp < this.lastGossipTime || timestamp >= this.lastGossipTime + 1200L)
+-            && (timestamp < target.lastGossipTime || timestamp >= target.lastGossipTime + 1200L)) {
+-            this.gossips.transferFrom(target.gossips, this.random, 10);
+-            this.lastGossipTime = timestamp;
+-            target.lastGossipTime = timestamp;
+-            this.spawnGolemIfNeeded(level, timestamp, 5);
+-        }
+-    }
+-
+-    private void maybeDecayGossip() {
+-        long timestamp = this.level().getGameTime();
+-        if (this.lastGossipDecayTime == 0L) {
+-            this.lastGossipDecayTime = timestamp;
+-        } else if (timestamp >= this.lastGossipDecayTime + 24000L) {
+-            this.gossips.decay();
+-            this.lastGossipDecayTime = timestamp;
+-        }
+-    }
 +            return true; // Paper - More vanilla friendly methods to update trades
-         }
++        }
 +        return false; // Paper - More vanilla friendly methods to update trades
-     }
++    }
++
++
  
-     public void gossip(final ServerLevel level, final Villager target, final long timestamp) {
+     public void spawnGolemIfNeeded(final ServerLevel level, final long timestamp, final int villagersNeededToAgree) {
+         if (this.wantsToSpawnGolem(timestamp)) {
 @@ -849,7 +_,7 @@
                  .limit(5L)
                  .toList();
@@ -374,3 +480,23 @@
                      nearbyVillagers.forEach(GolemSensor::golemDetected);
                  }
              }
+@@ -871,19 +_,6 @@
+         return this.golemSpawnConditionsMet(this.level().getGameTime()) && !this.brain.hasMemoryValue(MemoryModuleType.GOLEM_DETECTED_RECENTLY);
+     }
+ 
+-    @Override
+-    public void onReputationEventFrom(final ReputationEventType type, final Entity source) {
+-        if (type == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
+-            this.gossips.add(source.getUUID(), GossipType.MAJOR_POSITIVE, 20);
+-            this.gossips.add(source.getUUID(), GossipType.MINOR_POSITIVE, 25);
+-        } else if (type == ReputationEventType.TRADE) {
+-            this.gossips.add(source.getUUID(), GossipType.TRADING, 2);
+-        } else if (type == ReputationEventType.VILLAGER_HURT) {
+-            this.gossips.add(source.getUUID(), GossipType.MINOR_NEGATIVE, 25);
+-        } else if (type == ReputationEventType.VILLAGER_KILLED) {
+-            this.gossips.add(source.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
+-        }
+-    }
+ 
+     @Override
+     public int getVillagerXp() {

@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/entity/monster/zombie/ZombieVillager.java
 +++ b/net/minecraft/world/entity/monster/zombie/ZombieVillager.java
+@@ -38,7 +_,6 @@
+ import net.minecraft.world.entity.SlotAccess;
+ import net.minecraft.world.entity.SpawnGroupData;
+ import net.minecraft.world.entity.ai.gossip.GossipContainer;
+-import net.minecraft.world.entity.ai.village.ReputationEventType;
+ import net.minecraft.world.entity.npc.villager.Villager;
+ import net.minecraft.world.entity.npc.villager.VillagerData;
+ import net.minecraft.world.entity.npc.villager.VillagerDataHolder;
 @@ -196,12 +_,20 @@
      }
  
@@ -33,7 +41,7 @@
              EntityTypes.VILLAGER,
              ConversionParams.single(this, false, false),
              villager -> {
-@@ -258,19 +_,24 @@
+@@ -258,19 +_,23 @@
                  villager.finalizeSpawn(level, level.getCurrentDifficultyAt(villager.blockPosition()), EntitySpawnReason.CONVERSION, null);
                  villager.refreshBrain(level);
                  if (this.conversionStarter != null) {
@@ -41,7 +49,7 @@
 +                    Player player = level.getGlobalPlayerByUUID(this.conversionStarter); // Paper - check global player list where appropriate
                      if (player instanceof ServerPlayer serverPlayer) {
                          CriteriaTriggers.CURED_ZOMBIE_VILLAGER.trigger(serverPlayer, this, villager);
-                         level.onReputationEvent(ReputationEventType.ZOMBIE_VILLAGER_CURED, player, villager);
+-                        level.onReputationEvent(ReputationEventType.ZOMBIE_VILLAGER_CURED, player, villager);
                      }
                  }
  
