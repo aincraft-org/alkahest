@@ -678,7 +678,7 @@ diff --git a/net/minecraft/world/entity/npc/villager/Villager.java b/net/minecra
 index 48bf5f612b91c457dd8e99955429832daeaab9e2..0a02aef2ff159a1d94870bf3cede0ed29ae192af 100644
 --- a/net/minecraft/world/entity/npc/villager/Villager.java
 +++ b/net/minecraft/world/entity/npc/villager/Villager.java
-@@ -235,11 +235,35 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
+@@ -235,11 +235,36 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
          return this.assignProfessionWhenSpawned;
      }
  
@@ -696,6 +696,7 @@ index 48bf5f612b91c457dd8e99955429832daeaab9e2..0a02aef2ff159a1d94870bf3cede0ed2
 +                this.customServerAiStep(this.level().getMinecraftWorld(), true);
 +            }
 +        }
++        this.tickRestockIfServer();
 +        this.maybeDecayGossip();
 +        super.inactiveTick();
 +    }

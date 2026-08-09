@@ -1,5 +1,105 @@
 --- a/net/minecraft/world/entity/npc/villager/Villager.java
 +++ b/net/minecraft/world/entity/npc/villager/Villager.java
+@@ -2,10 +_,8 @@
+ 
+ import com.google.common.annotations.VisibleForTesting;
+ import com.google.common.collect.ImmutableMap;
+-import com.google.common.collect.ImmutableSet;
+ import com.mojang.datafixers.util.Pair;
+ import com.mojang.logging.LogUtils;
+-import java.util.ArrayList;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Optional;
+@@ -65,7 +_,6 @@
+ import net.minecraft.world.entity.ai.gossip.GossipContainer;
+ import net.minecraft.world.entity.ai.gossip.GossipType;
+ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+-import net.minecraft.world.entity.ai.memory.MemoryStatus;
+ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+ import net.minecraft.world.entity.ai.sensing.GolemSensor;
+ import net.minecraft.world.entity.ai.sensing.SensorType;
+@@ -126,50 +_,21 @@
+     private long lastRestockGameTime = 0L;
+     public int numberOfRestocksToday = 0;
+     private long lastRestockCheckDay;
++    private static final int RESTOCK_CHECK_INTERVAL = 300;
++    private int restockCheckTicks;
+     private boolean assignProfessionWhenSpawned = false;
+     private static final Brain.Provider<Villager> BRAIN_PROVIDER = Brain.provider(
+         List.of(
+             SensorType.NEAREST_LIVING_ENTITIES,
+             SensorType.NEAREST_PLAYERS,
+-            SensorType.NEAREST_ITEMS,
+-            SensorType.NEAREST_BED,
+             SensorType.HURT_BY,
+-            SensorType.VILLAGER_HOSTILES,
+-            SensorType.VILLAGER_BABIES,
+-            SensorType.SECONDARY_POIS,
+-            SensorType.GOLEM_DETECTED
++            SensorType.VILLAGER_HOSTILES
+         ),
+-        body -> {
+-            Holder<VillagerProfession> profession = body.getVillagerData().profession();
+-            List<ActivityData<Villager>> activities = new ArrayList<>();
+-            if (body.isBaby()) {
+-                activities.add(ActivityData.create(Activity.PLAY, VillagerGoalPackages.getPlayPackage(0.5F)));
+-            } else {
+-                activities.add(
+-                    ActivityData.create(
+-                        Activity.WORK,
+-                        VillagerGoalPackages.getWorkPackage(profession, 0.5F),
+-                        ImmutableSet.of(Pair.of(MemoryModuleType.JOB_SITE, MemoryStatus.VALUE_PRESENT))
+-                    )
+-                );
+-            }
+-
+-            activities.add(ActivityData.create(Activity.CORE, VillagerGoalPackages.getCorePackage(profession, 0.5F)));
+-            activities.add(
+-                ActivityData.create(
+-                    Activity.MEET,
+-                    VillagerGoalPackages.getMeetPackage(0.5F),
+-                    ImmutableSet.of(Pair.of(MemoryModuleType.MEETING_POINT, MemoryStatus.VALUE_PRESENT))
+-                )
+-            );
+-            activities.add(ActivityData.create(Activity.REST, VillagerGoalPackages.getRestPackage(0.5F)));
+-            activities.add(ActivityData.create(Activity.IDLE, VillagerGoalPackages.getIdlePackage(0.5F)));
+-            activities.add(ActivityData.create(Activity.PANIC, VillagerGoalPackages.getPanicPackage(0.5F)));
+-            activities.add(ActivityData.create(Activity.PRE_RAID, VillagerGoalPackages.getPreRaidPackage(0.5F)));
+-            activities.add(ActivityData.create(Activity.RAID, VillagerGoalPackages.getRaidPackage(0.5F)));
+-            activities.add(ActivityData.create(Activity.HIDE, VillagerGoalPackages.getHidePackage(0.5F)));
+-            return activities;
+-        }
++        body -> List.of(
++            ActivityData.create(Activity.CORE, VillagerGoalPackages.getCorePackage(0.5F)),
++            ActivityData.create(Activity.IDLE, VillagerGoalPackages.getIdlePackage(0.5F)),
++            ActivityData.create(Activity.PANIC, VillagerGoalPackages.getPanicPackage(0.5F))
++        )
+     );
+     public static final Map<MemoryModuleType<GlobalPos>, BiPredicate<Villager, Holder<PoiType>>> POI_MEMORIES = ImmutableMap.of(
+         MemoryModuleType.HOME,
+@@ -210,12 +_,8 @@
+     }
+ 
+     private void registerBrainGoals(final Brain<Villager> brain) {
+-        if (this.isBaby()) {
+-            brain.setSchedule(EnvironmentAttributes.BABY_VILLAGER_ACTIVITY);
+-        } else {
+-            brain.setSchedule(EnvironmentAttributes.VILLAGER_ACTIVITY);
+-        }
+-
++        brain.setSchedule(EnvironmentAttributes.VILLAGER_ACTIVITY);
++        brain.setDefaultActivity(Activity.IDLE);
+         brain.updateActivityFromSchedule(this.level().environmentAttributes(), this.level().getGameTime(), this.position());
+     }
+ 
+@@ -235,6 +_,6 @@
+         return this.assignProfessionWhenSpawned;
+     }
+ 
+     @Override
+     protected void customServerAiStep(final ServerLevel level) {
+         ProfilerFiller profiler = Profiler.get();
 @@ -253,7 +_,7 @@
                      this.increaseProfessionLevelOnUpdate = false;
                  }
@@ -9,6 +109,17 @@
              }
          }
  
+@@ -283,8 +_,8 @@
+         if (this.getUnhappyCounter() > 0) {
+             this.setUnhappyCounter(this.getUnhappyCounter() - 1);
+         }
+-
+-        this.maybeDecayGossip();
++        this.tickRestockIfServer();
++        this.maybeDecayGossip(); // remove in Task 3
+     }
+ 
+     @Override
 @@ -369,7 +_,12 @@
          this.updateDemand();
  
@@ -23,6 +134,30 @@
          }
  
          this.resendOffersToTradingPlayer();
+@@ -406,6 +_,23 @@
+         return this.numberOfRestocksToday == 0 || this.numberOfRestocksToday < 2 && this.level().getGameTime() > this.lastRestockGameTime + 2400L;
+     }
+ 
++    private void tickRestock(final ServerLevel level) {
++        if (++this.restockCheckTicks < RESTOCK_CHECK_INTERVAL) {
++            return;
++        }
++
++        this.restockCheckTicks = 0;
++        if (this.shouldRestock(level)) {
++            this.restock();
++        }
++    }
++
++    private void tickRestockIfServer() {
++        if (this.level() instanceof ServerLevel serverLevel) {
++            this.tickRestock(serverLevel);
++        }
++    }
++
+     public boolean shouldRestock(final ServerLevel level) {
+         long halfDayPassedTime = this.lastRestockGameTime + 12000L;
+         long gameTime = this.level().getGameTime();
 @@ -430,7 +_,12 @@
          int missedUpdates = 2 - this.numberOfRestocksToday;
          if (missedUpdates > 0) {

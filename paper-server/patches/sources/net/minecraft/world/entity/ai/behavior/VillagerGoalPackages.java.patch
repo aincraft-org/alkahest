@@ -1,11 +1,111 @@
 --- a/net/minecraft/world/entity/ai/behavior/VillagerGoalPackages.java
 +++ b/net/minecraft/world/entity/ai/behavior/VillagerGoalPackages.java
-@@ -45,7 +_,7 @@
+@@ -30,45 +_,16 @@
+     public static final float INTERACT_SPEED_MODIFIER = 0.5F;
+ 
+     public static ImmutableList<Pair<Integer, ? extends BehaviorControl<? super Villager>>> getCorePackage(
+-        final Holder<VillagerProfession> profession, final float speedModifier
++        final float speedModifier
+     ) {
+         return ImmutableList.of(
+             Pair.of(0, new Swim<>(0.8F)),
+             Pair.of(0, InteractWithDoor.create()),
+             Pair.of(0, new LookAtTargetSink(45, 90)),
+             Pair.of(0, new VillagerPanicTrigger()),
+-            Pair.of(0, WakeUp.create()),
+-            Pair.of(0, ReactToBell.create()),
+-            Pair.of(0, SetRaidStatus.create()),
+-            Pair.of(0, ValidateNearbyPoi.create(profession.value().heldJobSite(), MemoryModuleType.JOB_SITE)),
+-            Pair.of(0, ValidateNearbyPoi.create(profession.value().acquirableJobSite(), MemoryModuleType.POTENTIAL_JOB_SITE)),
              Pair.of(1, new MoveToTargetSink()),
-             Pair.of(2, PoiCompetitorScan.create()),
-             Pair.of(3, new LookAndFollowTradingPlayerSink(speedModifier)),
+-            Pair.of(2, PoiCompetitorScan.create()),
+-            Pair.of(3, new LookAndFollowTradingPlayerSink(speedModifier)),
 -            Pair.of(5, GoToWantedItem.create(speedModifier, false, 4)),
-+            Pair.of(5, GoToWantedItem.create(villager -> !villager.isSleeping(), speedModifier, false, 4)), // Paper - Fix MC-157464
-             Pair.of(
-                 6,
-                 AcquirePoi.create(
+-            Pair.of(
+-                6,
+-                AcquirePoi.create(
+-                    profession.value().acquirableJobSite(),
+-                    MemoryModuleType.JOB_SITE,
+-                    MemoryModuleType.POTENTIAL_JOB_SITE,
+-                    true,
+-                    Optional.empty(),
+-                    (l, p) -> true
+-                )
+-            ),
+-            Pair.of(7, new GoToPotentialJobSite(speedModifier)),
+-            Pair.of(8, YieldJobSite.create(speedModifier)),
+-            Pair.of(10, AcquirePoi.create(p -> p.is(PoiTypes.HOME), MemoryModuleType.HOME, false, Optional.of((byte)14), VillagerGoalPackages::validateBedPoi)),
+-            Pair.of(10, AcquirePoi.create(p -> p.is(PoiTypes.MEETING), MemoryModuleType.MEETING_POINT, true, Optional.of((byte)14))),
+-            Pair.of(10, AssignProfessionFromJobSite.create()),
+-            Pair.of(10, ResetProfession.create())
++            Pair.of(3, new LookAndFollowTradingPlayerSink(speedModifier))
+         );
+-    }
+-
+-    private static boolean validateBedPoi(final ServerLevel level, final BlockPos blockPos) {
+-        BlockState blockState = level.getBlockState(blockPos);
+-        return blockState.is(BlockTags.BEDS) && !blockState.getValue(BedBlock.OCCUPIED);
+     }
+ 
+     public static ImmutableList<Pair<Integer, ? extends BehaviorControl<? super Villager>>> getWorkPackage(
+@@ -179,56 +_,13 @@
+         );
+     }
+ 
+-    public static ImmutableList<Pair<Integer, ? extends BehaviorControl<? super Villager>>> getIdlePackage(final float speedModifier) {
++    public static ImmutableList<Pair<Integer, ? extends BehaviorControl<? super Villager>>> getIdlePackage(
++        final float speedModifier
++    ) {
+         return ImmutableList.of(
+-            Pair.of(
+-                2,
+-                new RunOne<>(
+-                    ImmutableList.of(
+-                        Pair.of(InteractWith.of(EntityTypes.VILLAGER, 8, MemoryModuleType.INTERACTION_TARGET, speedModifier, INTERACT_WALKUP_DIST), 2),
+-                        Pair.of(
+-                            InteractWith.of(
+-                                EntityTypes.VILLAGER,
+-                                8,
+-                                AgeableMob::canBreed,
+-                                AgeableMob::canBreed,
+-                                MemoryModuleType.BREED_TARGET,
+-                                speedModifier,
+-                                INTERACT_WALKUP_DIST
+-                            ),
+-                            1
+-                        ),
+-                        Pair.of(InteractWith.of(EntityTypes.CAT, 8, MemoryModuleType.INTERACTION_TARGET, speedModifier, INTERACT_WALKUP_DIST), 1),
+-                        Pair.of(VillageBoundRandomStroll.create(speedModifier), 1),
+-                        Pair.of(SetWalkTargetFromLookTarget.create(speedModifier, 2), 1),
+-                        Pair.of(new JumpOnBed(speedModifier), 1),
+-                        Pair.of(new DoNothing(30, 60), 1)
+-                    )
+-                )
+-            ),
+-            Pair.of(3, new GiveGiftToHero(100)),
++            Pair.of(2, RandomStroll.stroll(speedModifier)),
+             Pair.of(3, SetLookAndInteract.create(EntityTypes.PLAYER, 4)),
+             Pair.of(3, new ShowTradesToPlayer(400, 1600)),
+-            Pair.of(
+-                3,
+-                new GateBehavior<>(
+-                    ImmutableMap.of(),
+-                    ImmutableSet.of(MemoryModuleType.INTERACTION_TARGET),
+-                    GateBehavior.OrderPolicy.ORDERED,
+-                    GateBehavior.RunningPolicy.RUN_ONE,
+-                    ImmutableList.of(Pair.of(new TradeWithVillager(), 1))
+-                )
+-            ),
+-            Pair.of(
+-                3,
+-                new GateBehavior<>(
+-                    ImmutableMap.of(),
+-                    ImmutableSet.of(MemoryModuleType.BREED_TARGET),
+-                    GateBehavior.OrderPolicy.ORDERED,
+-                    GateBehavior.RunningPolicy.RUN_ONE,
+-                    ImmutableList.of(Pair.of(new VillagerMakeLove(), 1))
+-                )
+-            ),
+             getFullLookBehavior(),
+             Pair.of(99, UpdateActivityFromSchedule.create())
+         );
