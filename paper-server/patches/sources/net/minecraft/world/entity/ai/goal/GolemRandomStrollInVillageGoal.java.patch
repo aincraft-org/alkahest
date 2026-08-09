@@ -1,0 +1,10 @@
+--- a/net/minecraft/world/entity/ai/goal/GolemRandomStrollInVillageGoal.java
++++ b/net/minecraft/world/entity/ai/goal/GolemRandomStrollInVillageGoal.java
+@@ -92,6 +_,6 @@
+     }
+ 
+     private boolean doesVillagerWantGolem(final Villager villager) {
+-        return villager.wantsToSpawnGolem(this.mob.level().getGameTime());
++        return false; // Paper - villager golem requests removed
+     }
+ }

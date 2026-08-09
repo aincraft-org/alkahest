@@ -1,0 +1,16 @@
+--- a/net/minecraft/world/entity/ai/behavior/VillagerPanicTrigger.java
++++ b/net/minecraft/world/entity/ai/behavior/VillagerPanicTrigger.java
+@@ -34,13 +_,6 @@
+         }
+     }
+ 
+-    @Override
+-    protected void tick(final ServerLevel level, final Villager body, final long timestamp) {
+-        if (timestamp % 100L == 0L) {
+-            body.spawnGolemIfNeeded(level, timestamp, 3);
+-        }
+-    }
+-
+     public static boolean hasHostile(final LivingEntity myBody) {
+         return myBody.getBrain().hasMemoryValue(MemoryModuleType.NEAREST_HOSTILE);
+     }

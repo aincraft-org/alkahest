@@ -1,0 +1,11 @@
+--- a/net/minecraft/util/debug/DebugBrainDump.java
++++ b/net/minecraft/util/debug/DebugBrainDump.java
+@@ -114,7 +_,7 @@
+             inventoryStr = "";
+         }
+ 
+-        boolean wantsGolem = entity instanceof Villager villager && villager.wantsToSpawnGolem(gameTime);
++        boolean wantsGolem = false;
+         int angerLevel = entity instanceof Warden warden ? warden.getClientAngerLevel() : -1;
+         List<String> activities = brain.getActiveActivities().stream().map(Activity::getName).toList();
+         List<String> behaviors = brain.getRunningBehaviors().stream().map(BehaviorControl::debugString).toList();

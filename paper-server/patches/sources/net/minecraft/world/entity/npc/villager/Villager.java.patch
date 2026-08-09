@@ -11,6 +11,14 @@
  import java.util.List;
  import java.util.Map;
  import java.util.Optional;
+@@ -30,7 +_,6 @@
+ import net.minecraft.stats.Stats;
+ import net.minecraft.tags.ItemTags;
+ import net.minecraft.util.Mth;
+-import net.minecraft.util.SpawnUtil;
+ import net.minecraft.util.profiling.Profiler;
+ import net.minecraft.util.profiling.ProfilerFiller;
+ import net.minecraft.world.Difficulty;
 @@ -44,7 +_,6 @@
  import net.minecraft.world.effect.MobEffects;
  import net.minecraft.world.entity.AgeableMob;
@@ -27,7 +35,7 @@
  import net.minecraft.world.entity.SpawnGroupData;
  import net.minecraft.world.entity.ai.ActivityData;
  import net.minecraft.world.entity.ai.Brain;
-@@ -63,19 +_,13 @@
+@@ -63,19 +_,12 @@
  import net.minecraft.world.entity.ai.attributes.Attributes;
  import net.minecraft.world.entity.ai.behavior.VillagerGoalPackages;
  import net.minecraft.world.entity.ai.gossip.GossipContainer;
@@ -35,7 +43,7 @@
  import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 -import net.minecraft.world.entity.ai.memory.MemoryStatus;
 -import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
- import net.minecraft.world.entity.ai.sensing.GolemSensor;
+-import net.minecraft.world.entity.ai.sensing.GolemSensor;
  import net.minecraft.world.entity.ai.sensing.SensorType;
 -import net.minecraft.world.entity.ai.village.ReputationEventType;
  import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -47,7 +55,12 @@
  import net.minecraft.world.entity.player.Player;
  import net.minecraft.world.entity.raid.Raid;
  import net.minecraft.world.entity.schedule.Activity;
-@@ -94,15 +_,12 @@
+@@ -89,87 +_,54 @@
+ import net.minecraft.world.level.ServerLevelAccessor;
+ import net.minecraft.world.level.storage.ValueInput;
+ import net.minecraft.world.level.storage.ValueOutput;
+-import net.minecraft.world.phys.AABB;
+ import net.minecraft.world.timeline.Timelines;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
@@ -61,10 +74,11 @@
 -    private static final int MAX_GOSSIP_TOPICS = 10;
 -    private static final int GOSSIP_COOLDOWN = 1200;
 -    private static final int GOSSIP_DECAY_INTERVAL = 24000;
-     private static final int HOW_FAR_AWAY_TO_TALK_TO_OTHER_VILLAGERS_ABOUT_GOLEMS = 10;
-     private static final int HOW_MANY_VILLAGERS_NEED_TO_AGREE_TO_SPAWN_A_GOLEM = 5;
-     private static final long TIME_SINCE_SLEEPING_FOR_GOLEM_SPAWNING = 24000L;
-@@ -111,65 +_,40 @@
+-    private static final int HOW_FAR_AWAY_TO_TALK_TO_OTHER_VILLAGERS_ABOUT_GOLEMS = 10;
+-    private static final int HOW_MANY_VILLAGERS_NEED_TO_AGREE_TO_SPAWN_A_GOLEM = 5;
+-    private static final long TIME_SINCE_SLEEPING_FOR_GOLEM_SPAWNING = 24000L;
+     @VisibleForTesting
+     public static final float SPEED_MODIFIER = 0.5F;
      private static final int DEFAULT_XP = 0;
      private static final byte DEFAULT_FOOD_LEVEL = 0;
      private static final int DEFAULT_LAST_RESTOCK = 0;
@@ -92,8 +106,7 @@
 +            MemoryModuleType.JOB_SITE,
 +            MemoryModuleType.POTENTIAL_JOB_SITE,
 +            MemoryModuleType.MEETING_POINT,
-+            MemoryModuleType.LAST_SLEPT,
-+            MemoryModuleType.GOLEM_DETECTED_RECENTLY
++            MemoryModuleType.LAST_SLEPT
 +        ),
 +        List.of(
              SensorType.NEAREST_LIVING_ENTITIES,
@@ -407,7 +420,7 @@
      public boolean hasExcessFood() {
          return this.countFoodPointsInInventory() >= 24;
      }
-@@ -809,36 +_,26 @@
+@@ -809,81 +_,26 @@
  
      @Override
      protected void updateTrades(final ServerLevel level) {
@@ -448,42 +461,38 @@
 -            this.lastGossipDecayTime = timestamp;
 -        }
 -    }
-+            return true; // Paper - More vanilla friendly methods to update trades
-+        }
-+        return false; // Paper - More vanilla friendly methods to update trades
-+    }
-+
-+
- 
-     public void spawnGolemIfNeeded(final ServerLevel level, final long timestamp, final int villagersNeededToAgree) {
-         if (this.wantsToSpawnGolem(timestamp)) {
-@@ -849,7 +_,7 @@
-                 .limit(5L)
-                 .toList();
-             if (nearbyVillagersThatWantAGolem.size() >= villagersNeededToAgree) {
+-
+-    public void spawnGolemIfNeeded(final ServerLevel level, final long timestamp, final int villagersNeededToAgree) {
+-        if (this.wantsToSpawnGolem(timestamp)) {
+-            AABB villagerSearchBox = this.getBoundingBox().inflate(10.0, 10.0, 10.0);
+-            List<Villager> nearbyVillagers = level.getEntitiesOfClass(Villager.class, villagerSearchBox);
+-            List<Villager> nearbyVillagersThatWantAGolem = nearbyVillagers.stream()
+-                .filter(villager -> villager.wantsToSpawnGolem(timestamp))
+-                .limit(5L)
+-                .toList();
+-            if (nearbyVillagersThatWantAGolem.size() >= villagersNeededToAgree) {
 -                if (!SpawnUtil.trySpawnMob(
-+                if (SpawnUtil.trySpawnMob( // Paper - Set Golem Last Seen to stop it from spawning another one - switch to isPresent
-                         EntityTypes.IRON_GOLEM,
-                         EntitySpawnReason.MOB_SUMMONED,
-                         level,
-@@ -858,9 +_,11 @@
-                         8,
-                         6,
-                         SpawnUtil.Strategy.LEGACY_IRON_GOLEM,
+-                        EntityTypes.IRON_GOLEM,
+-                        EntitySpawnReason.MOB_SUMMONED,
+-                        level,
+-                        this.blockPosition(),
+-                        10,
+-                        8,
+-                        6,
+-                        SpawnUtil.Strategy.LEGACY_IRON_GOLEM,
 -                        false
-+                        false,
-+                        org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE, // CraftBukkit,
-+                        () -> {GolemSensor.golemDetected(this);} // Paper - Set Golem Last Seen to stop it from spawning another one
-                     )
+-                    )
 -                    .isEmpty()) {
-+                    .isPresent()) { // Paper - Set Golem Last Seen to stop it from spawning another one - switch to isPresent
-                     nearbyVillagers.forEach(GolemSensor::golemDetected);
-                 }
-             }
-@@ -871,19 +_,6 @@
-         return this.golemSpawnConditionsMet(this.level().getGameTime()) && !this.brain.hasMemoryValue(MemoryModuleType.GOLEM_DETECTED_RECENTLY);
-     }
- 
+-                    nearbyVillagers.forEach(GolemSensor::golemDetected);
+-                }
+-            }
+-        }
+-    }
+-
+-    public boolean wantsToSpawnGolem(final long timestamp) {
+-        return this.golemSpawnConditionsMet(this.level().getGameTime()) && !this.brain.hasMemoryValue(MemoryModuleType.GOLEM_DETECTED_RECENTLY);
+-    }
+-
 -    @Override
 -    public void onReputationEventFrom(final ReputationEventType type, final Entity source) {
 -        if (type == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
@@ -497,6 +506,24 @@
 -            this.gossips.add(source.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
 -        }
 -    }
++            return true; // Paper - More vanilla friendly methods to update trades
++        }
++        return false; // Paper - More vanilla friendly methods to update trades
++    }
++
++
  
      @Override
      public int getVillagerXp() {
+@@ -911,11 +_,6 @@
+     public void stopSleeping() {
+         super.stopSleeping();
+         this.brain.setMemory(MemoryModuleType.LAST_WOKEN, this.level().getGameTime());
+-    }
+-
+-    private boolean golemSpawnConditionsMet(final long gameTime) {
+-        Optional<Long> sleepMemory = this.brain.getMemory(MemoryModuleType.LAST_SLEPT);
+-        return sleepMemory.filter(aLong -> gameTime - aLong < 24000L).isPresent();
+     }
+ 
+     @Override

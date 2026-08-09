@@ -1,5 +1,13 @@
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
+@@ -139,7 +_,6 @@
+ import net.minecraft.world.clock.ClockTimeMarkers;
+ import net.minecraft.world.clock.ServerClockManager;
+ import net.minecraft.world.clock.WorldClocks;
+-import net.minecraft.world.entity.ai.village.VillageSiege;
+ import net.minecraft.world.entity.npc.CatSpawner;
+ import net.minecraft.world.entity.npc.wanderingtrader.WanderingTraderSpawner;
+ import net.minecraft.world.entity.player.Player;
 @@ -190,11 +_,13 @@
  import org.slf4j.Logger;
  
@@ -333,7 +341,7 @@
 -            this, this.executor, this.storageSource, levelData, Level.OVERWORLD, overworldData, isDebug, biomeZoomSeed, overworldCustomSpawners, true
 -        );
 -        this.levels.put(Level.OVERWORLD, overworld);
-+            new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(savedDataStorage) // Paper - save to world data
++            new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new WanderingTraderSpawner(savedDataStorage) // Paper - save to world data
 +        );
 +        final org.bukkit.generator.ChunkGenerator chunkGenerator = this.server.getGenerator(loading.data().bukkitName());
 +        org.bukkit.generator.BiomeProvider biomeProvider = this.server.getBiomeProvider(loading.data().bukkitName());
