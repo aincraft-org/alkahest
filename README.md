@@ -35,17 +35,11 @@ alkahestRun {
 }
 ```
 
-The optional `test-plugin` has a compile-time dependency on `dev.craftux:craftux-paper`. The current Paper server launch tasks add only the locally built `test-plugin` jar with `-add-plugin`; they do not resolve or load a CraftUX jar automatically. To use CraftUX at runtime, pass its jar explicitly with Paper's `-add-plugin` option.
+The optional `test-plugin` project is not included by default. To enable it, uncomment `include(":test-plugin")` in the generated `test-plugin.settings.gradle.kts`, then the server run tasks can add its jar with Paper's `-add-plugin` option.
 
-CraftUX is published to GitHub Packages, so configure a token with package read access before building `test-plugin`:
+The Alkahest artifact/release workflow does not resolve or load third-party plugin jars automatically. Any optional plugin dependencies and runtime jars must be configured separately from this API distribution change.
 
-```bash
-export GITHUB_ACTOR=your-github-user
-export GITHUB_TOKEN=your-github-pat
-./gradlew :test-plugin:jar
-```
-
-Override the dependency with `-PcraftuxVersion=1.0.3`; Gradle properties `craftuxRepoUser` and `craftuxRepoToken` (or `gpr.user` / `gpr.key`) are also supported. The lower-level `:paper-server:runServer`, `runDevServer`, `runBundler`, and `runPaperclip` tasks remain available for Paperweight development workflows.
+The lower-level `:paper-server:runServer`, `runDevServer`, `runBundler`, and `runPaperclip` tasks remain available for Paperweight development workflows.
 How To (Plugin Developers)
 ------
 * API source: [`alkahest-api`](alkahest-api)
