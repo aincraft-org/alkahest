@@ -47,7 +47,7 @@ public class CustomEntitySourcesPlacementTest {
     public void entityInterfaceHasAdditiveIdentityDefaults() throws Exception {
         final Path root = projectRoot();
         final String src = Files.readString(root.resolve(
-            "alkahest-api/src/main/java/org/bukkit/entity/Entity.java")));
+            "alkahest-api/src/main/java/org/bukkit/entity/Entity.java"));
         assertTrue(src.contains("getCustomKey()"), "Entity must expose getCustomKey");
         assertTrue(src.contains("getCustomEntity()"), "Entity must expose getCustomEntity");
         assertTrue(src.contains("isCustomEntity()"), "Entity must expose isCustomEntity");
