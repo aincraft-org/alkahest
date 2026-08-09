@@ -182,6 +182,14 @@ public final class PaperRegistries {
     public static <M, T extends Keyed> @Nullable RegistryEntry<M, T> getEntry(final RegistryKey<? super T> registryKey) {
         return (RegistryEntry<M, T>) BY_REGISTRY_KEY.get(registryKey);
     }
+    /** Returns the declared backend for a public registry key. */
+    public static RegistryBackendKind backend(final RegistryKey<?> registryKey) {
+        final RegistryEntry<?, ?> entry = BY_REGISTRY_KEY.get(Objects.requireNonNull(registryKey, "registryKey"));
+        if (entry == null) {
+            throw new IllegalArgumentException("No registry entry for " + registryKey);
+        }
+        return entry.meta().backend();
+    }
 
     @SuppressWarnings("unchecked")
     public static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> RegistryEntryMeta.Buildable<M, T, B> getBuildableMeta(final RegistryKey<T> registryKey) {

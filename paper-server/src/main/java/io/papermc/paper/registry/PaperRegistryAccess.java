@@ -83,11 +83,20 @@ public class PaperRegistryAccess implements RegistryAccess {
     }
 
     public <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> WritableCraftRegistry<M, T, B> getWritableRegistry(final RegistryKey<T> key) {
+        final RegistryBackendKind backend = PaperRegistries.backend(key);
+        if (backend == RegistryBackendKind.CATALOG || backend == RegistryBackendKind.MERGED) {
+            throw new IllegalArgumentException(key + " uses " + backend + " backend and has no writable native registry");
+        }
         final Registry<T> registry = this.getRegistry(key);
         if (registry instanceof WritableCraftRegistry<?, T, ?>) {
             return (WritableCraftRegistry<M, T, B>) registry;
         }
         throw new IllegalArgumentException(key + " does not point to a writable registry");
+    }
+
+    /** Returns the declared backend for a public registry key. */
+    public RegistryBackendKind backend(final RegistryKey<?> key) {
+        return PaperRegistries.backend(key);
     }
 
     private static <T extends Keyed> Registry<T> possiblyUnwrap(final Registry<T> registry) {

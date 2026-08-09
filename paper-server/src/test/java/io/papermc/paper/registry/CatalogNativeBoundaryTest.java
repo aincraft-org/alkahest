@@ -8,6 +8,7 @@ import dev.mintychochip.customblock.CustomBlockDefinition;
 import dev.mintychochip.customblock.CustomBlocks;
 import dev.mintychochip.customblock.PacketHostSpec;
 import java.util.List;
+import java.util.Set;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.ParticleRegistry;
