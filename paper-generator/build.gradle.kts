@@ -19,9 +19,9 @@ dependencies {
     implementation(project(":paper-server", "macheMinecraftLibraries"))
 
     implementation("com.squareup:javapoet:1.13.0")
-    implementation(project(":paper-api"))
+    implementation(project(":alkahest-api"))
     implementation("io.papermc.typewriter:typewriter:1.0.1") {
-        isTransitive = false // paper-api already have everything
+        isTransitive = false // alkahest-api already has everything
     }
     implementation("info.picocli:picocli:4.7.7")
     implementation("io.github.classgraph:classgraph:4.8.184")
@@ -36,7 +36,7 @@ val gameVersion = providers.gradleProperty("mcVersion")
 
 val rewriteApi = tasks.registerGenerationTask("rewriteApi", true, "api", {
     bootstrapTags = true
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-api")
+    sourceSet = rootProject.layout.projectDirectory.dir("alkahest-api")
 }) {
     description = "Rewrite existing API classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
@@ -59,7 +59,7 @@ tasks.register("rewrite") {
 
 val generateApi = tasks.registerGenerationTask("generateApi", false, "api", {
     bootstrapTags = true
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-api")
+    sourceSet = rootProject.layout.projectDirectory.dir("alkahest-api")
 }) {
     description = "Generate new API classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })

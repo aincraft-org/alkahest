@@ -17,13 +17,13 @@ public class CustomEntitySourcesPlacementTest {
     public void apiAndServerSourcesExistOutsidePatchTree() throws Exception {
         final Path root = projectRoot();
         assertTrue(Files.isRegularFile(root.resolve(
-            "paper-api/src/main/java/dev/mintychochip/customentity/CustomEntities.java")));
+            "alkahest-api/src/main/java/dev/mintychochip/customentity/CustomEntities.java")));
         assertTrue(Files.isRegularFile(root.resolve(
-            "paper-api/src/main/java/dev/mintychochip/customentity/CustomEntityDefinition.java")));
+            "alkahest-api/src/main/java/dev/mintychochip/customentity/CustomEntityDefinition.java")));
         assertTrue(Files.isRegularFile(root.resolve(
-            "paper-api/src/main/java/dev/mintychochip/customentity/BlockModelHostSpec.java")));
+            "alkahest-api/src/main/java/dev/mintychochip/customentity/BlockModelHostSpec.java")));
         assertTrue(Files.isRegularFile(root.resolve(
-            "paper-api/src/main/java/dev/mintychochip/customentity/CustomEntityLifecycle.java")));
+            "alkahest-api/src/main/java/dev/mintychochip/customentity/CustomEntityLifecycle.java")));
         assertTrue(Files.isRegularFile(root.resolve(
             "paper-server/src/main/java/dev/mintychochip/customentity/CustomEntityBootstrap.java")));
         assertTrue(Files.isRegularFile(root.resolve(
@@ -47,7 +47,7 @@ public class CustomEntitySourcesPlacementTest {
     public void entityInterfaceHasAdditiveIdentityDefaults() throws Exception {
         final Path root = projectRoot();
         final String src = Files.readString(root.resolve(
-            "paper-api/src/main/java/org/bukkit/entity/Entity.java"));
+            "alkahest-api/src/main/java/org/bukkit/entity/Entity.java")));
         assertTrue(src.contains("getCustomKey()"), "Entity must expose getCustomKey");
         assertTrue(src.contains("getCustomEntity()"), "Entity must expose getCustomEntity");
         assertTrue(src.contains("isCustomEntity()"), "Entity must expose isCustomEntity");
@@ -73,8 +73,8 @@ public class CustomEntitySourcesPlacementTest {
                 || Files.isRegularFile(cwd.resolve("settings.gradle"))) {
                 return cwd;
             }
-            // paper-api test cwd is often paper-api/
-            if (Files.isDirectory(cwd.resolve("paper-api")) && Files.isDirectory(cwd.resolve("paper-server"))) {
+            // alkahest-api test cwd is often alkahest-api/
+            if (Files.isDirectory(cwd.resolve("alkahest-api")) && Files.isDirectory(cwd.resolve("paper-server"))) {
                 return cwd;
             }
             final Path parent = cwd.getParent();
@@ -84,7 +84,7 @@ public class CustomEntitySourcesPlacementTest {
             cwd = parent;
         }
         final Path fromModule = Path.of("").toAbsolutePath().getParent();
-        if (fromModule != null && Files.isDirectory(fromModule.resolve("paper-api"))) {
+        if (fromModule != null && Files.isDirectory(fromModule.resolve("alkahest-api"))) {
             return fromModule;
         }
         throw new java.nio.file.NoSuchFileException("could not locate project root from " + Path.of("").toAbsolutePath());

@@ -2,6 +2,7 @@ package dev.mintychochip.provenance;
 
 import java.util.Objects;
 import java.util.UUID;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
  * Concrete place a stack instance can live in.
  *
  * <p>Two independent {@link ItemStack} objects carrying the same UUID at two
- * different concrete locations is the dupe signal. {@link #UNKNOWN} means the
+ * different concrete locations is the dupe signal. {@link LocationKind#UNKNOWN} means the
  * location has not been observed yet; moving from UNKNOWN (or between
  * locations) is a transfer, never a collision by itself.
  */

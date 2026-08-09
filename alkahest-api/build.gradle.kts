@@ -137,6 +137,7 @@ configure<PublishingExtension> {
         outgoingVariants.forEach {
             suppressPomMetadataWarningsFor(it)
         }
+        artifactId = "alkahest-api"
         from(components["java"])
     }
 }
@@ -170,6 +171,7 @@ val generateApiVersioningFile = tasks.register<GenerateApiVersioningFile>("gener
 }
 
 tasks.jar {
+    archiveBaseName.set("alkahest-api")
     from(generateApiVersioningFile.flatMap { it.outputFile })
     manifest {
         attributes(

@@ -109,7 +109,7 @@ abstract class MockitoAgentProvider : CommandLineArgumentProvider {
 }
 
 dependencies {
-    implementation(project(":paper-api"))
+    implementation(project(":alkahest-api"))
     implementation("ca.spottedleaf:leafpile:1.0.0")
     implementation("org.jline:jline-terminal-ffm:3.27.1") // use ffm on java 22+
     implementation("org.jline:jline-terminal-jni:3.27.1") // fall back to jni on java 21
