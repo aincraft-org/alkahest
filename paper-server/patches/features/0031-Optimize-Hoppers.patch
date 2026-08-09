@@ -48,10 +48,10 @@ index 0000000000000000000000000000000000000000..24a2090e068ad3c0d08705050944abdf
 +    }
 +}
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 2381f8571f6e614dba1cfb62a1d396be9a065c1c..879f53a64e3070aca5f6c58a0e200b62c3e51117 100644
+index 826138cd214decf42bf9ffc8cbd7cab15210dd32..ce666833c9f935bd3b6ad27bb8f79f8c4c033205 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1815,6 +1815,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1814,6 +1814,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              level.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
              level.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - Add EntityMoveEvent
              level.updateLagCompensationTick(); // Paper - lag compensation

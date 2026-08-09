@@ -155,10 +155,10 @@ index a94e6ca1d396b6b0781de5d550c4a804274ee003..a1018e9ca9dfb978d6e6633577abd7d5
  
      private ClientboundLevelChunkWithLightPacket(final RegistryFriendlyByteBuf input) {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 586b7de5147dccb9dfa84766c71db9b58bc39abc..ca1725b9ad40f41e241447e14948ee4116c3e4c9 100644
+index a7fa04bedec1e66740d3779eea76cd92552a84e4..13d9378ce9c27100f02d9d33e96a55a22f225a21 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -634,7 +634,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -632,7 +632,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          savedDataStorage.set(io.papermc.paper.world.saveddata.PaperWorldPDC.TYPE, loadedWorldData.pdc() == null ? io.papermc.paper.world.saveddata.PaperWorldPDC.TYPE.constructor().get() : loadedWorldData.pdc());
          final GameRules gameRules = new GameRules(server.getWorldData().enabledFeatures(), savedDataStorage.computeIfAbsent(net.minecraft.world.level.gamerules.GameRuleMap.TYPE));
          this.gameRules = gameRules;
@@ -209,7 +209,7 @@ index 779686f3d0c330b0c9ce4f37168503f3668b1f13..baec5d072b8f2d9379dba850b04e881e
          }
          // Paper end - Send empty chunk
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index d42f0b85b8bee558deebe36043dc32ef80356f5a..d12080e80e51916cefb37a3b7bcb1dd9c092304e 100644
+index e0c0e211578d3120be2c7808cf74da0cabedbd35..6c63c39afb861f4140f27ac57b0e30d1124a3608 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -146,6 +146,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

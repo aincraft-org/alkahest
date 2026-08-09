@@ -355,10 +355,10 @@ index 0000000000000000000000000000000000000000..829f7685904fd741e00403647ae76d32
 +    }
 +}
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index ca08f188d21b7f8b7c4f7d4fe27953c403169bf3..fb36386c7a3e2cb03907d18f41e2c4fc4a3db7bb 100644
+index 25d76605732ecb2afd42d9eef4c2d56e662d876a..5fca2362963942c7837ef5d5e371d45f957bb961 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -880,6 +880,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -878,6 +878,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
                  profiler.pop();
              }
  
@@ -366,7 +366,7 @@ index ca08f188d21b7f8b7c4f7d4fe27953c403169bf3..fb36386c7a3e2cb03907d18f41e2c4fc
              this.entityTickList
                  .forEach(
                      entity -> {
-@@ -1415,12 +1416,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1413,12 +1414,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          entity.totalEntityAge++; // Paper - age-like counter for all entities
          profiler.push(entity.typeHolder()::getRegisteredName);
          profiler.incrementCounter("tickNonPassenger");
@@ -383,7 +383,7 @@ index ca08f188d21b7f8b7c4f7d4fe27953c403169bf3..fb36386c7a3e2cb03907d18f41e2c4fc
          }
          // Paper start - log detailed entity tick information
          } finally {
-@@ -1431,7 +1435,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1429,7 +1433,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          // Paper end - log detailed entity tick information
      }
  
@@ -392,7 +392,7 @@ index ca08f188d21b7f8b7c4f7d4fe27953c403169bf3..fb36386c7a3e2cb03907d18f41e2c4fc
          if (entity.isRemoved() || entity.getVehicle() != vehicle) {
              entity.stopRiding();
          } else if (entity instanceof Player || this.entityTickList.contains(entity)) {
-@@ -1441,12 +1445,21 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1439,12 +1443,21 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
              ProfilerFiller profiler = Profiler.get();
              profiler.push(entity.typeHolder()::getRegisteredName);
              profiler.incrementCounter("tickPassenger");
@@ -463,7 +463,7 @@ index 271ed1128959287f6c1b6ca59ded377b88f5afff..f03fa06c0ba56f7f5e1e45bc1568a490
      public void tick() {
          super.tick();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 00d1ba3e42076f0de52455d66c4e056fdc48cd7a..700b5740229b5a97b8755c7d4205e8a99f229f9e 100644
+index b83daafed52cc6d00ec3100f8be08897ee84848c..69925eeb9d843def8c02da050b2912705bbabe93 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -382,6 +382,15 @@ public abstract class Entity
@@ -641,7 +641,7 @@ index d46e0e3a4a7fc3bb3f1dd695d4cc563778b99db0..c6e9b155c2341c13d569f28f54f0c1d2
                          }
                      }
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index fd25032b8a68bec2951fdc626fd95946fea5deb4..c800c894a921ae77ed1757794ddf8d737b05681e 100644
+index bc5fb575cf3debf441946aee82020bc252e20a7a..7082118d5dd817d59af0d4e8f2f04da5a63d5fa6 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -125,6 +125,29 @@ public class ItemEntity extends Entity implements TraceableEntity {
@@ -675,10 +675,10 @@ index fd25032b8a68bec2951fdc626fd95946fea5deb4..c800c894a921ae77ed1757794ddf8d73
      public void tick() {
          if (this.getItem().isEmpty()) {
 diff --git a/net/minecraft/world/entity/npc/villager/Villager.java b/net/minecraft/world/entity/npc/villager/Villager.java
-index 48bf5f612b91c457dd8e99955429832daeaab9e2..0a02aef2ff159a1d94870bf3cede0ed29ae192af 100644
+index 269e87a6383bb6ade68d944b7a42c91f8b36e683..935eab2846940e9cd96476a479247544de22d59e 100644
 --- a/net/minecraft/world/entity/npc/villager/Villager.java
 +++ b/net/minecraft/world/entity/npc/villager/Villager.java
-@@ -235,11 +235,35 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
+@@ -192,11 +192,35 @@ public class Villager extends AbstractVillager implements VillagerDataHolder {
          return this.assignProfessionWhenSpawned;
      }
  
@@ -713,9 +713,9 @@ index 48bf5f612b91c457dd8e99955429832daeaab9e2..0a02aef2ff159a1d94870bf3cede0ed2
 -        this.getBrain().tick(level, this);
 +        if (!inactive) this.getBrain().tick(level, this); // Paper - EAR 2
          profiler.pop();
-         if (this.assignProfessionWhenSpawned) {
-             this.assignProfessionWhenSpawned = false;
-@@ -263,7 +287,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
+ 
+         if (!this.isTrading() && this.updateMerchantTimer > 0) {
+@@ -216,7 +240,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder {
              this.lastTradedPlayer = null;
          }
  
@@ -724,7 +724,7 @@ index 48bf5f612b91c457dd8e99955429832daeaab9e2..0a02aef2ff159a1d94870bf3cede0ed2
              Raid raid = level.getRaidAt(this.blockPosition());
              if (raid != null && raid.isActive() && !raid.isOver()) {
                  level.broadcastEntityEvent(this, EntityEvent.VILLAGER_SWEAT);
-@@ -274,6 +298,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
+@@ -227,6 +251,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder {
              this.stopTrading();
          }
  
@@ -819,7 +819,7 @@ index f46cca0467bb4da5511bc953ce5b43fa606bf978..445c5cafad71028171c1f26193966177
 +
  }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index fb8f045b426efad4ad6b41ff9c86fe5ec85b3420..f4386116d38e02f8feb3e8ec3f98af5ed8d0b466 100644
+index 2a6720547a25318a27ac939369c55d308f6f8d74..2dc2f5f869f03e97d1a75bedac04dabb07390b11 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -156,6 +156,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl

@@ -33770,10 +33770,10 @@ index 945fdc4b3958a88342cc881edd6270c2123a8249..212172b6451a073e7c64a336fe4c0650
          return structureTemplate.save(new CompoundTag());
      }
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index afe68487585e5fc2766a10bf69e085f51d498990..1d422607ac31044da2eff88b9f020b8a76c4bd54 100644
+index 05834f6dfd9c4157ec2d9e773b72b1f0656b474a..ebb22b645d9c6774edc87d0ea686d60fb9771963 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -298,6 +298,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -297,6 +297,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      private final ServerClockManager clockManager;
  
      public static <S extends MinecraftServer> S spin(final Function<Thread, S> factory) {

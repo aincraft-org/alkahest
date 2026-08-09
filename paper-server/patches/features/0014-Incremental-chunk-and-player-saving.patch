@@ -5,10 +5,10 @@ Subject: [PATCH] Incremental chunk and player saving
 
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index bbc8899e2524f39a89525d6f54dc8bd0bded88d9..6de2929fda582cc4ceecd7bfe0b440ac6608669d 100644
+index ebb22b645d9c6774edc87d0ea686d60fb9771963..182f09a6c662ba9c91e7fd7e20fe88c4404a2d8a 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -936,7 +936,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -935,7 +935,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      }
      public boolean saveAllChunks(final boolean silent, final boolean flush, final boolean force, final boolean close) {
          // Paper end - add close param
@@ -17,7 +17,7 @@ index bbc8899e2524f39a89525d6f54dc8bd0bded88d9..6de2929fda582cc4ceecd7bfe0b440ac
          boolean result = false;
  
          for (ServerLevel level : this.getAllLevels()) {
-@@ -948,13 +948,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -947,13 +947,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              result = true;
          }
  
@@ -32,7 +32,7 @@ index bbc8899e2524f39a89525d6f54dc8bd0bded88d9..6de2929fda582cc4ceecd7bfe0b440ac
  
          if (flush) {
              for (ServerLevel level : this.getAllLevels()) {
-@@ -968,10 +962,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -967,10 +961,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return result;
      }
  
@@ -58,7 +58,7 @@ index bbc8899e2524f39a89525d6f54dc8bd0bded88d9..6de2929fda582cc4ceecd7bfe0b440ac
              boolean result = this.saveAllChunks(silent, flush, force);
              this.warnOnLowDiskSpace();
              return result;
-@@ -1616,9 +1624,31 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1615,9 +1623,31 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
  
          this.ticksUntilAutosave--;
@@ -93,10 +93,10 @@ index bbc8899e2524f39a89525d6f54dc8bd0bded88d9..6de2929fda582cc4ceecd7bfe0b440ac
          ProfilerFiller profiler = Profiler.get();
          this.server.spark.executeMainThreadTasks(); // Paper - spark
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 96b9d17eea349d83c634fe45ee28161219cb3f38..3ebcde6994d3b4b8c0135cafda4b44c316a28957 100644
+index a8b9f21f7650785b1b7891801310b201525dde1a..a7fa04bedec1e66740d3779eea76cd92552a84e4 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1483,6 +1483,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -1481,6 +1481,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public boolean mayInteract(final Entity entity, final BlockPos pos) {
          return !(entity instanceof Player player && (this.server.isUnderSpawnProtection(this, pos, player) || !this.getWorldBorder().isWithinBounds(pos)));
      }

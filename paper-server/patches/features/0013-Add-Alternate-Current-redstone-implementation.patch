@@ -2321,10 +2321,10 @@ index 0000000000000000000000000000000000000000..33cd90c30c22200a4e1ae64f40a0bf78
 +    }
 +}
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index fb36386c7a3e2cb03907d18f41e2c4fc4a3db7bb..96b9d17eea349d83c634fe45ee28161219cb3f38 100644
+index 5fca2362963942c7837ef5d5e371d45f957bb961..a8b9f21f7650785b1b7891801310b201525dde1a 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -236,6 +236,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -234,6 +234,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public boolean hasEntityMoveEvent; // Paper - Add EntityMoveEvent
      private static final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry();
      public final org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer persistentDataContainer = new org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
@@ -2332,7 +2332,7 @@ index fb36386c7a3e2cb03907d18f41e2c4fc4a3db7bb..96b9d17eea349d83c634fe45ee281612
  
      @Override
      public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {
-@@ -2801,6 +2802,13 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2796,6 +2797,13 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.debugSynchronizers;
      }
  
