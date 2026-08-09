@@ -6,7 +6,6 @@ import dev.mintychochip.customblock.CustomBlocks;
 import dev.mintychochip.customblock.MemoryCustomBlockLookup;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -25,7 +24,7 @@ public final class PacketDisplayService {
 
     private static final PacketDisplayService INSTANCE = new PacketDisplayService();
 
-    private final Map<String, PacketItemDisplay> byLocation = new ConcurrentHashMap<>();
+    private final PacketDisplayIndex<PacketItemDisplay> index = new PacketDisplayIndex<>();
 
     private PacketDisplayService() {
     }
@@ -39,12 +38,13 @@ public final class PacketDisplayService {
             return;
         }
         final String key = key(block.getLocation());
-        final PacketItemDisplay old = this.byLocation.remove(key);
+        final String ck = chunkKey(block.getLocation());
+        final PacketItemDisplay old = this.index.remove(key, ck);
         if (old != null) {
             old.hideAll();
         }
         final PacketItemDisplay display = PacketItemDisplay.create(block.getLocation(), definition);
-        this.byLocation.put(key, display);
+        this.index.put(key, ck, display);
 
         // Show to every player who can see this chunk (placer included).
         final Location loc = block.getLocation().clone();
@@ -72,7 +72,7 @@ public final class PacketDisplayService {
         Bukkit.getScheduler().runTaskLater(
             dev.mintychochip.MintyInternalPlugin.get(),
             () -> {
-                if (this.byLocation.get(key) != display) {
+                if (this.index.get(key) != display) {
                     return;
                 }
                 for (final Player player : chunk.getPlayersSeeingChunk()) {
@@ -87,7 +87,7 @@ public final class PacketDisplayService {
     }
 
     public void despawn(@NotNull final Location location) {
-        final PacketItemDisplay display = this.byLocation.remove(key(location));
+        final PacketItemDisplay display = this.index.remove(key(location), chunkKey(location));
         if (display != null) {
             display.hideAll();
         }
@@ -98,7 +98,7 @@ public final class PacketDisplayService {
     }
 
     public @Nullable PacketItemDisplay get(@NotNull final Location location) {
-        return this.byLocation.get(key(location));
+        return this.index.get(key(location));
     }
 
     /**
@@ -109,19 +109,15 @@ public final class PacketDisplayService {
         ensureDisplaysForChunk(chunk);
 
         final World world = chunk.getWorld();
-        final int cx = chunk.getX();
-        final int cz = chunk.getZ();
-        for (final Map.Entry<String, PacketItemDisplay> e : this.byLocation.entrySet()) {
+        final String ck = chunkKey(world, chunk.getX(), chunk.getZ());
+        for (final Map.Entry<String, PacketItemDisplay> e : this.index.entriesInChunk(ck).entrySet()) {
             final Location loc = parseKey(e.getKey(), world);
             if (loc == null) {
                 continue;
             }
-            if (loc.getBlockX() >> 4 != cx || loc.getBlockZ() >> 4 != cz) {
-                continue;
-            }
-            e.getValue().show(player);
-            // Re-apply glass after real chunk data (PacketBlocks uses a 2-tick delay).
             final PacketItemDisplay display = e.getValue();
+            display.show(player);
+            // Re-apply glass after real chunk data (PacketBlocks uses a 2-tick delay).
             final Location blockLoc = loc.clone();
             Bukkit.getScheduler().runTaskLater(
                 dev.mintychochip.MintyInternalPlugin.get(),
@@ -159,12 +155,12 @@ public final class PacketDisplayService {
                 e.getKey().getZ()
             );
             final String k = key(loc);
-            if (this.byLocation.containsKey(k)) {
+            if (this.index.get(k) != null) {
                 continue;
             }
             try {
                 final PacketItemDisplay display = PacketItemDisplay.create(loc, defOpt.get());
-                this.byLocation.put(k, display);
+                this.index.put(k, chunkKey(loc), display);
             } catch (final Throwable t) {
                 Bukkit.getLogger().log(
                     java.util.logging.Level.WARNING,
@@ -177,14 +173,10 @@ public final class PacketDisplayService {
 
     public void hideChunk(@NotNull final Player player, @NotNull final Chunk chunk) {
         final World world = chunk.getWorld();
-        final int cx = chunk.getX();
-        final int cz = chunk.getZ();
-        for (final Map.Entry<String, PacketItemDisplay> e : this.byLocation.entrySet()) {
+        final String ck = chunkKey(world, chunk.getX(), chunk.getZ());
+        for (final Map.Entry<String, PacketItemDisplay> e : this.index.entriesInChunk(ck).entrySet()) {
             final Location loc = parseKey(e.getKey(), world);
             if (loc == null) {
-                continue;
-            }
-            if (loc.getBlockX() >> 4 != cx || loc.getBlockZ() >> 4 != cz) {
                 continue;
             }
             e.getValue().hide(player);
@@ -192,10 +184,10 @@ public final class PacketDisplayService {
     }
 
     public void clear() {
-        for (final PacketItemDisplay d : this.byLocation.values()) {
+        for (final PacketItemDisplay d : this.index.all()) {
             d.hideAll();
         }
-        this.byLocation.clear();
+        this.index.clear();
     }
 
     public static void sendFakeCollision(
@@ -217,6 +209,15 @@ public final class PacketDisplayService {
     private static String key(final Location loc) {
         final World w = Objects.requireNonNull(loc.getWorld(), "world");
         return w.getUID() + ":" + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    }
+
+    private static String chunkKey(final Location loc) {
+        final World w = Objects.requireNonNull(loc.getWorld(), "world");
+        return chunkKey(w, loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
+    }
+
+    private static String chunkKey(final World world, final int chunkX, final int chunkZ) {
+        return world.getUID() + ":" + chunkX + "," + chunkZ;
     }
 
     private static @Nullable Location parseKey(final String key, final World expectedWorld) {

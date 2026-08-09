@@ -111,6 +111,15 @@ public final class CustomBlockMining {
         if (!(level instanceof ServerLevel serverLevel)) {
             return Optional.empty();
         }
+        // Cheap position-based gate for the default memory lookup: most mined blocks are
+        // vanilla carriers, so avoid allocating a CraftBlock wrapper unless the placement
+        // index actually has an entry here. Custom blocks deliberately reuse vanilla
+        // carrier materials, so this must key on the placement store, not the block type.
+        // Only applies to MemoryCustomBlockLookup; other lookup impls retain the full path.
+        if (CustomBlocks.lookup() instanceof MemoryCustomBlockLookup
+            && CustomBlockPlacementsData.get(serverLevel).get(pos).isEmpty()) {
+            return Optional.empty();
+        }
         try {
             return CustomBlocks.of(CraftBlock.at(serverLevel, pos));
         } catch (final Throwable t) {

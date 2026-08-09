@@ -46,12 +46,29 @@ public final class CustomBlockPlacementsData extends SavedData {
     );
 
     private final ConcurrentHashMap<Long, String> byPos = new ConcurrentHashMap<>();
+    /** Index of position longs by packed chunk key so entriesInChunk is O(chunk placements), not O(all placements). */
+    private final ConcurrentHashMap<Long, java.util.Set<Long>> byChunk = new ConcurrentHashMap<>();
 
     public CustomBlockPlacementsData() {
     }
 
     private CustomBlockPlacementsData(final Map<Long, String> initial) {
         this.byPos.putAll(initial);
+        this.rebuildChunkIndex();
+    }
+
+    private static long chunkKey(final BlockPos pos) {
+        final long cx = (long) (pos.getX() >> 4) & 0xffffffffL;
+        final long cz = (long) (pos.getZ() >> 4) & 0xffffffffL;
+        return cx | (cz << 32);
+    }
+
+    private void rebuildChunkIndex() {
+        this.byChunk.clear();
+        for (final Long posLong : this.byPos.keySet()) {
+            final BlockPos pos = BlockPos.of(posLong);
+            this.byChunk.computeIfAbsent(chunkKey(pos), k -> ConcurrentHashMap.newKeySet()).add(posLong);
+        }
     }
 
     public static @NotNull CustomBlockPlacementsData get(final @NotNull ServerLevel level) {
@@ -59,12 +76,16 @@ public final class CustomBlockPlacementsData extends SavedData {
     }
 
     public void put(final @NotNull BlockPos pos, final @NotNull NamespacedKey blockId) {
-        this.byPos.put(pos.asLong(), Objects.requireNonNull(blockId, "blockId").toString());
+        final long posLong = pos.asLong();
+        this.byPos.put(posLong, Objects.requireNonNull(blockId, "blockId").toString());
+        this.byChunk.computeIfAbsent(chunkKey(pos), k -> ConcurrentHashMap.newKeySet()).add(posLong);
         this.setDirty();
     }
 
     public void put(final @NotNull BlockPos pos, final @NotNull String namespacedId) {
-        this.byPos.put(pos.asLong(), Objects.requireNonNull(namespacedId, "namespacedId"));
+        final long posLong = pos.asLong();
+        this.byPos.put(posLong, Objects.requireNonNull(namespacedId, "namespacedId"));
+        this.byChunk.computeIfAbsent(chunkKey(pos), k -> ConcurrentHashMap.newKeySet()).add(posLong);
         this.setDirty();
     }
 
@@ -77,8 +98,13 @@ public final class CustomBlockPlacementsData extends SavedData {
     }
 
     public @Nullable NamespacedKey remove(final @NotNull BlockPos pos) {
-        final String raw = this.byPos.remove(pos.asLong());
+        final long posLong = pos.asLong();
+        final String raw = this.byPos.remove(posLong);
         if (raw != null) {
+            this.byChunk.computeIfPresent(chunkKey(pos), (k, set) -> {
+                set.remove(posLong);
+                return set.isEmpty() ? null : set;
+            });
             this.setDirty();
             return NamespacedKey.fromString(raw);
         }
@@ -89,15 +115,20 @@ public final class CustomBlockPlacementsData extends SavedData {
      * Entries in a chunk section footprint (block coords → chunk coords).
      */
     public @NotNull List<Map.Entry<BlockPos, NamespacedKey>> entriesInChunk(final int chunkX, final int chunkZ) {
-        final List<Map.Entry<BlockPos, NamespacedKey>> out = new ArrayList<>();
-        for (final var e : this.byPos.entrySet()) {
-            final BlockPos pos = BlockPos.of(e.getKey());
-            if ((pos.getX() >> 4) != chunkX || (pos.getZ() >> 4) != chunkZ) {
+        final long ck = ((long) chunkX & 0xffffffffL) | (((long) chunkZ & 0xffffffffL) << 32);
+        final java.util.Set<Long> positions = this.byChunk.get(ck);
+        if (positions == null || positions.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        final List<Map.Entry<BlockPos, NamespacedKey>> out = new ArrayList<>(positions.size());
+        for (final Long posLong : positions) {
+            final String raw = this.byPos.get(posLong);
+            if (raw == null) {
                 continue;
             }
-            final NamespacedKey key = NamespacedKey.fromString(e.getValue());
+            final NamespacedKey key = NamespacedKey.fromString(raw);
             if (key != null) {
-                out.add(Map.entry(pos, key));
+                out.add(Map.entry(BlockPos.of(posLong), key));
             }
         }
         return out;

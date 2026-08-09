@@ -77,7 +77,40 @@ public final class StackStamp {
     }
 
     public static @NotNull Optional<UUID> readId(final @Nullable ItemStack stack) {
-        return read(stack).map(StackProvenance::id);
+        if (stack == null || stack == ItemStack.EMPTY) {
+            return Optional.empty();
+        }
+        final int count = stack.getCount();
+        final boolean revived = count <= 0;
+        if (revived) {
+            stack.setCount(1);
+        }
+        try {
+            if (stack.getItem() == net.minecraft.world.item.Items.AIR) {
+                return Optional.empty();
+            }
+            final CustomData custom = stack.get(DataComponents.CUSTOM_DATA);
+            if (custom == null || custom.isEmpty()) {
+                return Optional.empty();
+            }
+            final CompoundTag root = custom.getUnsafe().getCompoundOrEmpty(ROOT);
+            if (root.isEmpty()) {
+                return Optional.empty();
+            }
+            final String idRaw = root.getStringOr(KEY_ID, "");
+            if (idRaw.isEmpty()) {
+                return Optional.empty();
+            }
+            try {
+                return Optional.of(UUID.fromString(idRaw));
+            } catch (final IllegalArgumentException ex) {
+                return Optional.empty();
+            }
+        } finally {
+            if (revived) {
+                stack.setCount(count);
+            }
+        }
     }
 
     public static void write(final @NotNull ItemStack stack, final @NotNull StackProvenance stamp) {
