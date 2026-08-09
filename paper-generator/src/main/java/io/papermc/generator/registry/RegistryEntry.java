@@ -10,8 +10,10 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.Set;
 import javax.lang.model.SourceVersion;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -39,6 +41,7 @@ public final class RegistryEntry<T> {
 
     private @Nullable String fieldRename;
     private boolean delayed;
+    private @Nullable String backend;
     private String apiAccessName = ConstantDescs.INIT_NAME;
     private Optional<String> apiRegistryField = Optional.empty();
     private int genericArgCount = 0;
@@ -84,6 +87,15 @@ public final class RegistryEntry<T> {
         return this;
     }
 
+
+    public RegistryEntry<T> backend(String backend) {
+        Preconditions.checkArgument(
+            Set.of("NATIVE_STATIC", "NATIVE_DATA", "NATIVE_RELOADABLE", "CATALOG", "MERGED").contains(backend),
+            "Invalid registry backend: %s", backend
+        );
+        this.backend = backend;
+        return this;
+    }
     public RegistryEntry<T> delayed() {
         this.delayed = true;
         return this;
@@ -117,6 +129,10 @@ public final class RegistryEntry<T> {
 
     public boolean isDelayed() {
         return this.delayed;
+    }
+
+    public String backend() {
+        return Objects.requireNonNull(this.backend, "Registry backend not configured for " + this.registryKey);
     }
 
     public String apiAccessName() {

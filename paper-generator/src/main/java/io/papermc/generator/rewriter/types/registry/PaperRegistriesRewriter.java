@@ -29,7 +29,17 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
         builder.append(").");
         if (apiOnly) {
             builder.append("apiOnly(");
-            if (entry.apiClass().isEnum()) {
+            builder.append("io.papermc.paper.registry.RegistryBackendKind.").append(entry.backend());
+            builder.append(", ");
+            final String apiRegistryMethod = switch (entry.registryKeyField()) {
+                case "ENTITY_TYPE" -> "entityType";
+                case "PARTICLE_TYPE" -> "particleType";
+                case "POTION" -> "potion";
+                default -> null;
+            };
+            if (apiRegistryMethod != null) {
+                builder.append(this.importCollector.getShortName(Types.PAPER_SIMPLE_REGISTRY)).append("::").append(apiRegistryMethod);
+            } else if (entry.apiClass().isEnum()) {
                 builder.append(this.importCollector.getShortName(Types.PAPER_SIMPLE_REGISTRY)).append("::").append(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, entry.registryKey().identifier().getPath()));
             } else {
                 builder.append("() -> ");
@@ -52,6 +62,8 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
             if (entry.fieldRename() != null) {
                 builder.append(".serializationUpdater(").append(Types.FIELD_RENAME.simpleName()).append('.').append(entry.fieldRename()).append(")");
             }
+
+            builder.append(".backend(").append("io.papermc.paper.registry.RegistryBackendKind.").append(entry.backend()).append(')');
 
             if (entry.apiRegistryBuilderImpl() != null && entry.modificationApiSupport() != null) {
                 switch (entry.modificationApiSupport()) {
