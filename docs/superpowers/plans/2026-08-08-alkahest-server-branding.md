@@ -221,7 +221,7 @@ BUILD_STARTED_AT=2026-08-08T00:00:00Z \
   -PalkahestVersion=2026.08.08.1
 ```
 
-Expected result: `BUILD SUCCESSFUL` and an archive named `alkahest-paperclip-2026.08.08.1.jar`.
+Expected result: `BUILD SUCCESSFUL` and an archive named `alkahest-2026.08.08.1.jar`.
 
 - [ ] **Step 2: Inspect the packaged manifest**
 
@@ -245,7 +245,7 @@ Use the focused tests plus a small package/runtime smoke check to confirm the ve
 
 - [ ] **Step 4: Run the relevant release workflow contract check**
 
-Run the workflow's local equivalent: verify the tagged-version regex, artifact name, and manifest checks from `.github/workflows/release-alkahest.yml`. The GitHub workflow must continue to publish the same `alkahest-paperclip-2026.08.08.1.jar` asset.
+Run the workflow's local equivalent: verify the tagged-version regex, artifact name, and manifest checks from `.github/workflows/release-alkahest.yml`. The GitHub workflow must continue to publish the same `alkahest-2026.08.08.1.jar` asset.
 
 - [ ] **Step 5: Report the existing unrelated test baseline accurately**
 

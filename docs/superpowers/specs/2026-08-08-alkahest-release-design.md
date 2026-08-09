@@ -15,7 +15,7 @@ The first release is:
 - Paper remains the upstream project. The `upstream` remote stays `https://github.com/PaperMC/Paper.git` and receives no pushes.
 - Pushes go only to the fork remote, renamed locally to `https://github.com/mintychochip/alkahest.git` after the GitHub repository rename.
 - The public API remains `io.papermc.paper`, `paper-api`, and `org.bukkit`. No plugin-facing Paper coordinates or compatibility names are renamed.
-- The distribution identity is Alkahest: root project name, Paperclip archive, manifest brand, console, and local version reporting remain Alkahest-branded.
+- The distribution identity is Alkahest: root project name, Alkahest launcher archive, manifest brand, console, and local version reporting remain Alkahest-branded.
 - The current main checkout contains unrelated uncommitted work and runtime artifacts. Release work is isolated in a clean worktree from committed `main`; those files are not included.
 - The baseline `:paper-api:test` task currently fails its existing annotation audit with 469 missing annotations. The baseline API/server jar compilation succeeds. The release workflow therefore verifies compilation and packages the jar without claiming that the unrelated annotation audit passes.
 
@@ -42,8 +42,8 @@ Add `.github/workflows/release-alkahest.yml` with these responsibilities:
 3. Check out the tagged commit with full history.
 4. Set up JDK 25 and Gradle caching.
 5. Apply Paper source/resource/feature patches.
-6. Compile the API and server jars and create the Alkahest Paperclip jar using the release version override.
-7. Create a GitHub release titled `Alkahest 2026.08.08.1` for the first tag (and the corresponding date-version for later tags), with `contents: write`, and attach the generated `alkahest-paperclip-*.jar`.
+6. Compile the API and server jars and create the Alkahest launcher archive using the release version override.
+7. Create a GitHub release titled `Alkahest 2026.08.08.1` for the first tag (and the corresponding date-version for later tags), with `contents: write`, and attach the generated `alkahest-*.jar`.
 
 The inherited `Build Paper` and `publish_pr.yml` workflows remain unchanged. Their names and PaperMC PR-publication action are coupled; they are not part of the release path, and changing them would add unrelated workflow migration risk.
 
@@ -65,6 +65,6 @@ The inherited `Build Paper` and `publish_pr.yml` workflows remain unchanged. The
 - The pushed `main` contains the Alkahest release workflow and version override without including the dirty main checkout's unrelated files.
 - Tag `v2026.08.08.1` exists on `origin` and points at the pushed release commit.
 - GitHub Actions completes the tagged release workflow successfully.
-- GitHub Release `Alkahest 2026.08.08.1` exists with one Alkahest Paperclip jar asset.
-- The packaged server manifest inside the Paperclip build reports `Brand-Id: mintychochip:alkahest`, `Brand-Name: Alkahest`, and `Specification-Version: 2026.08.08.1`; the outer Paperclip launcher is the published asset.
+- GitHub Release `Alkahest 2026.08.08.1` exists with one Alkahest launcher jar asset.
+- The packaged server manifest inside the Alkahest launcher build reports `Brand-Id: mintychochip:alkahest`, `Brand-Name: Alkahest`, and `Specification-Version: 2026.08.08.1`; the outer Alkahest launcher is the published asset.
 - No command pushes to or creates a branch on `upstream`.

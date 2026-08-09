@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rename the fork repository to Alkahest and publish `v2026.08.08.1` as a date-versioned GitHub release containing a verified Paperclip jar.
+**Goal:** Rename the fork repository to Alkahest and publish `v2026.08.08.1` as a date-versioned GitHub release containing a verified Alkahest launcher jar.
 
 **Architecture:** Gradle keeps its current Minecraft/build version fallback and accepts an explicit `alkahestVersion` property for release builds. A tag-triggered GitHub Actions workflow validates `vYYYY.MM.DD.N`, derives the numeric manifest build number, compiles and packages the tagged source with JDK 25, then uses the GitHub CLI to create the release and attach the jar. Repository administration and pushes happen only after local artifact verification, with `origin` changed to the renamed fork and `upstream` left untouched.
 
-**Tech Stack:** Gradle 9.4.1 Kotlin DSL, Paperweight, GitHub Actions, GitHub CLI (`gh`), JDK 25, Paperclip jar.
+**Tech Stack:** Gradle 9.4.1 Kotlin DSL, Paperweight, GitHub Actions, GitHub CLI (`gh`), JDK 25, Alkahest launcher jar.
 
 ## Global Constraints
 
@@ -92,7 +92,7 @@ The staged paths must contain only the version override and fork self-link updat
 
 **Interfaces:**
 - Consumes: pushed tags matching `vYYYY.MM.DD.N`, the `alkahestVersion` Gradle property, and the existing `createPaperclipJar` task.
-- Produces: a GitHub release titled `Alkahest 2026.08.08.1` with the tagged `alkahest-paperclip-*.jar` asset.
+- Produces: a GitHub release titled `Alkahest 2026.08.08.1` with the tagged `alkahest-*.jar` asset.
 
 - [ ] **Step 1: Create the complete release workflow**
 
@@ -172,7 +172,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           ./gradlew applyPatches --stacktrace --no-daemon
 
-      - name: Compile and package Paperclip
+      - name: Compile and package Alkahest
         run: |
           ./gradlew :paper-api:jar :paper-server:jar --stacktrace --no-daemon -PalkahestVersion="$RELEASE_VERSION"
           ./gradlew createPaperclipJar --stacktrace --no-daemon -PalkahestVersion="$RELEASE_VERSION"
@@ -181,9 +181,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paperclip_jar="$(find paper-server/build/libs -maxdepth 1 -type f -name 'alkahest-paperclip-*.jar' -print -quit)"
-          if [[ -z "$paperclip_jar" ]]; then
-            echo "::error::No Alkahest Paperclip jar was produced"
+          release_jar="paper-server/build/libs/alkahest-${RELEASE_VERSION}.jar"
+          if [[ ! -f "$release_jar" ]]; then
+            echo "::error::No Alkahest release jar was produced for $RELEASE_VERSION"
             exit 1
           fi
           server_jar="paper-server/build/libs/paper-server-${RELEASE_VERSION}.jar"
@@ -195,11 +195,11 @@ jobs:
           [[ "$manifest" == *$'Brand-Id: mintychochip:alkahest'* ]]
           [[ "$manifest" == *$'Brand-Name: Alkahest'* ]]
           [[ "$manifest" == *"Specification-Version: $RELEASE_VERSION"* ]]
-          echo "PAPERCLIP_JAR=$paperclip_jar" >> "$GITHUB_ENV"
+          echo "RELEASE_JAR=$release_jar" >> "$GITHUB_ENV"
 
       - name: Publish GitHub release
         run: |
-          gh release create "$GITHUB_REF_NAME" "$PAPERCLIP_JAR" \
+          gh release create "$GITHUB_REF_NAME" "$RELEASE_JAR" \
             --repo "$GITHUB_REPOSITORY" \
             --title "Alkahest $RELEASE_VERSION" \
             --generate-notes
@@ -220,7 +220,7 @@ required = (
     "java-version: 25",
     "-PalkahestVersion=",
     "gh release create",
-    "alkahest-paperclip-*.jar",
+    "alkahest-${RELEASE_VERSION}.jar",
 )
 missing = [value for value in required if value not in text]
 if missing:
@@ -286,13 +286,13 @@ BUILD_STARTED_AT=2026-08-08T00:00:00Z \
 ./gradlew createPaperclipJar --no-daemon --stacktrace -PalkahestVersion=2026.08.08.1
 ```
 
-Resolve the single `paper-server/build/libs/alkahest-paperclip-2026.08.08.1.jar` and the matching packaged server jar, then inspect the server jar manifest:
+Resolve the single `paper-server/build/libs/alkahest-2026.08.08.1.jar` and the matching packaged server jar, then inspect the server jar manifest:
 
 ```bash
 unzip -p paper-server/build/libs/paper-server-2026.08.08.1.jar META-INF/MANIFEST.MF
 ```
 
-The packaged server manifest must contain `Brand-Id: mintychochip:alkahest`, `Brand-Name: Alkahest`, `Specification-Version: 2026.08.08.1`, and `Build-Number: 2026080801`. The Paperclip jar is the release asset; its outer launcher manifest does not carry the server implementation metadata. The pre-existing `./gradlew :paper-api:test --no-daemon` annotation-audit failure remains recorded and is not relabeled as a release failure.
+The packaged server manifest must contain `Brand-Id: mintychochip:alkahest`, `Brand-Name: Alkahest`, `Specification-Version: 2026.08.08.1`, and `Build-Number: 2026080801`. The Alkahest launcher jar is the release asset; its outer launcher manifest does not carry the server implementation metadata. The pre-existing `./gradlew :paper-api:test --no-daemon` annotation-audit failure remains recorded and is not relabeled as a release failure.
 
 - [ ] **Step 2: Confirm the implementation worktree is clean and remotes are known**
 
@@ -355,10 +355,10 @@ gh run watch "$workflow_id" --repo mintychochip/alkahest --exit-status
 Then verify the final release:
 
 ```bash
-gh release view v2026.08.08.1 --repo mintychochip/alkahest --json name,tagName,isDraft,isPrerelease,assets,url
+gh release view v2026.08.08.1 --repo aincraft-org/alkahest --json name,tagName,isDraft,isPrerelease,assets,url
 ```
 
-Require a non-draft, non-prerelease release named `Alkahest 2026.08.08.1`, tag `v2026.08.08.1`, and exactly one `alkahest-paperclip-*.jar` asset with a nonzero size.
+Require a non-draft, non-prerelease release named `Alkahest 2026.08.08.1`, tag `v2026.08.08.1`, and exactly one `alkahest-*.jar` asset with a nonzero size.
 
 - [ ] **Step 6: Record final repository state**
 
