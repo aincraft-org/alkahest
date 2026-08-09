@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/npc/villager/Villager.java
 +++ b/net/minecraft/world/entity/npc/villager/Villager.java
-@@ -2,10 +2,8 @@
+@@ -2,10 +_,8 @@
  
  import com.google.common.annotations.VisibleForTesting;
  import com.google.common.collect.ImmutableMap;
@@ -11,7 +11,7 @@
  import java.util.List;
  import java.util.Map;
  import java.util.Optional;
-@@ -65,7 +63,6 @@
+@@ -65,7 +_,6 @@
  import net.minecraft.world.entity.ai.gossip.GossipContainer;
  import net.minecraft.world.entity.ai.gossip.GossipType;
  import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -19,7 +19,7 @@
  import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
  import net.minecraft.world.entity.ai.sensing.GolemSensor;
  import net.minecraft.world.entity.ai.sensing.SensorType;
-@@ -73,9 +70,7 @@
+@@ -73,9 +_,7 @@
  import net.minecraft.world.entity.ai.village.poi.PoiManager;
  import net.minecraft.world.entity.ai.village.poi.PoiType;
  import net.minecraft.world.entity.ai.village.poi.PoiTypes;
@@ -29,7 +29,7 @@
  import net.minecraft.world.entity.player.Player;
  import net.minecraft.world.entity.raid.Raid;
  import net.minecraft.world.entity.schedule.Activity;
-@@ -113,7 +108,6 @@
+@@ -113,7 +_,6 @@
      private static final int DEFAULT_LAST_RESTOCK = 0;
      private static final int DEFAULT_LAST_GOSSIP_DECAY = 0;
      private static final int DEFAULT_RESTOCKS_TODAY = 0;
@@ -37,7 +37,7 @@
      private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.63F);
      private int updateMerchantTimer;
      private boolean increaseProfessionLevelOnUpdate;
-@@ -126,50 +120,21 @@
+@@ -126,50 +_,29 @@
      private long lastRestockGameTime = 0L;
      public int numberOfRestocksToday = 0;
      private long lastRestockCheckDay;
@@ -45,6 +45,14 @@
 +    private int restockCheckTicks;
      private boolean assignProfessionWhenSpawned = false;
      private static final Brain.Provider<Villager> BRAIN_PROVIDER = Brain.provider(
++        List.of(
++            MemoryModuleType.HOME,
++            MemoryModuleType.JOB_SITE,
++            MemoryModuleType.POTENTIAL_JOB_SITE,
++            MemoryModuleType.MEETING_POINT,
++            MemoryModuleType.LAST_SLEPT,
++            MemoryModuleType.GOLEM_DETECTED_RECENTLY
++        ),
          List.of(
              SensorType.NEAREST_LIVING_ENTITIES,
              SensorType.NEAREST_PLAYERS,
@@ -96,7 +104,7 @@
      );
      public static final Map<MemoryModuleType<GlobalPos>, BiPredicate<Villager, Holder<PoiType>>> POI_MEMORIES = ImmutableMap.of(
          MemoryModuleType.HOME,
-@@ -187,7 +152,7 @@
+@@ -187,7 +_,7 @@
          this.getNavigation().setCanOpenDoors(true);
          this.getNavigation().setCanFloat(true);
          this.getNavigation().setRequiredPathLength(48.0F);
@@ -105,7 +113,7 @@
      }
  
      @Override
-@@ -205,17 +170,19 @@
+@@ -205,17 +_,19 @@
      public void refreshBrain(final ServerLevel level) {
          Brain<Villager> oldBrain = this.getBrain();
          oldBrain.stopAll(level, this);
@@ -132,7 +140,7 @@
          brain.updateActivityFromSchedule(this.level().environmentAttributes(), this.level().getGameTime(), this.position());
      }
  
-@@ -241,9 +208,6 @@
+@@ -241,9 +_,6 @@
          profiler.push("villagerBrain");
          this.getBrain().tick(level, this);
          profiler.pop();
@@ -142,7 +150,7 @@
  
          if (!this.isTrading() && this.updateMerchantTimer > 0) {
              this.updateMerchantTimer--;
-@@ -253,7 +217,7 @@
+@@ -253,7 +_,7 @@
                      this.increaseProfessionLevelOnUpdate = false;
                  }
  
@@ -151,7 +159,7 @@
              }
          }
  
-@@ -284,6 +248,7 @@
+@@ -284,6 +_,7 @@
              this.setUnhappyCounter(this.getUnhappyCounter() - 1);
          }
  
@@ -159,7 +167,7 @@
          this.maybeDecayGossip();
      }
  
-@@ -426,6 +391,23 @@
+@@ -426,6 +_,23 @@
          return this.allowedToRestock() && this.needsToRestock();
      }
  
@@ -183,7 +191,7 @@
      private void catchUpDemand() {
          int missedUpdates = 2 - this.numberOfRestocksToday;
          if (missedUpdates > 0) {
-@@ -491,9 +473,6 @@
+@@ -491,9 +_,6 @@
          output.putLong("LastRestock", this.lastRestockGameTime);
          output.putLong("LastGossipDecay", this.lastGossipDecayTime);
          output.putInt("RestocksToday", this.numberOfRestocksToday);
@@ -193,7 +201,14 @@
      }
  
      @Override
-@@ -517,7 +496,6 @@
+@@ -499,5 +_,6 @@
+     @Override
+     protected void readAdditionalSaveData(final ValueInput input) {
+         super.readAdditionalSaveData(input);
++        this.setCanPickUpLoot(false);
+         Optional<VillagerData> villagerDataOptional = input.read("VillagerData", VillagerData.CODEC);
+         if (input.getBooleanOr("VillagerDataFinalized", false) || villagerDataOptional.isPresent()) {
+@@ -517,7 +_,6 @@
          }
  
          this.numberOfRestocksToday = input.getIntOr("RestocksToday", 0);
@@ -201,7 +216,7 @@
      }
  
      @Override
-@@ -585,7 +563,7 @@
+@@ -585,7 +_,7 @@
          }
  
          if (offer.shouldRewardExp()) {
@@ -210,7 +225,7 @@
          }
      }
  
-@@ -603,7 +581,7 @@
+@@ -603,7 +_,7 @@
  
      @Override
      public void die(final DamageSource source) {
@@ -219,7 +234,7 @@
          Entity murderer = source.getEntity();
          if (murderer != null) {
              this.tellWitnessesThatIWasMurdered(murderer);
-@@ -634,18 +612,21 @@
+@@ -634,18 +_,21 @@
      public void releasePoi(final MemoryModuleType<GlobalPos> memoryType) {
          if (this.level() instanceof ServerLevel) {
              MinecraftServer server = ((ServerLevel)this.level()).getServer();
@@ -252,7 +267,7 @@
          }
      }
  
-@@ -702,7 +683,7 @@
+@@ -702,7 +_,7 @@
          return VillagerData.canLevelUp(currentLevel) && this.villagerXp >= VillagerData.getMaxXpPerLevel(currentLevel);
      }
  
@@ -261,7 +276,7 @@
          this.setVillagerData(this.getVillagerData().withLevel(this.getVillagerData().level() + 1));
          this.updateTrades(level);
      }
-@@ -736,9 +717,6 @@
+@@ -736,9 +_,6 @@
          }
  
          this.finalizeVillagerType(level, this.blockPosition());
@@ -271,7 +286,7 @@
  
          return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
      }
-@@ -764,30 +742,25 @@
+@@ -764,30 +_,25 @@
      @Override
      public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
          if (level.getDifficulty() != Difficulty.PEACEFUL) {
@@ -311,7 +326,7 @@
      }
  
      public boolean hasExcessFood() {
-@@ -809,15 +782,23 @@
+@@ -809,15 +_,23 @@
  
      @Override
      protected void updateTrades(final ServerLevel level) {
@@ -336,7 +351,7 @@
      }
  
      public void gossip(final ServerLevel level, final Villager target, final long timestamp) {
-@@ -849,7 +830,7 @@
+@@ -849,7 +_,7 @@
                  .limit(5L)
                  .toList();
              if (nearbyVillagersThatWantAGolem.size() >= villagersNeededToAgree) {
@@ -345,7 +360,7 @@
                          EntityTypes.IRON_GOLEM,
                          EntitySpawnReason.MOB_SUMMONED,
                          level,
-@@ -858,9 +839,11 @@
+@@ -858,9 +_,11 @@
                          8,
                          6,
                          SpawnUtil.Strategy.LEGACY_IRON_GOLEM,
