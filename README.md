@@ -35,7 +35,17 @@ alkahestRun {
 }
 ```
 
-`runAlkahest` is the jar-oriented root launcher. The lower-level `:paper-server:runServer`, `runDevServer`, `runBundler`, and `runPaperclip` tasks remain available for Paperweight development workflows.
+The optional `test-plugin` has a compile-time dependency on `dev.craftux:craftux-paper`. The current Paper server launch tasks add only the locally built `test-plugin` jar with `-add-plugin`; they do not resolve or load a CraftUX jar automatically. To use CraftUX at runtime, pass its jar explicitly with Paper's `-add-plugin` option.
+
+CraftUX is published to GitHub Packages, so configure a token with package read access before building `test-plugin`:
+
+```bash
+export GITHUB_ACTOR=your-github-user
+export GITHUB_TOKEN=your-github-pat
+./gradlew :test-plugin:jar
+```
+
+Override the dependency with `-PcraftuxVersion=1.0.3`; Gradle properties `craftuxRepoUser` and `craftuxRepoToken` (or `gpr.user` / `gpr.key`) are also supported. The lower-level `:paper-server:runServer`, `runDevServer`, `runBundler`, and `runPaperclip` tasks remain available for Paperweight development workflows.
 How To (Plugin Developers)
 ------
 * API source: [`alkahest-api`](alkahest-api)
