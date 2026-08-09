@@ -1,8 +1,11 @@
 package dev.mintychochip.customblock;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,24 +18,40 @@ import org.jetbrains.annotations.UnmodifiableView;
 /**
  * In-memory registry of {@link CustomBlockDefinition}s keyed by {@link NamespacedKey}.
  *
- * <p>Not thread-safe for concurrent mutation; intended for bootstrap registration then
- * mostly-read use (same pattern as ecology catalogs).
+ * <p>Registrations publish immutable snapshots atomically. Readers therefore observe either
+ * the previous complete catalog or the newly published complete catalog.
  */
 public final class CustomBlockCatalog {
 
-    private final Map<NamespacedKey, CustomBlockDefinition> byKey = new LinkedHashMap<>();
+    private static final Comparator<CustomBlockDefinition> KEY_ORDER =
+        Comparator.comparing(definition -> definition.namespacedKey().toString());
 
-    public void register(final CustomBlockDefinition definition) {
+    private volatile Snapshot snapshot = Snapshot.empty();
+
+    public synchronized void register(final CustomBlockDefinition definition) {
         Objects.requireNonNull(definition, "definition");
-        final NamespacedKey key = definition.namespacedKey();
-        if (this.byKey.containsKey(key)) {
+        final NamespacedKey key = Objects.requireNonNull(definition.namespacedKey(), "definition key");
+        if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+            throw new IllegalArgumentException("custom block key must not use the minecraft namespace: " + key);
+        }
+        final Snapshot current = this.snapshot;
+        if (current.byKey().containsKey(key)) {
             throw new IllegalStateException("custom block already registered: " + key);
         }
-        this.byKey.put(key, definition);
+        for (final CustomBlockDefinition existing : current.values()) {
+            if (existing == definition) {
+                throw new IllegalStateException("custom block object already registered: " + key);
+            }
+        }
+
+        final List<CustomBlockDefinition> next = new ArrayList<>(current.values());
+        next.add(definition);
+        next.sort(KEY_ORDER);
+        this.snapshot = Snapshot.of(next);
     }
 
     public boolean contains(final NamespacedKey key) {
-        return this.byKey.containsKey(Objects.requireNonNull(key, "key"));
+        return this.snapshot.byKey().containsKey(Objects.requireNonNull(key, "key"));
     }
 
     public boolean contains(final Key key) {
@@ -40,12 +59,12 @@ public final class CustomBlockCatalog {
     }
 
     public boolean contains(final String namespacedKey) {
-        final NamespacedKey key = NamespacedKey.fromString(namespacedKey);
-        return key != null && this.byKey.containsKey(key);
+        final NamespacedKey key = NamespacedKey.fromString(Objects.requireNonNull(namespacedKey, "namespacedKey"));
+        return key != null && this.snapshot.byKey().containsKey(key);
     }
 
     public Optional<CustomBlockDefinition> get(final NamespacedKey key) {
-        return Optional.ofNullable(this.byKey.get(Objects.requireNonNull(key, "key")));
+        return Optional.ofNullable(this.snapshot.byKey().get(Objects.requireNonNull(key, "key")));
     }
 
     public Optional<CustomBlockDefinition> get(final Key key) {
@@ -58,7 +77,7 @@ public final class CustomBlockCatalog {
     }
 
     public Optional<CustomBlockDefinition> get(final String namespacedKey) {
-        final NamespacedKey key = NamespacedKey.fromString(namespacedKey);
+        final NamespacedKey key = NamespacedKey.fromString(Objects.requireNonNull(namespacedKey, "namespacedKey"));
         if (key == null) {
             return Optional.empty();
         }
@@ -66,31 +85,51 @@ public final class CustomBlockCatalog {
     }
 
     public @Nullable CustomBlockDefinition getOrNull(final NamespacedKey key) {
-        return this.byKey.get(Objects.requireNonNull(key, "key"));
+        return this.snapshot.byKey().get(Objects.requireNonNull(key, "key"));
     }
 
     public @UnmodifiableView Collection<CustomBlockDefinition> all() {
-        return Collections.unmodifiableCollection(this.byKey.values());
+        return this.snapshot.values();
     }
 
     public @UnmodifiableView Map<NamespacedKey, CustomBlockDefinition> asMap() {
-        return Collections.unmodifiableMap(this.byKey);
+        return this.snapshot.byKey();
     }
 
     public int size() {
-        return this.byKey.size();
+        return this.snapshot.values().size();
     }
 
     public boolean isEmpty() {
-        return this.byKey.isEmpty();
+        return this.snapshot.values().isEmpty();
     }
 
-    public void clear() {
-        this.byKey.clear();
+    public synchronized void clear() {
+        this.snapshot = Snapshot.empty();
     }
 
     /** Fresh empty catalog. */
     public static @NotNull CustomBlockCatalog create() {
         return new CustomBlockCatalog();
+    }
+
+    private record Snapshot(
+        List<CustomBlockDefinition> values,
+        Map<NamespacedKey, CustomBlockDefinition> byKey
+    ) {
+        private static Snapshot empty() {
+            return new Snapshot(List.of(), Map.of());
+        }
+
+        private static Snapshot of(final List<CustomBlockDefinition> values) {
+            final LinkedHashMap<NamespacedKey, CustomBlockDefinition> byKey = new LinkedHashMap<>();
+            for (final CustomBlockDefinition definition : values) {
+                byKey.put(definition.namespacedKey(), definition);
+            }
+            return new Snapshot(
+                List.copyOf(values),
+                Collections.unmodifiableMap(byKey)
+            );
+        }
     }
 }
