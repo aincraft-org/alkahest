@@ -56,4 +56,8 @@ public class TestServerBuildInfo implements ServerBuildInfo {
     public @NotNull String asString(final @NotNull StringRepresentation representation) {
         return "";
     }
+    @Override
+    public @NotNull String releaseVersion() {
+        return "2026.08.08.1";
+    }
 }

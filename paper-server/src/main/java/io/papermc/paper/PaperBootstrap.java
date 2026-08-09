@@ -51,7 +51,7 @@ public final class PaperBootstrap {
             String.format(
                 "Loading %s %s for Minecraft %s",
                 bi.brandName(),
-                bi.asString(ServerBuildInfo.StringRepresentation.VERSION_FULL),
+                bi.releaseVersion(),
                 bi.minecraftVersionId()
             )
         );

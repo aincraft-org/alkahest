@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 public record ServerBuildInfoImpl(
     Key brandId,
     String brandName,
+    Optional<String> manifestReleaseVersion,
     String minecraftVersionId,
     String minecraftVersionName,
     OptionalInt buildNumber,
@@ -25,12 +26,13 @@ public record ServerBuildInfoImpl(
 ) implements ServerBuildInfo {
     private static final String ATTRIBUTE_BRAND_ID = "Brand-Id";
     private static final String ATTRIBUTE_BRAND_NAME = "Brand-Name";
+    private static final String ATTRIBUTE_SPECIFICATION_VERSION = "Specification-Version";
     private static final String ATTRIBUTE_BUILD_TIME = "Build-Time";
     private static final String ATTRIBUTE_BUILD_NUMBER = "Build-Number";
     private static final String ATTRIBUTE_GIT_BRANCH = "Git-Branch";
     private static final String ATTRIBUTE_GIT_COMMIT = "Git-Commit";
 
-    private static final String BRAND_PAPER_NAME = "Paper";
+    private static final String BRAND_ALKAHEST_NAME = "Alkahest";
 
     private static final String BUILD_DEV = "DEV";
 
@@ -38,13 +40,14 @@ public record ServerBuildInfoImpl(
         this(JarManifests.manifest(CraftServer.class));
     }
 
-    private ServerBuildInfoImpl(final Manifest manifest) {
+    ServerBuildInfoImpl(final Manifest manifest) {
         this(
             getManifestAttribute(manifest, ATTRIBUTE_BRAND_ID)
                 .map(Key::key)
                 .orElse(BRAND_PAPER_ID),
             getManifestAttribute(manifest, ATTRIBUTE_BRAND_NAME)
-                .orElse(BRAND_PAPER_NAME),
+                .orElse(BRAND_ALKAHEST_NAME),
+            getManifestAttribute(manifest, ATTRIBUTE_SPECIFICATION_VERSION),
             SharedConstants.getCurrentVersion().id(),
             SharedConstants.getCurrentVersion().name(),
             getManifestAttribute(manifest, ATTRIBUTE_BUILD_NUMBER)
@@ -57,6 +60,11 @@ public record ServerBuildInfoImpl(
             getManifestAttribute(manifest, ATTRIBUTE_GIT_BRANCH),
             getManifestAttribute(manifest, ATTRIBUTE_GIT_COMMIT)
         );
+    }
+
+    @Override
+    public @NotNull String releaseVersion() {
+        return this.manifestReleaseVersion.orElseGet(() -> this.asString(StringRepresentation.VERSION_SIMPLE));
     }
 
     @Override

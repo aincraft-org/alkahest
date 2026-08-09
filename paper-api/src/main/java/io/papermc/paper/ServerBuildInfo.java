@@ -56,6 +56,15 @@ public interface ServerBuildInfo {
     String brandName();
 
     /**
+     * Gets the distribution release version used in user-facing server branding.
+     *
+     * @return the release version, or the simple build string when no release metadata exists
+     */
+    default String releaseVersion() {
+        return this.asString(StringRepresentation.VERSION_SIMPLE);
+    }
+
+    /**
      * Gets the Minecraft version id.
      *
      * @return the Minecraft version id (e.g. "1.20.4", "1.20.2-pre2", "23w31a")
