@@ -20,6 +20,8 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 /**
@@ -69,7 +71,7 @@ public final class EcologyConfig {
      * Used by the explicit {@link Ecology#load(Path)} API for administrative/API
      * reloads; server tick hot paths use {@link #ensureLoaded(Path)}.
      */
-    public static synchronized EcologySettings reload(final Path serverDirectory) {
+    public static synchronized @NotNull EcologySettings reload(final @Nullable Path serverDirectory) {
         if (serverDirectory == null) {
             return settings;
         }
