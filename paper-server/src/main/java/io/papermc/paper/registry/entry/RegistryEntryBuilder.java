@@ -3,6 +3,7 @@ package io.papermc.paper.registry.entry;
 import io.papermc.paper.registry.PaperRegistryBuilder;
 import io.papermc.paper.registry.RegistryBackendKind;
 import io.papermc.paper.registry.RegistryKey;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -35,6 +36,7 @@ public class RegistryEntryBuilder<M, A extends Keyed> { // TODO remove Keyed
     }
 
     public RegistryEntry<M, A> apiOnly(final RegistryBackendKind backend, final Supplier<org.bukkit.Registry<A>> apiRegistrySupplier) {
+        Objects.requireNonNull(backend, "Registry backend must not be null");
         return new RegistryEntryImpl<>(new RegistryEntryMeta.ApiOnly<>(this.mcKey, this.apiKey, backend, apiRegistrySupplier));
     }
 

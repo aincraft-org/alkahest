@@ -7,6 +7,7 @@ import org.bukkit.Keyed;
 import org.bukkit.support.environment.AllFeatures;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,6 +26,15 @@ class RegistryBackendTest {
         return RegistryKeyImpl.REGISTRY_KEYS.stream();
     }
 
+    static Stream<Arguments> apiOnlyKeys() {
+        return Stream.of(
+            Arguments.of((RegistryKey<?>) RegistryKey.PARTICLE_TYPE, RegistryBackendKind.CATALOG),
+            Arguments.of((RegistryKey<?>) RegistryKey.POTION, RegistryBackendKind.CATALOG),
+            Arguments.of((RegistryKey<?>) RegistryKey.MEMORY_MODULE_TYPE, RegistryBackendKind.CATALOG),
+            Arguments.of((RegistryKey<?>) RegistryKey.ENTITY_TYPE, RegistryBackendKind.MERGED)
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("allKeys")
     void everyKeyHasExplicitBackend(final RegistryKey<?> key) {
@@ -32,17 +42,11 @@ class RegistryBackendTest {
     }
 
     @ParameterizedTest
-    @MethodSource("allKeys")
-    <M, A extends Keyed> void testApiOnlyBackends(final RegistryKey<A> key) {
-        final RegistryEntry<M, A> entry = PaperRegistries.getEntry(key);
-        if (entry.meta() instanceof RegistryEntryMeta.ApiOnly<M, A> apiOnly) {
-            final RegistryBackendKind backend = apiOnly.backend();
-            if (key == RegistryKey.PARTICLE_TYPE || key == RegistryKey.POTION || key == RegistryKey.MEMORY_MODULE_TYPE) {
-                assertEquals(RegistryBackendKind.CATALOG, backend, key::toString);
-            } else if (key == RegistryKey.ENTITY_TYPE) {
-                assertInstanceOf(RegistryEntryMeta.ApiOnly.class, entry.meta());
-                assertEquals(RegistryBackendKind.MERGED, backend, key::toString);
-            }
-        }
+    @MethodSource("apiOnlyKeys")
+    void testApiOnlyBackends(final RegistryKey<?> key, final RegistryBackendKind expectedBackend) {
+        final RegistryEntry<?, ?> entry = PaperRegistries.getEntry(key);
+        // the API-only registries must be exactly ApiOnly backend metadata
+        final RegistryEntryMeta.ApiOnly<?, ?> apiOnly = assertInstanceOf(RegistryEntryMeta.ApiOnly.class, entry.meta(), key::toString);
+        assertEquals(expectedBackend, apiOnly.backend(), key::toString);
     }
 }
