@@ -1,6 +1,7 @@
 package io.papermc.paper.registry.entry;
 
 import io.papermc.paper.registry.PaperRegistryBuilder;
+import io.papermc.paper.registry.RegistryBackendKind;
 import io.papermc.paper.registry.RegistryKey;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -33,8 +34,17 @@ public class RegistryEntryBuilder<M, A extends Keyed> { // TODO remove Keyed
         this.apiKey = apiKey;
     }
 
+    public RegistryEntry<M, A> apiOnly(final RegistryBackendKind backend, final Supplier<org.bukkit.Registry<A>> apiRegistrySupplier) {
+        return new RegistryEntryImpl<>(new RegistryEntryMeta.ApiOnly<>(this.mcKey, this.apiKey, backend, apiRegistrySupplier));
+    }
+
+    /**
+     * @deprecated API-only entries must declare an explicit backend. This delegates to
+     * {@link #apiOnly(RegistryBackendKind, Supplier)} with {@link RegistryBackendKind#CATALOG}.
+     */
+    @Deprecated(forRemoval = false)
     public RegistryEntry<M, A> apiOnly(final Supplier<org.bukkit.Registry<A>> apiRegistrySupplier) {
-        return new RegistryEntryImpl<>(new RegistryEntryMeta.ApiOnly<>(this.mcKey, this.apiKey, apiRegistrySupplier));
+        return this.apiOnly(RegistryBackendKind.CATALOG, apiRegistrySupplier);
     }
 
     public CraftStage<M, A> craft(final Class<?> classToPreload, final Function<Holder<M>, ? extends A> minecraftToBukkit) {
@@ -52,6 +62,7 @@ public class RegistryEntryBuilder<M, A extends Keyed> { // TODO remove Keyed
         private final Class<?> classToPreload;
         private final RegistryTypeMapper<M, A> minecraftToBukkit;
         private BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater = EMPTY;
+        private RegistryBackendKind backend;
 
         private CraftStage(
             final ResourceKey<? extends Registry<M>> mcKey,
@@ -69,8 +80,20 @@ public class RegistryEntryBuilder<M, A extends Keyed> { // TODO remove Keyed
             return this;
         }
 
+        public CraftStage<M, A> backend(final RegistryBackendKind backend) {
+            this.backend = backend;
+            return this;
+        }
+
+        private RegistryBackendKind requireBackend() {
+            if (this.backend == null) {
+                throw new IllegalStateException("Registry backend was not declared for " + this.apiKey);
+            }
+            return this.backend;
+        }
+
         public RegistryEntry<M, A> build() {
-            return new RegistryEntryImpl<>(new RegistryEntryMeta.Craft<>(this.mcKey, this.apiKey, this.classToPreload, this.minecraftToBukkit, this.serializationUpdater));
+            return new RegistryEntryImpl<>(new RegistryEntryMeta.Craft<>(this.mcKey, this.apiKey, this.classToPreload, this.minecraftToBukkit, this.serializationUpdater, this.requireBackend()));
         }
 
         public <B extends PaperRegistryBuilder<M, A>> RegistryEntry<M, A> modifiable(final PaperRegistryBuilder.Filler<M, A, B> filler) {
@@ -86,7 +109,7 @@ public class RegistryEntryBuilder<M, A extends Keyed> { // TODO remove Keyed
         }
 
         public <B extends PaperRegistryBuilder<M, A>> RegistryEntry<M, A> create(final PaperRegistryBuilder.Filler<M, A, B> filler, final RegistryEntryMeta.RegistryModificationApiSupport support) {
-            return new RegistryEntryImpl<>(new RegistryEntryMeta.Buildable<>(this.mcKey, this.apiKey, this.classToPreload, this.minecraftToBukkit, this.serializationUpdater, filler, support));
+            return new RegistryEntryImpl<>(new RegistryEntryMeta.Buildable<>(this.mcKey, this.apiKey, this.classToPreload, this.minecraftToBukkit, this.serializationUpdater, filler, support, this.requireBackend()));
         }
     }
 }

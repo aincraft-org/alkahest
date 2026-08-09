@@ -2,6 +2,7 @@ package io.papermc.paper.registry.entry;
 
 import com.google.common.base.Preconditions;
 import io.papermc.paper.registry.PaperRegistryBuilder;
+import io.papermc.paper.registry.RegistryBackendKind;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.TypedKey;
 import io.papermc.paper.registry.WritableCraftRegistry;
@@ -24,13 +25,15 @@ public sealed interface RegistryEntryMeta<M, A extends Keyed> permits RegistryEn
 
     RegistryKey<A> apiKey();
 
+    RegistryBackendKind backend();
+
     org.bukkit.Registry<A> createApiRegistry(final Registry<M> nmsRegistry);
 
     default RegistryModificationApiSupport modificationApiSupport() {
         return RegistryModificationApiSupport.NONE;
     }
 
-    record ApiOnly<M, A extends Keyed>(ResourceKey<? extends Registry<M>> mcKey, RegistryKey<A> apiKey, Supplier<org.bukkit.Registry<A>> registrySupplier) implements RegistryEntryMeta<M, A> { // TODO remove Keyed
+    record ApiOnly<M, A extends Keyed>(ResourceKey<? extends Registry<M>> mcKey, RegistryKey<A> apiKey, RegistryBackendKind backend, Supplier<org.bukkit.Registry<A>> registrySupplier) implements RegistryEntryMeta<M, A> { // TODO remove Keyed
 
         @Override
         public org.bukkit.Registry<A> createApiRegistry(final Registry<M> nmsRegistry) {
@@ -56,7 +59,8 @@ public sealed interface RegistryEntryMeta<M, A extends Keyed> permits RegistryEn
         RegistryKey<A> apiKey,
         Class<?> classToPreload,
         RegistryTypeMapper<M, A> registryTypeMapper,
-        BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater
+        BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater,
+        RegistryBackendKind backend
     ) implements ServerSide<M, A> { // TODO remove Keyed
 
         public Craft {
@@ -99,7 +103,8 @@ public sealed interface RegistryEntryMeta<M, A extends Keyed> permits RegistryEn
         RegistryTypeMapper<M, A> registryTypeMapper,
         BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater,
         PaperRegistryBuilder.Filler<M, A, B> builderFiller,
-        RegistryModificationApiSupport modificationApiSupport
+        RegistryModificationApiSupport modificationApiSupport,
+        RegistryBackendKind backend
     ) implements ServerSide<M, A> {
 
         public RegistryEntryAddEventImpl<A, B> createEntryAddEvent(final TypedKey<A> key, final B initialBuilder, final Conversions conversions) {
