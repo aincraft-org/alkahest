@@ -189,9 +189,9 @@ Use the existing `BuiltInRegistries.bootStrap(Runnable)` window. Plugin handlers
 1. validate the typed builder;
 2. create the NMS value and its holder;
 3. register through `PaperRegistryListenerManager`;
-4. apply tags before freeze;
-5. lock reference-holder creation only after all plugin registrations;
-6. freeze and validate the completed registry.
+4. lock reference-holder creation only after all plugin registrations;
+5. freeze and validate the completed registry;
+6. load and bind tag data through the normal post-freeze `TagLoader` lifecycle. Tag declarations needed for builder lookup may be created before freeze, but actual tag contents are not applied through `prepareTagReload` until the registry is frozen.
 
 Registry-specific integration is required for types whose constructors register intrusive holders or populate global tables. Blocks, items, fluids, menus, and entity types cannot use a generic reflective constructor.
 
