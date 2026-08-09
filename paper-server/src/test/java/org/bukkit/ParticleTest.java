@@ -61,8 +61,8 @@ public class ParticleTest {
     }
 
     @ParameterizedTest
-    @EnumSource(Particle.class)
-    public void testMinecraftValuesPresent(Particle bukkit) {
+    @EnumSource(VanillaParticle.class)
+    public void testMinecraftValuesPresent(VanillaParticle bukkit) {
         // TODO: 10/19/23 Remove with enum PR, it is then no longer needed, since the enum PR has a extra test for this
         Particle finalBukkit = bukkit;
         assertDoesNotThrow(() -> CraftParticle.bukkitToMinecraft(finalBukkit), String.format("""
@@ -72,8 +72,8 @@ public class ParticleTest {
     }
 
     @ParameterizedTest
-    @EnumSource(Particle.class)
-    public void testRightParticleParamCreation(Particle bukkit) {
+    @EnumSource(VanillaParticle.class)
+    public void testRightParticleParamCreation(VanillaParticle bukkit) {
         net.minecraft.core.particles.ParticleType<?> minecraft = CraftParticle.bukkitToMinecraft(bukkit);
 
         if (bukkit.getDataType().equals(Void.class)) {
