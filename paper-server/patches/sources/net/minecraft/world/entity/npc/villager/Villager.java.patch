@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/npc/villager/Villager.java
 +++ b/net/minecraft/world/entity/npc/villager/Villager.java
-@@ -2,10 +_,8 @@
+@@ -2,10 +2,8 @@
  
  import com.google.common.annotations.VisibleForTesting;
  import com.google.common.collect.ImmutableMap;
@@ -11,7 +11,7 @@
  import java.util.List;
  import java.util.Map;
  import java.util.Optional;
-@@ -65,7 +_,6 @@
+@@ -65,7 +63,6 @@
  import net.minecraft.world.entity.ai.gossip.GossipContainer;
  import net.minecraft.world.entity.ai.gossip.GossipType;
  import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -19,7 +19,25 @@
  import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
  import net.minecraft.world.entity.ai.sensing.GolemSensor;
  import net.minecraft.world.entity.ai.sensing.SensorType;
-@@ -126,50 +_,21 @@
+@@ -73,9 +70,7 @@
+ import net.minecraft.world.entity.ai.village.poi.PoiManager;
+ import net.minecraft.world.entity.ai.village.poi.PoiType;
+ import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+-import net.minecraft.world.entity.item.ItemEntity;
+ import net.minecraft.world.entity.monster.Witch;
+-import net.minecraft.world.entity.npc.InventoryCarrier;
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.entity.raid.Raid;
+ import net.minecraft.world.entity.schedule.Activity;
+@@ -113,7 +108,6 @@
+     private static final int DEFAULT_LAST_RESTOCK = 0;
+     private static final int DEFAULT_LAST_GOSSIP_DECAY = 0;
+     private static final int DEFAULT_RESTOCKS_TODAY = 0;
+-    private static final boolean DEFAULT_ASSIGN_PROFESSION_WHEN_SPAWNED = false;
+     private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.63F);
+     private int updateMerchantTimer;
+     private boolean increaseProfessionLevelOnUpdate;
+@@ -126,50 +120,21 @@
      private long lastRestockGameTime = 0L;
      public int numberOfRestocksToday = 0;
      private long lastRestockCheckDay;
@@ -78,7 +96,28 @@
      );
      public static final Map<MemoryModuleType<GlobalPos>, BiPredicate<Villager, Holder<PoiType>>> POI_MEMORIES = ImmutableMap.of(
          MemoryModuleType.HOME,
-@@ -210,12 +_,8 @@
+@@ -187,7 +152,7 @@
+         this.getNavigation().setCanOpenDoors(true);
+         this.getNavigation().setCanFloat(true);
+         this.getNavigation().setRequiredPathLength(48.0F);
+-        this.setCanPickUpLoot(true);
++        this.setCanPickUpLoot(false);
+     }
+ 
+     @Override
+@@ -205,17 +170,19 @@
+     public void refreshBrain(final ServerLevel level) {
+         Brain<Villager> oldBrain = this.getBrain();
+         oldBrain.stopAll(level, this);
++        this.releaseAllPois(); // release stale villager POI claims before replacing the brain
+         this.brain = BRAIN_PROVIDER.makeBrain(this, oldBrain.pack());
+-        this.registerBrainGoals(this.getBrain());
++        Brain<Villager> refreshedBrain = this.getBrain();
++        refreshedBrain.eraseMemory(MemoryModuleType.HOME);
++        refreshedBrain.eraseMemory(MemoryModuleType.JOB_SITE);
++        refreshedBrain.eraseMemory(MemoryModuleType.POTENTIAL_JOB_SITE);
++        refreshedBrain.eraseMemory(MemoryModuleType.MEETING_POINT);
++        this.registerBrainGoals(refreshedBrain);
      }
  
      private void registerBrainGoals(final Brain<Villager> brain) {
@@ -93,14 +132,17 @@
          brain.updateActivityFromSchedule(this.level().environmentAttributes(), this.level().getGameTime(), this.position());
      }
  
-@@ -235,6 +_,6 @@
-         return this.assignProfessionWhenSpawned;
-     }
+@@ -241,9 +208,6 @@
+         profiler.push("villagerBrain");
+         this.getBrain().tick(level, this);
+         profiler.pop();
+-        if (this.assignProfessionWhenSpawned) {
+-            this.assignProfessionWhenSpawned = false;
+-        }
  
-     @Override
-     protected void customServerAiStep(final ServerLevel level) {
-         ProfilerFiller profiler = Profiler.get();
-@@ -253,7 +_,7 @@
+         if (!this.isTrading() && this.updateMerchantTimer > 0) {
+             this.updateMerchantTimer--;
+@@ -253,7 +217,7 @@
                      this.increaseProfessionLevelOnUpdate = false;
                  }
  
@@ -109,33 +151,16 @@
              }
          }
  
-@@ -283,8 +_,8 @@
-         if (this.getUnhappyCounter() > 0) {
+@@ -284,6 +248,7 @@
              this.setUnhappyCounter(this.getUnhappyCounter() - 1);
          }
--
--        this.maybeDecayGossip();
+ 
 +        this.tickRestockIfServer();
-+        this.maybeDecayGossip(); // remove in Task 3
+         this.maybeDecayGossip();
      }
  
-     @Override
-@@ -369,7 +_,12 @@
-         this.updateDemand();
- 
-         for (MerchantOffer offer : this.getOffers()) {
--            offer.resetUses();
-+            // CraftBukkit start
-+            org.bukkit.event.entity.VillagerReplenishTradeEvent event = new org.bukkit.event.entity.VillagerReplenishTradeEvent((org.bukkit.entity.Villager) this.getBukkitEntity(), offer.asBukkit());
-+            if (event.callEvent()) {
-+                offer.resetUses();
-+            }
-+            // CraftBukkit end
-         }
- 
-         this.resendOffersToTradingPlayer();
-@@ -406,6 +_,23 @@
-         return this.numberOfRestocksToday == 0 || this.numberOfRestocksToday < 2 && this.level().getGameTime() > this.lastRestockGameTime + 2400L;
+@@ -426,6 +391,23 @@
+         return this.allowedToRestock() && this.needsToRestock();
      }
  
 +    private void tickRestock(final ServerLevel level) {
@@ -155,40 +180,28 @@
 +        }
 +    }
 +
-     public boolean shouldRestock(final ServerLevel level) {
-         long halfDayPassedTime = this.lastRestockGameTime + 12000L;
-         long gameTime = this.level().getGameTime();
-@@ -430,7 +_,12 @@
+     private void catchUpDemand() {
          int missedUpdates = 2 - this.numberOfRestocksToday;
          if (missedUpdates > 0) {
-             for (MerchantOffer offer : this.getOffers()) {
--                offer.resetUses();
-+                // CraftBukkit start
-+                org.bukkit.event.entity.VillagerReplenishTradeEvent event = new org.bukkit.event.entity.VillagerReplenishTradeEvent((org.bukkit.entity.Villager) this.getBukkitEntity(), offer.asBukkit());
-+                if (event.callEvent()) {
-+                    offer.resetUses();
-+                }
-+                // CraftBukkit end
-             }
+@@ -491,9 +473,6 @@
+         output.putLong("LastRestock", this.lastRestockGameTime);
+         output.putLong("LastGossipDecay", this.lastGossipDecayTime);
+         output.putInt("RestocksToday", this.numberOfRestocksToday);
+-        if (this.assignProfessionWhenSpawned) {
+-            output.putBoolean("AssignProfessionWhenSpawned", true);
+-        }
+     }
+ 
+     @Override
+@@ -517,7 +496,6 @@
          }
  
-@@ -451,6 +_,7 @@
-         int reputation = this.getPlayerReputation(player);
-         if (reputation != 0) {
-             for (MerchantOffer offer : this.getOffers()) {
-+                if (offer.ignoreDiscounts) continue; // Paper - Add ignore discounts API
-                 offer.addToSpecialPriceDiff(-Mth.floor(reputation * offer.getPriceMultiplier()));
-             }
-         }
-@@ -460,6 +_,7 @@
-             int amplifier = effect.getAmplifier();
+         this.numberOfRestocksToday = input.getIntOr("RestocksToday", 0);
+-        this.assignProfessionWhenSpawned = input.getBooleanOr("AssignProfessionWhenSpawned", false);
+     }
  
-             for (MerchantOffer offer : this.getOffers()) {
-+                if (offer.ignoreDiscounts) continue; // Paper - Add ignore discounts API
-                 double modifier = 0.3 + 0.0625 * amplifier;
-                 int costReduction = (int)Math.floor(modifier * offer.getBaseCostA().getCount());
-                 offer.addToSpecialPriceDiff(-Math.max(costReduction, 1));
-@@ -585,7 +_,7 @@
+     @Override
+@@ -585,7 +563,7 @@
          }
  
          if (offer.shouldRewardExp()) {
@@ -197,7 +210,7 @@
          }
      }
  
-@@ -603,7 +_,7 @@
+@@ -603,7 +581,7 @@
  
      @Override
      public void die(final DamageSource source) {
@@ -206,7 +219,40 @@
          Entity murderer = source.getEntity();
          if (murderer != null) {
              this.tellWitnessesThatIWasMurdered(murderer);
-@@ -702,7 +_,7 @@
+@@ -634,18 +612,21 @@
+     public void releasePoi(final MemoryModuleType<GlobalPos> memoryType) {
+         if (this.level() instanceof ServerLevel) {
+             MinecraftServer server = ((ServerLevel)this.level()).getServer();
+-            this.brain.getMemory(memoryType).ifPresent(memory -> {
+-                ServerLevel poiLevel = server.getLevel(memory.dimension());
+-                if (poiLevel != null) {
+-                    PoiManager poiManager = poiLevel.getPoiManager();
+-                    Optional<Holder<PoiType>> type = poiManager.getType(memory.pos());
+-                    BiPredicate<Villager, Holder<PoiType>> poiTypePredicate = POI_MEMORIES.get(memoryType);
+-                    if (type.isPresent() && poiTypePredicate.test(this, type.get())) {
+-                        poiManager.release(memory.pos());
+-                        poiLevel.debugSynchronizers().updatePoi(memory.pos());
++            Optional<GlobalPos> memory = this.brain.getMemoryInternal(memoryType);
++            if (memory != null) {
++                memory.ifPresent(poiPos -> {
++                    ServerLevel poiLevel = server.getLevel(poiPos.dimension());
++                    if (poiLevel != null) {
++                        PoiManager poiManager = poiLevel.getPoiManager();
++                        Optional<Holder<PoiType>> type = poiManager.getType(poiPos.pos());
++                        BiPredicate<Villager, Holder<PoiType>> poiTypePredicate = POI_MEMORIES.get(memoryType);
++                        if (type.isPresent() && poiTypePredicate.test(this, type.get())) {
++                            poiManager.release(poiPos.pos());
++                            poiLevel.debugSynchronizers().updatePoi(poiPos.pos());
++                        }
+                     }
+-                }
+-            });
++                });
++            }
+         }
+     }
+ 
+@@ -702,7 +683,7 @@
          return VillagerData.canLevelUp(currentLevel) && this.villagerXp >= VillagerData.getMaxXpPerLevel(currentLevel);
      }
  
@@ -215,7 +261,17 @@
          this.setVillagerData(this.getVillagerData().withLevel(this.getVillagerData().level() + 1));
          this.updateTrades(level);
      }
-@@ -764,12 +_,19 @@
+@@ -736,9 +717,6 @@
+         }
+ 
+         this.finalizeVillagerType(level, this.blockPosition());
+-        if (spawnReason == EntitySpawnReason.STRUCTURE) {
+-            this.assignProfessionWhenSpawned = true;
+-        }
+ 
+         return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
+     }
+@@ -764,30 +742,25 @@
      @Override
      public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
          if (level.getDifficulty() != Difficulty.PEACEFUL) {
@@ -237,7 +293,25 @@
              if (witch == null) {
                  super.thunderHit(level, lightningBolt);
              }
-@@ -809,15 +_,23 @@
+         } else {
+             super.thunderHit(level, lightningBolt);
+         }
+-    }
+-
+-    @Override
+-    protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
+-        InventoryCarrier.pickUpItem(level, this, this, entity);
+-    }
+-
+-    @Override
+-    public boolean wantsToPickUp(final ServerLevel level, final ItemStack itemStack) {
+-        Item item = itemStack.getItem();
+-        return (itemStack.is(ItemTags.VILLAGER_PICKS_UP) || this.getVillagerData().profession().value().requestedItems().contains(item))
+-            && this.getInventory().canAddItem(itemStack);
+     }
+ 
+     public boolean hasExcessFood() {
+@@ -809,15 +782,23 @@
  
      @Override
      protected void updateTrades(final ServerLevel level) {
@@ -262,7 +336,7 @@
      }
  
      public void gossip(final ServerLevel level, final Villager target, final long timestamp) {
-@@ -849,7 +_,7 @@
+@@ -849,7 +830,7 @@
                  .limit(5L)
                  .toList();
              if (nearbyVillagersThatWantAGolem.size() >= villagersNeededToAgree) {
@@ -271,7 +345,7 @@
                          EntityTypes.IRON_GOLEM,
                          EntitySpawnReason.MOB_SUMMONED,
                          level,
-@@ -858,9 +_,11 @@
+@@ -858,9 +839,11 @@
                          8,
                          6,
                          SpawnUtil.Strategy.LEGACY_IRON_GOLEM,

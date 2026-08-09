@@ -3,6 +3,8 @@ package io.papermc.paper.entity;
 import com.mojang.datafixers.util.Pair;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.VillagerGoalPackages;
 import org.bukkit.support.environment.Normal;
@@ -57,5 +59,22 @@ class VillagerGoalPackagesTest {
         Set<String> names = behaviorNames(VillagerGoalPackages.getPanicPackage(0.5F));
         assertTrue(names.contains("VillagerCalmDown"));
         assertTrue(names.contains("SetWalkTargetAwayFrom"));
+    }
+
+    @Test
+    void noRemovedActivityPackageRemainsReachableFromTheVillagerGraph() {
+        Set<String> core = behaviorNames(VillagerGoalPackages.getCorePackage(0.5F));
+        Set<String> idle = behaviorNames(VillagerGoalPackages.getIdlePackage(0.5F));
+        Set<String> panic = behaviorNames(VillagerGoalPackages.getPanicPackage(0.5F));
+
+        Set<String> active = Stream.of(core, idle, panic).flatMap(Set::stream).collect(Collectors.toSet());
+        for (String removed : Set.of(
+            "AcquirePoi", "AssignProfessionFromJobSite", "ResetProfession", "YieldJobSite",
+            "PoiCompetitorScan", "GoToPotentialJobSite", "WorkAtPoi", "WorkAtComposter",
+            "HarvestFarmland", "UseBonemeal", "VillagerMakeLove", "TradeWithVillager",
+            "GiveGiftToHero", "SocializeAtBell", "ReactToBell", "RingBell", "JumpOnBed"
+        )) {
+            assertFalse(active.contains(removed), removed);
+        }
     }
 }
