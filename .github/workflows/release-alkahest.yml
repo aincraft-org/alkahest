@@ -92,7 +92,7 @@ jobs:
           fi
           manifest="$(unzip -p "$server_jar" META-INF/MANIFEST.MF)"
           [[ "$manifest" == *$'Brand-Id: mintychochip:alkahest'* ]]
-          [[ "$manifest" == *$'Brand-Name: Alkahest'* ]]
+          [[ "$manifest" == *"Brand-Name: Alkahest $RELEASE_VERSION"* ]]
           [[ "$manifest" == *"Specification-Version: $RELEASE_VERSION"* ]]
           {
             echo "API_JAR=$api_jar"

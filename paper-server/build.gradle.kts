@@ -178,7 +178,7 @@ tasks.jar {
             "Specification-Version" to project.version,
             "Specification-Vendor" to "Alkahest",
             "Brand-Id" to "mintychochip:alkahest",
-            "Brand-Name" to "Alkahest",
+            "Brand-Name" to "Alkahest ${project.version}",
             "Build-Number" to (build ?: ""),
             "Build-Time" to buildTime.toString(),
             "Git-Branch" to gitBranch,
